@@ -1,0 +1,227 @@
+version: '3'
+
+vars:
+
+  RELEASE:
+    sh: ./build_target.sh release
+  GIT_VERSION:
+    sh: ./build_target.sh git
+  DOCKER_VERSION:
+    sh: ./build_target.sh docker
+  PKG_VERSION:
+    sh: ./build_target.sh pkg
+    #sh: python -m paasify.version
+  
+  
+  # GIT_TAG:
+  #   sh: git describe --tags 2>/dev/null || echo devel
+  # GIT_BRANCH:
+  #   sh: git rev-parse --abbrev-ref HEAD
+  # PAASIFY_VERSION:
+  #   sh: poetry version -s
+
+  # #PAASIFY_RELEASE=$(poetry version -s)
+  # PAASIFY_RELEASE: latest
+
+includes:
+  doc:
+    taskfile: ./docs/Taskfile.yml
+    dir: ./docs
+    
+
+# See: https://github.blog/2015-06-30-scripts-to-rule-them-all/
+
+
+tasks:
+  default:
+    desc: Show all commands
+    cmds:
+      - task --list-all
+
+
+  # Project CI
+  # ---------------
+
+  run_black:
+    desc: Autolint codes
+    run: once
+    sources: &PAASIFY_MODULE
+      - paasify/*.py
+    cmds:
+      - >2
+        git status --porcelain | grep '^.M paasify/' && {
+          echo "ERROR: Uncommited files !";
+          exit 1;
+        } || exit 0
+      - black paasify
+
+  run_tests:
+    desc: Run tests
+    run: once
+    sources: &PAASIFY_CODE
+      - paasify/*.py
+      - tests/*.py
+    cmds:
+      - pytest -vv tests {{.CLI_ARGS}}
+
+  # Reporting tools
+  # ---------------
+  
+  report_coverage:
+    desc: Test coverage status
+    run: once
+    sources: &PAASIFY_MODULE
+    cmds:
+      - pytest --cov=paasify tests {{.CLI_ARGS}}
+
+  report_linting:
+    desc: Report linting status
+    run: once
+    sources: *PAASIFY_CODE
+    cmds:
+      - pylint --output-format=colorized paasify
+
+
+  # Version Workflow
+  # ---------------
+  bump_reset:
+    desc: Reset version to last version from git
+    cmds:
+      - git checkout paasify/version.py
+      - poetry version $(python -m paasify.version)
+
+  bump_test:
+    desc: Bump prepath (0.0.0a0)
+    cmds:
+      - poetry version prepatch
+
+
+  bump_try:
+    desc: Bump prerelease (0.0.0aX)
+    cmds:
+      - poetry version prerelease
+
+
+
+  # Pypi Workflow
+  # ---------------
+  pkg_build:
+    desc: Create a python package
+    cmds:
+      - poetry build
+
+  pkg_publish:
+    desc: Create a python package
+    interactive: true
+    deps:
+      - pkg_build
+    cmds:
+      - poetry publish
+
+  pkg_clean:
+    desc: Clean generated packages
+    cmds:
+      - rm -rf dist/
+    status:
+      - test ! -d dist/
+
+
+
+  # Docker Workflow
+  # ---------------
+  docker_build_prepare:
+    desc: Generate requirements.txt
+    cmds:
+      - >
+        poetry export --without-hashes 
+        --format=requirements.txt --output=dist/requirements.txt
+    status:
+      - test -f dist/requirements.txt
+
+  docker_build_prepare_doc:
+    desc: Generate requirements.txt for docs
+    cmds:
+      - >
+        poetry export 
+        --without-hashes 
+        --without main --with doc
+        --format=requirements.txt --output=dist/requirements-doc.txt
+    status:
+      - test -f dist/requirements-doc.txt
+
+
+  docker_build_image_doc:
+    desc: Build docker image 
+    deps:
+      - docker_build_prepare_doc
+      - docker_build_image
+    cmds: 
+    - >
+      docker build 
+      -f docker/Dockerfile.doc
+      -t paasify-doc:{{.DOCKER_VERSION}}
+      -t paasify-doc:latest
+      .
+
+  docker_build_image:
+    desc: Build docker image 
+    deps:
+      - pkg_build
+      - docker_build_prepare
+    cmds: 
+    - >
+      docker build 
+      -f docker/Dockerfile.build
+      -t paasify:{{.DOCKER_VERSION}}
+      -t paasify:latest
+      --build-arg PAASIFY_VERSION={{.PKG_VERSION}}
+      .
+
+  docker_run:
+    desc: Run paasify binary
+    deps:
+      - docker_build_image
+    cmds:
+      - docker run -ti --rm paasify:{{.DOCKER_VERSION}} paasify {{.CLI_ARGS}}
+
+  docker_clean:
+    desc: Clean generated images
+    cmds:
+      - docker images paasify -q | xargs -n 1 docker image rm
+    status:
+      - test -z "$(docker images paasify -q)"
+
+
+
+  # Project Workflow
+  # ---------------
+  run_qa:
+    desc: Run short test suites 
+    deps: 
+    - run_black
+    - report_linting
+
+  run_test:
+    desc: Run full test suites 
+    deps: 
+    - run_black
+    - run_test
+    - report_coverage
+    - report_linting
+
+
+
+  # Top level Workflow
+  # ---------------
+
+  # serve_doc:
+  #   desc: Serve locally documentation site
+  #   deps:
+  #     - doc:serve_doc
+
+  clean:
+    desc: Clean all artifacts
+    deps:
+      - pkg_clean
+      - docker_clean
+

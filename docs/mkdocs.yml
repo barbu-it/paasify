@@ -1,0 +1,101 @@
+docs_dir: src/
+site_dir: build/site/
+site_name: "Paasify Documentation"
+
+watch:
+  - src
+  - ../paasify
+
+extra_css:
+  - css/mkdocstrings.css
+
+site_url: https://paasify.org/
+nav:
+    - Documentation:
+      - Introduction: index.md
+      - docs/concepts.md
+      - docs/configuration.md
+      - docs/distribute.md
+      - docs/extend.md
+      - docs/advanced.md
+    - Guides:
+      - jupyter/*.ipynb
+      - tutorial/best_practices.md
+    - Reference:
+      - Introduction: refs/index.md
+      - Command line: refs/cli_usage.md
+      - Configuration:
+          - Project: refs/schema_prj.md
+          - Config: refs/schema_prj_config.md
+          - Stacks: refs/schema_prj_stacks.md
+          - Sources: refs/schema_prj_sources.md
+      - Plugins: 
+          - refs/extend_base.md
+          - refs/extend_tags.md
+      - Python API:
+        - refs/python_api_app.md
+        - refs/python_api_project.md
+        - refs/python_api_other.md
+    - Plugins:
+      - plugins_apidoc/*/markdown.md
+    - About:
+      - about/development.md
+      - about/contribute.md
+      - about/license.md
+
+# https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/
+
+plugins:
+  - search
+  - mkdocstrings
+  #- schema_reader:
+  #    include: 
+  #      - "build/paasify_yml_schema.json"
+  - mkdocs-jupyter
+  - literate-nav:
+      nav_file: SUMMARY.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+
+
+theme:
+    name: material
+    locale: en
+    features:
+      - content.code.annotate
+      - navigation.tracking
+      - navigation.tabs
+      - navigation.tabs.sticky
+#      - navigation.expand
+      - navigation.sections
+#      - toc.integrate
+      - navigation.top
+      - search.highlight
+
+    #custom_dir: mkdocs_override/
+    #custom_dir: overrides
+    #custom_dir: custom_theme/
+    palette: 
+
+      # Palette toggle for light mode
+      - scheme: default
+        primary: light green
+        accent: indigo
+        toggle:
+          icon: material/brightness-7 
+          name: Switch to dark mode
+
+      # Palette toggle for dark mode
+      - scheme: slate
+        primary: blue grey
+        accent: green light
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode

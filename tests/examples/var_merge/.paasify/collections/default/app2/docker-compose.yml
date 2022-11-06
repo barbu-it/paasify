@@ -1,0 +1,12 @@
+
+services:
+  main_app2:
+    image: $var_image
+    environment:
+      user1: ${var_user_unexisting_var:-OK_FALLBACK_compose_user}
+      user2: ${var_user:-default_compose_user}
+      escaped_var1: $var_escaped
+      escaped_var2: $$OK_var_escaped_missing
+      
+
+

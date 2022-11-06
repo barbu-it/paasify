@@ -1,0 +1,50 @@
+# Builder image
+# ==================
+
+FROM paasify:latest as builder
+# FROM python:3.9-slim  as builder
+
+# For Debian
+# Build dependencies
+# RUN apt-get update \
+#     && apt-get install gcc g++ make jsonnet libjsonnet-dev -y \
+#     && apt-get clean
+
+
+# # Install python dependencies as root
+# ENV PIP_ROOT_USER_ACTION=ignore
+# RUN pip3 install --upgrade pip
+# COPY dist/requirements-doc.txt /requirements.txt
+# RUN pip3 install -r /requirements.txt
+# RUN python -m bash_kernel.install
+
+# Install python dependencies as user
+USER root
+COPY dist/requirements-doc.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
+RUN python -m bash_kernel.install
+
+
+# App image
+# ==================
+
+FROM python:3.9-slim  as app
+
+# Import python deps as root
+COPY --from=builder /usr/local/lib/python3.9/ /usr/local/lib/python3.9/
+COPY --from=builder /usr/local/share/ /usr/local/share/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+# Import python deps as user
+COPY --from=builder /work /work
+
+#COPY --chown=work:work docs/ /app
+COPY docs/ /docs
+
+RUN useradd \
+    --home-dir /work \
+    --shell=/bin/bash work \
+    && chown -R work /work
+ENV PATH="/work/.local/bin:${PATH}"
+USER work
+WORKDIR /docs

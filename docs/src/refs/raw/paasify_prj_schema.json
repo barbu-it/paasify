@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Paasify",
+  "description": "Main paasify project settings. This defines the format of `paasify.yml`.",
+  "additionalProperties": false,
+  "examples": [
+    {
+      "config": {
+        "tags_prefix": [
+          "_paasify"
+        ],
+        "vars": {
+          "app_domain": "devbox.192.168.186.129.nip.io",
+          "app_expose_ip": "192.168.186.129",
+          "app_tz": "Europe/Paris",
+          "top_var1": "My value",
+          "top_var2": "TOP VAR1=> ${top_var1}"
+        }
+      },
+      "sources": [
+        {
+          "default": {
+            "url": "https://github.com/user/docker-compose.git"
+          }
+        }
+      ],
+      "stacks": [
+        {
+          "app": "default:traefik",
+          "path": "traefik",
+          "tags": [
+            "ep_http",
+            "expose_admin",
+            "debug",
+            {
+              "traefik-svc": {
+                "traefik_net_external": false,
+                "traefik_svc_port": "8080"
+              }
+            }
+          ]
+        },
+        {
+          "app": "default:minio",
+          "env": [
+            {
+              "app_admin_passwd": "MY_PASS"
+            },
+            {
+              "app_image": "quay.io/minio/minio:latest"
+            }
+          ],
+          "tags": [
+            {
+              "traefik-svc": {
+                "traefik_svc_name": "minio-api",
+                "traefik_svc_port": 9000
+              }
+            },
+            {
+              "traefik-svc": {
+                "traefik_svc_name": "minio-console",
+                "traefik_svc_port": 9001
+              }
+            }
+          ]
+        },
+        {
+          "app": "default:authelia",
+          "tags": [
+            "traefik-svc"
+          ]
+        },
+        {
+          "app": "default:librespeed",
+          "tags": [
+            "traefik-svc"
+          ]
+        }
+      ]
+    }
+  ],
+  "default": {},
+  "properties": {
+    "config": {
+      "type": "object",
+      "description": "See: schema prj_config"
+    },
+    "sources": {
+      "type": "object",
+      "description": "See: schema prj_sources"
+    },
+    "stacks": {
+      "type": "array",
+      "description": "See: schema prj_stacks"
+    },
+    "_runtime": {
+      "title": "Project runtime variables",
+      "type": "object",
+      "description": "Internal object to pass context variables, internal use only or for troubleshooting purpose"
+    }
+  }
+}

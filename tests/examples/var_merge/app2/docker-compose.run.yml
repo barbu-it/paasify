@@ -1,0 +1,25 @@
+name: var_merge_app2
+networks:
+  default:
+    external: false
+    labels:
+      paasify.managed: true
+    name: var_merge_app2_default
+services:
+  main_app2:
+    environment:
+      escaped_var1: $$OK_my_value
+      escaped_var2: $$OK_var_escaped_missing
+      user1: OK_FALLBACK_compose_user
+      user2: OK_from_app_vars
+    image: OK_from_app_vars:latest
+    labels:
+      paasify.fqdn: app2.var-merge.localhost
+      paasify.managed: true
+      paasify.name: app2
+      paasify.namespace: var_merge
+      paasify.path: tests/examples/var_merge/app2/
+    networks:
+      default:
+    restart: unless-stopped
+version: '3.8'

@@ -1,0 +1,231 @@
+tests/examples/var_merge/.paasify/collections/default/app1/docker-compose.yml:
+  services:
+    main_1:
+      image: app1_from_template
+tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.debug.yml:
+  services:
+    main_app2:
+      environment:
+        DEBUG1: ENABLED_FROM_APP_TAG
+tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.override.yml:
+  services:
+    main_app2:
+      environment:
+        OVERRIDE1: KO_should have been overriden
+tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.yml:
+  services:
+    main_app2:
+      environment:
+        escaped_var1: $var_escaped
+        escaped_var2: $$OK_var_escaped_missing
+        user1: ${var_user_unexisting_var:-OK_FALLBACK_compose_user}
+        user2: ${var_user:-default_compose_user}
+      image: $var_image
+tests/examples/var_merge/.paasify/collections/default/app2/vars.yml:
+  var_escaped: $$OK_my_value
+  var_image: OK_from_app_vars:latest
+  var_user: OK_from_app_vars
+tests/examples/var_merge/app1/docker-compose.run.yml:
+  name: var_merge_app1
+  networks:
+    default:
+      external: false
+      labels:
+        paasify.managed: true
+      name: var_merge_app1_default
+  services:
+    main:
+      image: app1_local
+      labels:
+        paasify.fqdn: app1.var-merge.localhost
+        paasify.managed: true
+        paasify.name: app1
+        paasify.namespace: var_merge
+        paasify.path: tests/examples/var_merge/app1/
+      networks:
+        default: null
+      restart: unless-stopped
+  version: '3.8'
+tests/examples/var_merge/app1/docker-compose.yml:
+  services:
+    main:
+      image: app1_local
+tests/examples/var_merge/app2/docker-compose.run.yml:
+  name: var_merge_app2
+  networks:
+    default:
+      external: false
+      labels:
+        paasify.managed: true
+      name: var_merge_app2_default
+  services:
+    main_app2:
+      environment:
+        escaped_var1: $$OK_my_value
+        escaped_var2: $$OK_var_escaped_missing
+        user1: OK_FALLBACK_compose_user
+        user2: OK_from_app_vars
+      image: OK_from_app_vars:latest
+      labels:
+        paasify.fqdn: app2.var-merge.localhost
+        paasify.managed: true
+        paasify.name: app2
+        paasify.namespace: var_merge
+        paasify.path: tests/examples/var_merge/app2/
+      networks:
+        default: null
+      restart: unless-stopped
+  version: '3.8'
+tests/examples/var_merge/app2_copy1/docker-compose.run.yml:
+  name: var_merge_app2_copy1
+  networks:
+    default:
+      external: false
+      labels:
+        paasify.managed: true
+      name: var_merge_app2_copy1_default
+  services:
+    main_app2:
+      environment:
+        escaped_var1: $$OK_my_value
+        escaped_var2: $$OK_var_escaped_missing
+        user1: OK_FALLBACK_compose_user
+        user2: OK_from_app_vars
+      image: OK_from_app_vars:latest
+      labels:
+        paasify.fqdn: app2_copy1.var-merge.localhost
+        paasify.managed: true
+        paasify.name: app2_copy1
+        paasify.namespace: var_merge
+        paasify.path: tests/examples/var_merge/app2_copy1/
+      networks:
+        default: null
+      restart: unless-stopped
+  version: '3.8'
+tests/examples/var_merge/app2_copy2/docker-compose.run.yml:
+  name: var_merge_app2_copy2
+  networks:
+    default:
+      external: false
+      labels:
+        paasify.managed: true
+      name: var_merge_app2_copy2_default
+  services:
+    main_app2:
+      environment:
+        escaped_var1: $$OK_my_value
+        escaped_var2: $$OK_var_escaped_missing
+        user1: OK_FALLBACK_compose_user
+        user2: OK_from_app_vars
+      image: OK_from_app_vars:latest
+      labels:
+        paasify.fqdn: app2_copy2.var-merge.localhost
+        paasify.managed: true
+        paasify.name: app2_copy2
+        paasify.namespace: var_merge
+        paasify.path: tests/examples/var_merge/app2_copy2/
+      networks:
+        default: null
+      restart: unless-stopped
+  version: '3.8'
+tests/examples/var_merge/app3/docker-compose.run.yml:
+  name: var_merge_app3
+  networks:
+    default:
+      name: var_merge_app3_default
+  services:
+    main:
+      image: app3_local
+      networks:
+        default: null
+tests/examples/var_merge/app3/docker-compose.yml:
+  services:
+    main:
+      image: app3_local
+tests/examples/var_merge/paasify.yml:
+  config:
+    vars:
+      custom_from_var1: OK_from_config_global
+      var_base1: global_value
+      var_base2: global_value
+      var_base3: global_value
+      var_null1: null
+      var_test: null
+  sources:
+  - name: default
+  stacks:
+  - app: app1
+    vars:
+      var_base2: local_value
+      var_null2: null
+  - app: app2
+    vars:
+      var_base2: local_value
+      var_null2: null
+  - app: app2
+    name: app2_copy1
+  - app: app2
+    path: app2_copy2
+  - app: app2
+    path: test_devel
+    tags:
+    - debug
+    - debug-local:
+        custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
+    - override
+    - docker-net-attach:
+        app_name: ${var_base2}
+        app_namespace: otherns
+    vars:
+      app_dir_db_data: my_value
+      custom_from_var2: OK_from_config_stack
+      db_pass: ${_secret_admin_password}
+      db_user: ${_env_USER}
+      var_base2: local_value
+      var_null2: null
+tests/examples/var_merge/test_devel/docker-compose.debug-local.yml:
+  services:
+    main_app2:
+      environment:
+        DEBUG2: ENABLED_FROM_LOCAL_APP
+        custom_from_var1: $custom_from_var1
+        custom_from_var2: $custom_from_var2
+        custom_from_var3: ${custom_from_var3:-OK tag override is only allowed for
+          jsonnet files}
+tests/examples/var_merge/test_devel/docker-compose.override.yml:
+  services:
+    main_app2:
+      environment:
+        OVERRIDE1: OK_override
+tests/examples/var_merge/test_devel/docker-compose.run.yml:
+  name: var_merge_test_devel
+  networks:
+    default:
+      external: true
+      name: otherns_local_value_default
+  services:
+    main_app2:
+      environment:
+        DEBUG1: ENABLED_FROM_APP_TAG
+        DEBUG2: ENABLED_FROM_LOCAL_APP
+        OVERRIDE1: OK_override
+        custom_from_var1: OK_from_config_global
+        custom_from_var2: OK_from_config_stack
+        custom_from_var3: OK tag override is only allowed for jsonnet files
+        escaped_var1: $$OK_my_value
+        escaped_var2: $$OK_var_escaped_missing
+        user1: OK_FALLBACK_compose_user
+        user2: OK_from_app_vars
+      image: OK_from_app_vars:latest
+      labels:
+        paasify.fqdn: test_devel.var-merge.localhost
+        paasify.managed: true
+        paasify.name: test_devel
+        paasify.namespace: var_merge
+        paasify.path: tests/examples/var_merge/test_devel/
+      networks:
+        default: {}
+      restart: unless-stopped
+  version: '3.8'
+tests/examples/var_merge/test_devel/vars.yml:
+  xx_stack_var: defined

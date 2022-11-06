@@ -1,0 +1,41 @@
+                                                                                  
+ Usage: paasify [OPTIONS] COMMAND [ARGS]...                                       
+                                                                                  
+ Paasify, build your compose-files                                                
+                                                                                  
+╭─ Options ──────────────────────────────────────────────────────────────────────╮
+│ --verbose             -v      INTEGER RANGE [0<=x<=5]  [default: 1]            │
+│ --config              -c      TEXT                     Path of paasify.yml     │
+│                                                        configuration file.     │
+│                                                        [env var:               │
+│                                                        PAASIFY_PROJECT_DIR]    │
+│                                                        [default: None]         │
+│ --version                                              Show version info       │
+│ --install-completion                                   Install completion for  │
+│                                                        the current shell.      │
+│ --show-completion                                      Show completion for the │
+│                                                        current shell, to copy  │
+│                                                        it or customize the     │
+│                                                        installation.           │
+│ --help                                                 Show this message and   │
+│                                                        exit.                   │
+╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ─────────────────────────────────────────────────────────────────────╮
+│ apply              Build and apply stack                                       │
+│ build              Build docker-files                                          │
+│ down               Stop docker stack                                           │
+│ explain            Show project plugins                                        │
+│ help               Show this help message                                      │
+│ info               Show context infos                                          │
+│ logs               Show stack logs                                             │
+│ ls                 List all stacks                                             │
+│ ps                 Show docker stack instances                                 │
+│ recreate           Stop, rebuild and create stack                              │
+│ schema             Show paasify configurations schema format                   │
+│ src-install        Install sources                                             │
+│ src-ls             List sources                                                │
+│ src-tree           Show source tree                                            │
+│ src-update         Update sources                                              │
+│ up                 Start docker stack                                          │
+╰────────────────────────────────────────────────────────────────────────────────╯
+

@@ -1,0 +1,7 @@
+show_breadcrumbs: False
+
+examples_as_yaml: True
+# show_heading_numbers: False
+footer_show_time: False
+expand_buttons: False
+collapse_long_examples: False

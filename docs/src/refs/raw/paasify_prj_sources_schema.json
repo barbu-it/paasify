@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Paasify Source configuration",
+  "description": "Configure a list of collections to install",
+  "oneOf": [
+    {
+      "type": "null",
+      "title": "Unset sources",
+      "description": "If null or empty, it does not use any source"
+    },
+    {
+      "title": "List of sources",
+      "description": "Each source define a git repository and a name for stack references",
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Paasify Source configuration",
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "remote": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

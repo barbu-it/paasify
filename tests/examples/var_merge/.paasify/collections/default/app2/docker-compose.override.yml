@@ -1,0 +1,7 @@
+
+services:
+  main_app2:
+    environment:
+      OVERRIDE1: KO_should have been overriden
+
+

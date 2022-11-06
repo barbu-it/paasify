@@ -1,0 +1,73 @@
+[tool.poetry]
+name = "paasify"
+version = "0.1.0"
+description = "Paasify your docker-compose files"
+authors = ["MrJK"]
+license = "Apache License"
+
+packages = [
+    { include = "paasify" },
+    # Temporary until cafram is released
+    { include = "cafram", from = "cafram/"},
+]
+include = [
+  { path = "paasify_assets", format = ["sdist", "wheel"] }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+sh = "^1.14.3"
+anyconfig = "^0.13.0"
+typer = "^0.6.1"
+pydantic = "^1.10.2"
+PyYAML = "^6.0"
+oschmod = "^0.3.12"
+"ruamel.yaml" = "^0.17.21"
+jsonschema = "^4.16.0"
+semver = "^2.13.0"
+jsonnet = "^0.18.0"
+#cafram = { path = "../cafram/", develop = false }
+giturlparse = "^0.10.0"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.15.3"
+black = "^22.8.0"
+pytest-regressions = "^2.4.1"
+pytest-clarity = "^1.0.1"
+pytest-coverage = "^0.0"
+
+[tool.poetry.group.doc.dependencies]
+json-schema-for-humans = "^0.41.8"
+mkdocs = "^1.4.0"
+mkdocs-material = "^8.5.6"
+mkdocs-schema-reader = "^0.11.1"
+mkdocs-jupyter = "^0.22.0"
+jupyter = "^1.0.0"
+bash_kernel = "^0.8.0"
+mkdocstrings = {extras = ["python"], version = "^0.19.0"}
+mkdocs-literate-nav = "^0.5.0"
+nbconvert = "^6.0.0"
+
+
+# See: https://github.com/monim67/poetry-bumpversion
+
+[tool.poetry.group.community.dependencies]
+pre-commit = "^2.20.0"
+commitizen = "^2.37.0"
+
+[tool.poetry_bumpversion.file."paasify/version.py"]
+
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry.scripts]
+paasify = "paasify.cli:app"
+
+[tool.pytest.ini_options]
+log_cli = true
+#log_cli_level = "DEBUG"
+log_cli_level = "NOTSET"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"

@@ -1,0 +1,12 @@
+show_breadcrumbs: False
+
+examples_as_yaml: True
+footer_show_time: False
+expand_buttons: False
+collapse_long_examples: False
+template_name: md
+show_toc: False
+
+template_md_options:
+  show_heading_numbers: False
+

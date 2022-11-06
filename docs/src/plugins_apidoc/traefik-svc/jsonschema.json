@@ -1,0 +1,104 @@
+{
+  "description": "Create a traefik service for a given service",
+  "examples": [
+    {
+      "stacks": [
+        {
+          "app": "my_app_name",
+          "tags": [
+            "traefik-svc"
+          ],
+          "vars": [
+            {
+              "traefik_svc_entrypoints": "default-http,default-https"
+            },
+            {
+              "traefik_svc_port": 8080
+            },
+            {
+              "traefik_svc_group": "trafik_prod"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "transform": {
+      "description": "Add correct traefik labels for a given service. Also append traefik network if not already present.",
+      "type": "object"
+    },
+    "variables": {
+      "properties": {
+        "traefik_net_external": {
+          "default": true,
+          "description": "Determine if network is external or not",
+          "type": "string"
+        },
+        "traefik_net_ident": {
+          "default": "$app_network",
+          "description": "Name of the key in networks:{} as in docker-compose",
+          "type": "string"
+        },
+        "traefik_net_name": {
+          "default": "$prj_namespace-traefik",
+          "description": "Name of the docker network to use",
+          "type": "string"
+        },
+        "traefik_sep": {
+          "default": "-",
+          "description": "String to separe names",
+          "type": "string"
+        },
+        "traefik_svc_auth": {
+          "default": null,
+          "description": "Service Authentication to use",
+          "type": "string"
+        },
+        "traefik_svc_certresolver": {
+          "default": null,
+          "description": "Certresolver of the application",
+          "type": "string"
+        },
+        "traefik_svc_domain": {
+          "default": "$traefik_svc_name.$vars.app_domain",
+          "description": "Fully Qualified Domain Name of the application (dynamic)",
+          "type": "string"
+        },
+        "traefik_svc_entrypoints": {
+          "default": "default-http",
+          "description": "Traefik entrypoints of the application",
+          "type": "string"
+        },
+        "traefik_svc_group": {
+          "default": "$prj_namespace-traefik",
+          "description": "Traefik group name to assign this container",
+          "type": "string"
+        },
+        "traefik_svc_ident": {
+          "default": "$app_service",
+          "description": "Name of the key in services:{} as in docker-compose",
+          "type": "string"
+        },
+        "traefik_svc_name": {
+          "default": "$app_service",
+          "description": "Name of the service (dynamic)",
+          "type": "string"
+        },
+        "traefik_svc_port": {
+          "default": "80",
+          "description": "Listening port of the application",
+          "type": "string"
+        },
+        "traefik_svc_tls": {
+          "default": false,
+          "description": "The application is availalble on TLS",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Traefik Service",
+  "type": "object"
+}

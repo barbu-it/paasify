@@ -1,0 +1,78 @@
+
+config:
+  vars:
+    var_base1: global_value
+    var_base2: global_value
+    var_base3: global_value
+
+    var_null1: null
+    var_test: null
+      
+    custom_from_var1: OK_from_config_global
+
+
+sources:
+  - name: default
+
+stacks:
+
+  # Test docker-compose file resolution from app or local stack
+  - app: app1
+    vars:
+      var_base2: local_value
+      var_null2: null
+
+  - app: app2
+    vars:
+      var_base2: local_value
+      var_null2: null
+
+  # This is expected to fail as there is no docker-compose
+  #- app: app3
+  #  vars:
+  #    var_base2: local_value
+  #    var_null2: null
+
+  # Test if app milti instances works
+  # RUN: paasify build app2_copy1
+  - app: app2
+    name: app2_copy1
+
+  # Test if app milti instances works
+  # RUN: paasify build app2_copy2
+  - app: app2
+    path: app2_copy2
+
+
+  # This is expected to fail as there is no docker-compose
+  #- app: app3
+  #  name: app3_copy
+
+
+  # Test core tags
+  - app: app2
+    path: test_devel
+    vars:
+      var_base2: local_value
+      var_null2: null
+      app_dir_db_data: my_value
+      db_pass: ${_secret_admin_password}
+      db_user: ${_env_USER}
+
+      custom_from_var2: OK_from_config_stack
+    tags:
+      - debug   # Test loading docker-compose.debug.yml from app
+      - debug-local:   # Test loading docker-compose.debug.yml from local
+          custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
+
+      - override      # Test local override over app tag
+      - docker-net-attach:
+          #app_network: tata
+          app_name: "${var_base2}"
+          app_namespace: otherns
+
+          #docker_net_ident: tutu
+          #var_base3: tag_value
+          #var_null3: null
+
+

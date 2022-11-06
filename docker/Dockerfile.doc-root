@@ -1,0 +1,38 @@
+# Builder image
+# ==================
+
+FROM paasify:latest as builder
+# FROM python:3.9-slim  as builder
+
+# For Debian
+# Build dependencies
+# RUN apt-get update \
+#     && apt-get install gcc g++ make jsonnet libjsonnet-dev -y \
+#     && apt-get clean
+
+
+# # Install python dependencies as root
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip3 install --upgrade pip
+COPY dist/requirements-doc.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
+RUN python -m bash_kernel.install
+
+
+
+
+# App image
+# ==================
+
+FROM python:3.9-slim  as app
+
+# Import python deps as root
+COPY --from=builder /usr/local/lib/python3.9/ /usr/local/lib/python3.9/
+COPY --from=builder /usr/local/share/ /usr/local/share/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+
+
+#COPY --chown=work:work docs/ /app
+COPY docs/ /app
+

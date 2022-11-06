@@ -1,0 +1,7 @@
+
+services:
+  main_app2:
+    environment:
+      DEBUG1: ENABLED_FROM_APP_TAG
+
+

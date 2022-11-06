@@ -1,0 +1,64 @@
+version: '3'
+
+tasks:
+
+  default:
+    desc: Show all commands
+    cmds:
+      - task --list-all
+
+  # Setup
+  # -----------------
+  install:
+    desc: Install jupyter dependencies
+    cmds:
+      - python -m bash_kernel.install
+
+  build_doc:
+    desc: Generate API doc
+    deps: [install]
+    run: once
+    cmds:
+      - ./gen_apidoc.sh
+    sources:
+      - ../paasify/*.py
+
+
+  # Dockerized tools
+  # -----------------
+  serve_ide:
+    desc: Run documentation IDE
+    deps: [build_doc]
+    cmds:
+      - docker-compose up -d
+      - |
+        sleep 3
+        echo "Documentation: http://127.0.0.1:8042"
+        echo "Jupyter:       $( docker-compose logs | grep -m 1 ' or http:' | sed 's/.* or //' )"
+
+  stop_ide:
+    desc: Stop documentation IDE
+    cmds:
+      - docker-compose rm -f
+      #- docker-compose stop
+
+
+  # Local tools
+  # -----------------
+  serve:
+    desc: Run mkdocs website
+    deps: [build_doc]
+    interactive: true
+    cmds:
+      - >
+        echo "Documentation: http://127.0.0.1:8000"
+      - mkdocs serve
+
+  serve_jupyter:
+    desc: Run jupyter playbook editor website
+    interactive: true
+    cmds:
+      - >
+        echo "Jupyter: http://127.0.0.1:8888"
+      - jupyter-notebook --autoreload --notebook-dir src/jupyter/
+

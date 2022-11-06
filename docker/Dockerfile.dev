@@ -1,0 +1,18 @@
+FROM python:3.8
+
+# TODO: Run as limited user ?
+
+RUN mkdir /app
+#COPY . /app
+COPY cafram/cafram /app
+COPY paasify/ /app
+COPY pyproject.toml /app
+WORKDIR /app
+ENV PYTHONPATH=${PYTHONPATH}:${PWD}
+
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip3 install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install --only main
+
+

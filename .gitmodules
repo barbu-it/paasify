@@ -1,0 +1,4 @@
+[submodule "cafram"]
+	path = cafram
+	url = git@github.com:mrjk/cafram-archives.git
+	branch = main

@@ -1,0 +1,4 @@
+
+var_image: OK_from_app_vars:latest
+var_user: OK_from_app_vars
+var_escaped: $$OK_my_value

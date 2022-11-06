@@ -1,0 +1,30 @@
+
+stacks:
+
+  # shortcuts
+  - custom_source:custom_app
+  - my_local_app
+  - my/local/app
+
+  # Minimal
+  - app: custom_source:custom_app
+  - name: my_local_app
+  - path: local/app/path
+  
+  ## with app and name
+  - app: custom_source:custom_app
+    name: custom_name
+  - app: default_source_app
+    name: tutu
+
+  ## with app and path
+  - app: custom_source:custom_app
+    path: nested/path
+  - app: default_source_app
+    path: nested/path
+
+  ## with name and path
+  - name: my_local_app
+    path: nested/path
+
+

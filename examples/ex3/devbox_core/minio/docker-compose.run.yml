@@ -1,0 +1,43 @@
+name: minio
+networks:
+  default:
+    external: true
+    name: devbox_core-traefik
+services:
+  minio:
+    command:
+    - server
+    - --console-address
+    - :9001
+    - /data
+    environment:
+      MINIO_BROWSER_REDIRECT_URL: http://minio-console.devbox.192.168.186.129.nip.io
+      MINIO_ROOT_PASSWORD: admin123!!!
+      MINIO_ROOT_USER: admin
+      MINIO_SERVER_URL: http://minio:9000
+    image: quay.io/minio/minio:latest
+    labels:
+      traefik.enable: 'true'
+      traefik.group: devbox_core-traefik
+      traefik.http.routers.devbox_core-minio-api.entrypoints: default-http
+      traefik.http.routers.devbox_core-minio-api.rule: Host(`minio-api.devbox.192.168.186.129.nip.io`)
+      traefik.http.routers.devbox_core-minio-api.service: devbox_core-minio-api
+      traefik.http.routers.devbox_core-minio-console.entrypoints: default-http
+      traefik.http.routers.devbox_core-minio-console.rule: Host(`minio-console.devbox.192.168.186.129.nip.io`)
+      traefik.http.routers.devbox_core-minio-console.service: devbox_core-minio-console
+      traefik.http.services.devbox_core-minio-api.loadbalancer.server.port: '9000'
+      traefik.http.services.devbox_core-minio-console.loadbalancer.server.port: '9001'
+    networks:
+      default:
+    restart: always
+    volumes:
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/minio/data
+      target: /data
+      type: bind
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/minio/config
+      target: /root/.minio
+      type: bind

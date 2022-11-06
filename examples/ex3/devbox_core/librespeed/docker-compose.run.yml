@@ -1,0 +1,28 @@
+name: librespeed
+networks:
+  default:
+    external: true
+    name: devbox_core-traefik
+services:
+  librespeed:
+    environment:
+      CUSTOM_RESULTS: 'false'
+      DB_TYPE: sqlite
+      PASSWORD: admin123!!!
+      TZ: Europe/Paris
+    image: lscr.io/linuxserver/librespeed:latest
+    labels:
+      traefik.enable: 'true'
+      traefik.group: devbox_core-traefik
+      traefik.http.routers.devbox_core-librespeed.entrypoints: default-http
+      traefik.http.routers.devbox_core-librespeed.rule: Host(`librespeed.devbox.192.168.186.129.nip.io`)
+      traefik.http.routers.devbox_core-librespeed.service: devbox_core-librespeed
+      traefik.http.services.devbox_core-librespeed.loadbalancer.server.port: '80'
+    networks:
+      default:
+    volumes:
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/librespeed/config
+      target: /config
+      type: bind

@@ -1,0 +1,3 @@
+THIS_MY_STACK_VAR: "value"
+app_image: "traefik"
+app_version: "8.8.8"

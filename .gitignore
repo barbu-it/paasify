@@ -1,0 +1,16 @@
+**/__pycache__
+**/.ipynb_checkpoints*
+dist/*
+
+.coverage
+*.code-workspace
+*build*
+
+
+# Temp
+docs/code_config/*
+.vscode/*
+lab/*
+tmp/*
+tests_dev/*
+*OLD*
