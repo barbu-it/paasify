@@ -9,7 +9,7 @@ on:
       - "*-rc"
 
 jobs:
-  paasify_build:
+  paasify_install:
 
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
@@ -39,6 +39,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
 
     - name: Install Poetry (cached)
       uses: snok/install-poetry@v1
@@ -70,11 +71,15 @@ jobs:
     - name: Run pytest
       run: poetry run pytest --cov 
 
+    - uses: actions/upload-artifact@master
+      with:
+        name: paasify-install-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
+        path: .
 
 
   paasify_release_dev:
     needs: 
-      - paasify_build
+      - paasify_install
 
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
@@ -89,6 +94,17 @@ jobs:
         poetry-version: ["1.2.1"]
 
     steps:
+
+    - uses: actions/download-artifact@master
+      with:
+        name: paasify-install-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
+        path: .
+    
+    #- name: "Retrieve source code"
+    #  uses: actions/checkout@v3
+    #  with:
+    #    token: ${{ secrets.ACCESS_TOKEN }}
+    #    submodules: true
 
     # Configure release files and version
     # -----------------------------
