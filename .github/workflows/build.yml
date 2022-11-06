@@ -8,11 +8,6 @@ on:
       - "*-beta"
       - "*-rc"
 
-      #- develop
-      ## To be removed after tests
-      #- "*-build"
-      #- "dev-*"
-
 jobs:
   python_release_dev:
 
@@ -80,7 +75,7 @@ jobs:
       uses: commitizen-tools/commitizen-action@master
       with:
         github_token: ${{ secrets.ACCESS_TOKEN }}
-        prerelease: "${GITHUB_REF##*-}"
+        prerelease: ${GITHUB_REF##*-}
         changelog: false
         increment: PATCH
 
