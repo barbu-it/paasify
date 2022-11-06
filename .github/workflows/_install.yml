@@ -75,7 +75,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .local
-        key: venv-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
 
     - name: Install Poetry ${{ matrix.poetry_version }} (cached)
       if: steps.cached-poetry-install.outputs.cache-hit != 'true'
@@ -107,6 +107,23 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+
+    # Load caches
+    # -----------------------------
+
+    - name: Load cached poetry
+      id: cached-poetry-install
+      uses: actions/cache@v3
+      with:
+        path: .local
+        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
 
     # Install project
     # -----------------------------
