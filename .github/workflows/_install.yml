@@ -46,7 +46,8 @@ jobs:
   # =====================================
   install_python:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: 
+      - setup
     # permissions:
     #   security-events: write
     strategy:
@@ -131,7 +132,8 @@ jobs:
   # =====================================
   install_paasify:
     runs-on: ubuntu-latest
-    needs: 
+    needs:
+      - setup
       - install_python
     # permissions:
     #   security-events: write
