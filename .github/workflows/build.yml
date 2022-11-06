@@ -25,10 +25,17 @@ jobs:
 
     steps:
 
+    - name: Extract release type from branch name
+      shell: bash
+      run: echo "##[set-output name=release;]$(echo ${GITHUB_REF#*-})"
+      id: release
+
+
     # Prepare devel environment
     # -----------------------------
     
-    - uses: actions/checkout@v3
+    - name: "Retrieve source code (${{ steps.release.outputs.release }})"
+      uses: actions/checkout@v3
       with:
         token: ${{ secrets.ACCESS_TOKEN }}
         submodules: true
@@ -45,7 +52,7 @@ jobs:
         path: .venv
         key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - name: Install Poetry
+    - name: Install Poetry (cached)
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
       with:
@@ -55,7 +62,7 @@ jobs:
         version: ${{ matrix.poetry-version }}
         #installation-arguments: --with=dev --with=doc --with=community
 
-    - name: Install dependencies
+    - name: Install dependencies (cached)
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
@@ -76,7 +83,7 @@ jobs:
       uses: commitizen-tools/commitizen-action@master
       with:
         github_token: "${{ secrets.ACCESS_TOKEN }}"
-        prerelease: "${GITHUB_REF##*-}"
+        prerelease: "${{ steps.release.outputs.release }}"
         changelog: false
         increment: PATCH
 
@@ -98,7 +105,7 @@ jobs:
       with:
         #repo_token: "${{ secrets.GITHUB_TOKEN }}"
         repo_token: "${{ secrets.ACCESS_TOKEN }}"
-        automatic_release_tag: "latest-${GITHUB_REF##*-}"
+        automatic_release_tag: "latest-${{ steps.release.outputs.release }}"
         draft: true
         title: "Development Build"
         files: |
