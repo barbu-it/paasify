@@ -15,8 +15,8 @@ jobs:
   install_paasify:
     uses: ./.github/workflows/_install.yml
     with:
-      python-version: "['3.9']"
-      poetry-version: "['1.2.1']"
+      python_versions: "['3.9']"
+      poetry_versions: "['1.2.1']"
     # DO:
       # install_paasify:
       # install_env:
