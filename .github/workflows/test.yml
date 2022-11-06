@@ -31,6 +31,8 @@ jobs:
 
   test_paasify:
     uses: ./.github/workflows/_test2.yml
+    needs:
+      - install_paasify
     strategy:
       fail-fast: false
       matrix:
