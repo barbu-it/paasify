@@ -74,7 +74,7 @@ jobs:
       id: cached-poetry-install
       uses: actions/cache@v3
       with:
-        path: .local
+        path: .venv
         key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
 
     - name: Install Poetry ${{ matrix.poetry_version }} (cached)
@@ -102,22 +102,20 @@ jobs:
 
   install_paasify:
     runs-on: ubuntu-latest
-    needs: install_python
+    needs: 
+      - setup
+      - install_python
     # permissions:
     #   security-events: write
     strategy:
       fail-fast: false
+      matrix:
+        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
+        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
     steps:
 
     # Load caches
     # -----------------------------
-
-    - name: Load cached poetry
-      id: cached-poetry-install
-      uses: actions/cache@v3
-      with:
-        path: .local
-        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
 
     - name: Load cached venv
       id: cached-poetry-dependencies
@@ -132,6 +130,7 @@ jobs:
       run: |
         source .venv/bin/activate
         ls -ahl
+        find .venv/bin
         pwd
         poetry install --no-interaction
 
