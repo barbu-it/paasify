@@ -108,7 +108,7 @@ jobs:
         path: .
 
     - name: unzip artifact for deployment
-      run: unzip release.zip
+      run: unzip workdir.zip
     
     #- name: "Retrieve source code"
     #  uses: actions/checkout@v3
