@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - develop
+      # To be removed after tests
       - "*-build"
       - "dev-*"
 

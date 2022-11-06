@@ -1,0 +1,122 @@
+name: Test Paasify
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  python_ci:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        poetry-version: ["1.2.1"]
+
+    steps:
+
+    # Prepare devel environment
+    # -----------------------------
+    
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACCESS_TOKEN }}
+        submodules: true
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+        version: ${{ matrix.poetry-version }}
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root
+
+    # Install project
+    # -----------------------------
+    - name: Install paasify
+      run: poetry install --no-interaction
+    - name: Run pytest
+      run: poetry run pytest --cov 
+
+
+    #- name: Install dependencies
+    #  run: |
+    #    python -m pip install --upgrade pip
+    #    python -m pip install poetry
+    #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    #    poetry install
+
+    #- name: Lint with flake8
+    #  run: |
+    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+    #- name: Test with pytest
+    #  run: |
+    #    pytest --cov --cov-report=xml
+
+    #- name: Upload coverage to Codecov
+    #  env:
+    #    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    #  if: ${{ env.CODECOV_TOKEN }}
+    #  uses: codecov/codecov-action@v1
+    #  with:
+    #    token: ${{ secrets.CODECOV_TOKEN }}
+    #    file: coverage.xml
+    #    name: ${{ matrix.os }}, python ${{ matrix.python-version }}
+
+    #- name: Check types with mypy
+    #  run: mypy src
+
+    #- name: Install pypa/build
+    #  run: python -m pip install build
+
+    #- name: Build a binary wheel and a source tarball
+    #  run: >-
+    #    python -m
+    #    build
+    #    --sdist
+    #    --wheel
+    #    --outdir dist/
+    #    .
+
+    # - name: Publish package
+    #   uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+    #   with:
+    #     user: __token__
+    #     password: ${{ secrets.PYPI_API_TOKEN }}
+
+    # - uses: act10ns/slack@v1
+    #     with:
+    #       status: ${{ job.status }}
+    #       steps: ${{ toJson(steps) }}
+    #       channel: '#workflows'
+    #     env:
+    #       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    #- name: Documentation
+    #  run: cd docs && make html
+
+    #- name: Deploy documentation
+    #  uses: peaceiris/actions-gh-pages@v3
+    #  with:
+    #    github_token: ${{ secrets.GITHUB_TOKEN }}
+    #    publish_dir: ./docs/_build/html
