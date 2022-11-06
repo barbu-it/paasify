@@ -21,6 +21,9 @@ on:
 
 jobs:
 
+
+  # Setup
+  # =====================================
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -39,6 +42,8 @@ jobs:
           poetry_versions: ${{ inputs.poetry_versions }}
 
 
+  # Install Python and Poetry
+  # =====================================
   install_python:
     runs-on: ubuntu-latest
     needs: setup
@@ -56,28 +61,22 @@ jobs:
           echo "python_versions=$python_version"
           echo "poetry_versions=$poetry_version"
 
-    # Prepare devel environment
+
+    # Install python and poetry
     # -----------------------------
-    
-    - uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.access_token }}
-        submodules: true
-
-    - name: Set up Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python_version }}
-        #cache: 'poetry'
-
-
-
     - name: Load cached poetry
       id: cached-poetry-install
       uses: actions/cache@v3
       with:
         path: ~/.local
         key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+
+    - name: Set up Python ${{ matrix.python_version }}
+      if: steps.cached-poetry-install.outputs.cache-hit != 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python_version }}
+        #cache: 'poetry'
 
     - name: Install Poetry ${{ matrix.poetry_version }} (cached)
       if: steps.cached-poetry-install.outputs.cache-hit != 'true'
@@ -90,6 +89,13 @@ jobs:
         version: ${{ matrix.poetry_version }}
 
 
+    # Prepare devel environment
+    # -----------------------------
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.access_token }}
+        submodules: true
+
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v3
@@ -100,7 +106,6 @@ jobs:
     - name: Install dependencies (cached)
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
-
 
     - name: Debug Infos
       run: |
@@ -119,6 +124,11 @@ jobs:
         echo "VENV"
         ls -ahl .venv/bin
 
+
+
+
+  # Install Paasify
+  # =====================================
   install_paasify:
     runs-on: ubuntu-latest
     needs: 
@@ -135,7 +145,7 @@ jobs:
 
     # Load caches
     # -----------------------------
-    
+
     - uses: actions/checkout@v3
       with:
         token: ${{ secrets.access_token }}
@@ -155,33 +165,51 @@ jobs:
         path: .venv
         key: venv-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
 
-
-    - name: Debug Infos
-      run: |
-        set +eu
-        echo "PATH=$PATH"
-        echo PWD=$(pwd)
-        echo "HOME=$HOME"
-
-        whereis poetry
-        python3 -m site
-
-        echo "WORKING DIR"
-        ls -ahl .
-        echo "LOCAL"
-        ls -ahl ~/.local/bin
-        echo "VENV"
-        ls -ahl .venv/bin
-
+    - name: Load cached project
+      id: cached-poetry-project
+      uses: actions/cache@v3
+      with:
+        path: .
+        key: prj-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**') }}
 
 
     # Install project
     # -----------------------------
     - name: Install paasify
+      if: steps.cached-poetry-project.outputs.cache-hit != 'true'
       run: |
         source .venv/bin/activate
-        ls -ahl
-        find .venv/bin
-        pwd
         poetry install --no-interaction
 
+
+
+  # Test Paasify
+  # =====================================
+  test_paasify:
+    runs-on: ubuntu-latest
+    needs: 
+      - setup
+      - install_paasify
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
+        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
+    
+    steps:
+
+    # Load caches
+    # -----------------------------
+    - name: Load cached project
+      id: cached-poetry-project
+      uses: actions/cache@v3
+      with:
+        path: .
+        key: prj-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**') }}
+
+    # Test project
+    # -----------------------------
+    - name: Test paasify
+      run: |
+        source .venv/bin/activate
+        poetry run pytest --cov
