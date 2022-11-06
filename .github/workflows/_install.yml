@@ -74,7 +74,7 @@ jobs:
       id: cached-poetry-install
       uses: actions/cache@v3
       with:
-        path: .local
+        path: ~/.local
         key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
 
     - name: Install Poetry ${{ matrix.poetry_version }} (cached)
@@ -131,6 +131,13 @@ jobs:
 
     # Load caches
     # -----------------------------
+    
+    - name: Load cached poetry
+      id: cached-poetry-install
+      uses: actions/cache@v3
+      with:
+        path: ~/.local
+        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
 
     - name: Load cached venv
       id: cached-poetry-dependencies
@@ -142,18 +149,20 @@ jobs:
 
     - name: Debug Infos
       run: |
-        echo PWD
-        pwd
+        echo PWD=$(pwd)
+        echo "HOME=$HOME"
 
-        echo "HOME"
+        whereis poetry
+        python3 -m site
+
+        echo "WORKING DIR"
         ls -ahl .
         echo "LOCAL"
         ls -ahl .local
         echo "VENV"
         ls -ahl .venv
 
-        whereis poetry
-        python3 -m site
+
 
     # Install project
     # -----------------------------
