@@ -1,9 +1,9 @@
 name: Test Paasify
 
-on:
-  workflow_dispatch:
-  push:
-  pull_request:
+#on:
+#  workflow_dispatch:
+#  push:
+#  pull_request:
 
 jobs:
   python_ci:
