@@ -45,15 +45,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v3
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}-${{ hashFiles('**/poetry.lock') }}
-
     - name: Install Poetry (cached)
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
@@ -61,6 +53,13 @@ jobs:
         installer-parallel: true
         version: ${{ matrix.poetry-version }}
         #installation-arguments: --with=dev --with=doc --with=community
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies (cached)
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
