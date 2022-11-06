@@ -71,10 +71,16 @@ jobs:
     - name: Run pytest
       run: poetry run pytest --cov 
 
-    - uses: actions/upload-artifact@master
+    # Create project artifact
+    # -----------------------------
+    - name: Zip artifact for deployment
+      run: zip workdir.zip ./* -r
+
+    - name: update latest working dir
+      uses: actions/upload-artifact@master
       with:
         name: paasify-install-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
-        path: .
+        path: workdir.zip
 
 
   paasify_release_dev:
@@ -95,10 +101,14 @@ jobs:
 
     steps:
 
-    - uses: actions/download-artifact@master
+    - name: Retrieve working dir
+      uses: actions/download-artifact@master
       with:
         name: paasify-install-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
         path: .
+
+    - name: unzip artifact for deployment
+      run: unzip release.zip
     
     #- name: "Retrieve source code"
     #  uses: actions/checkout@v3
