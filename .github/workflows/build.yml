@@ -9,7 +9,7 @@ on:
       - "*-rc"
 
 jobs:
-  python_release_dev:
+  paasify_build:
 
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
@@ -25,16 +25,11 @@ jobs:
 
     steps:
 
-    - name: Extract release type from branch name
-      shell: bash
-      run: echo "##[set-output name=release;]$(echo ${GITHUB_REF#*-})"
-      id: release
-
 
     # Prepare devel environment
     # -----------------------------
     
-    - name: "Retrieve source code (${{ steps.release.outputs.release }})"
+    - name: "Retrieve source code"
       uses: actions/checkout@v3
       with:
         token: ${{ secrets.ACCESS_TOKEN }}
@@ -65,6 +60,7 @@ jobs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
+
     # Install project
     # -----------------------------
 
@@ -75,8 +71,33 @@ jobs:
       run: poetry run pytest --cov 
 
 
+
+  paasify_release_dev:
+    needs: 
+      - paasify_build
+
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+
+    strategy:
+      fail-fast: false
+      # TOFIX:
+      # We dont want to use matrix build here for python version
+      # We want to use matrix build for wheels on multiple archs
+      matrix:
+        python-version: ["3.9"]
+        poetry-version: ["1.2.1"]
+
+    steps:
+
     # Configure release files and version
     # -----------------------------
+
+    - name: Extract release type from branch name
+      shell: bash
+      run: echo "##[set-output name=release;]$(echo ${GITHUB_REF#*-})"
+      id: release
+
     - id: cz
       name: Create bump and changelog
       uses: commitizen-tools/commitizen-action@master
