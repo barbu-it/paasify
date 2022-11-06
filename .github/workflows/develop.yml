@@ -1,4 +1,4 @@
-name: DEvelop workflow
+name: Develop workflow
 
 on:
   workflow_dispatch:
