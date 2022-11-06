@@ -32,8 +32,6 @@ jobs:
     steps:
       - id: setVariables
         run: |
-          echo "python_versions=$python_versions"
-          echo "poetry_versions=$poetry_versions"
           echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
           echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
 
@@ -56,10 +54,10 @@ jobs:
         poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
     steps:
 
-    - name: Show infos
-      run: |
-          echo "python_versions=$python_version"
-          echo "poetry_versions=$poetry_version"
+    # - name: Show infos
+    #   run: |
+    #       echo "python_versions=$python_version"
+    #       echo "poetry_versions=$poetry_version"
 
 
     # Install python and poetry
@@ -200,6 +198,13 @@ jobs:
 
     # Load caches
     # -----------------------------
+    - name: Load cached poetry
+      id: cached-poetry-install
+      uses: actions/cache@v3
+      with:
+        path: ~/.local
+        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+        
     - name: Load cached project
       id: cached-poetry-project
       uses: actions/cache@v3
