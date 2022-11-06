@@ -1,0 +1,157 @@
+name: DEvelop workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*-alpha"
+      - "*-beta"
+      - "*-rc"
+
+jobs:
+
+  # Prepare 
+  # --------------
+  install_paasify:
+    uses: ./.github/workflows/_install.yml
+    with:
+      python-version: [3.9]
+      poetry-version: ["1.2.1"]
+    # DO:
+      # install_paasify:
+      # install_env:
+
+  # release_paasify:
+  #   needs: install_paasify
+  #   uses: ./.github/workflows/_release.yml
+  #   with:
+  #     release: alpha
+  #     # Other choices: alpha/beta/rc
+      
+  # test_paasify:
+  #   needs: release_paasify
+  #   uses: ./.github/workflows/_test.yml
+
+
+  # # Build 
+  # # --------------
+  # build_paasify:
+  #   needs: test_paasify
+  #   uses: ./.github/workflows/_build.yml
+
+  # release_paasify:
+  #   needs: build_paasify
+  #   uses: ./.github/workflows/_build.yml
+  #   with:
+  #     targets:
+  #       - gh_release
+  #     # OTher: dockerhub, pypi, gcr.io
+  
+
+  # # Documentation
+  # # -------------
+  # release_doc:
+  #   needs: test_paasify
+  #   uses: ./.github/workflows/_build.yml
+  #   targets:
+  #     - gh_page
+  #     - barbu_it
+
+
+
+
+
+# ########## OLD
+
+#   python_ci:
+
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python-version: [3.7, 3.8, 3.9]
+#         poetry-version: ["1.2.1"]
+
+#     steps:
+
+#     # Prepare devel environment
+#     # -----------------------------
+    
+#     - uses: actions/checkout@v3
+#       with:
+#         token: ${{ secrets.ACCESS_TOKEN }}
+#         submodules: true
+
+#     - name: Set up Python ${{ matrix.python-version }}
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: ${{ matrix.python-version }}
+
+#     - name: Install Poetry
+#       uses: snok/install-poetry@v1
+#       with:
+#         virtualenvs-create: true
+#         virtualenvs-in-project: true
+#         installer-parallel: true
+#         version: ${{ matrix.poetry-version }}
+
+#     - name: Load cached venv
+#       id: cached-poetry-dependencies
+#       uses: actions/cache@v3
+#       with:
+#         path: .venv
+#         key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+#     - name: Install dependencies
+#       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+#       run: poetry install --no-interaction --no-root
+
+#     # Install project
+#     # -----------------------------
+#     - name: Install paasify
+#       run: poetry install --no-interaction
+
+
+
+
+
+
+
+
+#     - name: Run pytest
+#       run: poetry run pytest --cov 
+
+#     - name: Create changelog
+#       run: cz changelog --file-name CHANGELOG.md
+
+#     - name: Build packages
+#       run: poetry build --no-interaction
+
+#     # Prepare secrets
+#     - name: Configure secret key
+#       run: 
+#         - name: Add mask
+#         run: |
+#           echo "::add-mask::${{ secrets.PYPI_API_TOKEN }}" 
+#           poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+
+#     # Publish to pypi
+#     - name: Publish package and wheel on Pypi.org
+#       run: poetry publish --build --no-interaction
+
+
+#     # Create a github release
+#     - uses: "marvinpinto/action-automatic-releases@latest"
+#       with:
+#         #repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#         repo_token: "${{ secrets.ACCESS_TOKEN }}"
+#         automatic_release_tag: "latest"
+#         prerelease: true
+#         title: "Development Build"
+#         files: |
+#           LICENSE.txt
+#           CHANGELOG.md
+#           dist/*.whl
+#           dist/*.tar.gz
+
+
