@@ -24,16 +24,16 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      python_version: ${{ steps.setVariables.outputs.python_versions }}
-      poetry_version: ${{ steps.setVariables.outputs.poetry_versions }}
+      python_versions: ${{ steps.setVariables.outputs.python_versions }}
+      poetry_versions: ${{ steps.setVariables.outputs.poetry_versions }}
     steps:
       - id: setVariables
         run: |
+          echo "python_versions=$python_versions"
+          echo "poetry_versions=$poetry_versions"
           echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
           echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
 
-      # echo "::set-output name=python_versions::$python_versions"
-      # echo "::set-output name=poetry_versions::$poetry_versions"
         env:
           python_versions: ${{ inputs.python_versions }}
           poetry_versions: ${{ inputs.poetry_versions }}
@@ -47,9 +47,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_versions: ${{fromJson(needs.setup.outputs.python_version)}}
-        poetry_versions: ${{fromJson(needs.setup.outputs.poetry_version)}}
+        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
+        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
     steps:
+
+    - name: Show infos
+      run: |
+          echo "python_versions=$python_version"
+          echo "poetry_versions=$poetry_version"
 
     # Prepare devel environment
     # -----------------------------
