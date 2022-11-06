@@ -75,8 +75,8 @@ jobs:
       name: Create bump and changelog
       uses: commitizen-tools/commitizen-action@master
       with:
-        github_token: ${{ secrets.ACCESS_TOKEN }}
-        prerelease: ${{GITHUB_REF##*-}}
+        github_token: "${{ secrets.ACCESS_TOKEN }}"
+        prerelease: "${GITHUB_REF##*-}"
         changelog: false
         increment: PATCH
 
@@ -98,7 +98,7 @@ jobs:
       with:
         #repo_token: "${{ secrets.GITHUB_TOKEN }}"
         repo_token: "${{ secrets.ACCESS_TOKEN }}"
-        automatic_release_tag: "latest-${{GITHUB_REF##*-}}"
+        automatic_release_tag: "latest-${GITHUB_REF##*-}"
         draft: true
         title: "Development Build"
         files: |
