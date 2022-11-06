@@ -28,9 +28,6 @@ jobs:
     uses: ./.github/workflows/_install2.yml
     strategy:
       fail-fast: false
-      matrix:
-        python_version: ['3.8', '3.9']
-        poetry_version: ['1.2.1']
     with:
       python_version: ${{ inputs.python_version }}
       poetry_version: ${{ inputs.poetry_version }}
@@ -44,9 +41,6 @@ jobs:
       - install_paasify
     strategy:
       fail-fast: false
-      matrix:
-        python_version: ['3.8', '3.9']
-        poetry_version: ['1.2.1']
     with:
       python_version: ${{ inputs.python_version }}
       poetry_version: ${{ inputs.poetry_version }}
