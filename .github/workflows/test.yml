@@ -7,7 +7,7 @@ on:
       - "*-alpha"
       - "*-beta"
       - "*-rc"
-      
+
       # Enable on all branches
 
 
@@ -16,7 +16,7 @@ jobs:
 
 
   install_paasify:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     uses: ./.github/workflows/_install2.yml
     strategy:
       fail-fast: false
