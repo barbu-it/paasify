@@ -38,7 +38,15 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}-${{ hashFiles('**/poetry.lock') }}
+
     - name: Install Poetry
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
@@ -46,13 +54,6 @@ jobs:
         installer-parallel: true
         version: ${{ matrix.poetry-version }}
         #installation-arguments: --with=dev --with=doc --with=community
-
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v3
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -75,7 +76,7 @@ jobs:
       uses: commitizen-tools/commitizen-action@master
       with:
         github_token: ${{ secrets.ACCESS_TOKEN }}
-        prerelease: ${GITHUB_REF##*-}
+        prerelease: ${{GITHUB_REF##*-}}
         changelog: false
         increment: PATCH
 
@@ -97,7 +98,7 @@ jobs:
       with:
         #repo_token: "${{ secrets.GITHUB_TOKEN }}"
         repo_token: "${{ secrets.ACCESS_TOKEN }}"
-        automatic_release_tag: "latest-${GITHUB_REF##*-}"
+        automatic_release_tag: "latest-${{GITHUB_REF##*-}}"
         draft: true
         title: "Development Build"
         files: |
