@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "paasify"
-version = "0.1.0"
+version = "0.0.0"
 description = "Paasify your docker-compose files"
 authors = ["MrJK"]
 license = "Apache License"
