@@ -1,4 +1,4 @@
-name: Test Many workflow
+name: Test Many Paasify
 
 on: 
   workflow_call:
@@ -25,7 +25,7 @@ jobs:
 
 
   install_paasify:
-    uses: ./.github/workflows/_install2.yml
+    uses: ./.github/workflows/_install.yml
     strategy:
       fail-fast: false
     with:
@@ -36,7 +36,7 @@ jobs:
 
 
   test_paasify:
-    uses: ./.github/workflows/_test2.yml
+    uses: ./.github/workflows/_test.yml
     needs:
       - install_paasify
     strategy:

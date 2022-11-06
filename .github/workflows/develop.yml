@@ -10,7 +10,6 @@ on:
 
 jobs:
 
-
   test_paasify:
     uses: ./.github/workflows/_test_many.yml
     strategy:
@@ -24,6 +23,8 @@ jobs:
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
+  build_paasify:
+    uses: ./.github/workflows/_build.yml
 
 
 

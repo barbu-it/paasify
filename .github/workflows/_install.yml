@@ -3,17 +3,17 @@ name: Install Paasify
 on: 
   workflow_call:
     inputs:
-      python_versions:
-        description: 'Version of python to build ["3.7", "3.8", "3.9"]'
+      python_version:
+        description: 'Version of python to use'
         required: true
         type: string
-        default: '["3.9"]'
+        default: "3.9"
 
-      poetry_versions:
+      poetry_version:
         description: 'Version of Poetry to use'
         required: true
         type: string
-        default: '["1.2.1"]'
+        default: "1.2.1"
 
     secrets:
       access_token:
@@ -22,39 +22,14 @@ on:
 
 jobs:
 
-  # Setup
-  # =====================================
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      python_versions: ${{ steps.setVariables.outputs.python_versions }}
-      poetry_versions: ${{ steps.setVariables.outputs.poetry_versions }}
-    steps:
-
-      - name: Retrieve matrix parameters
-        id: setVariables
-        run: |
-          echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
-          echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
-
-        env:
-          python_versions: ${{ inputs.python_versions }}
-          poetry_versions: ${{ inputs.poetry_versions }}
-
 
   # Install Python and Poetry
   # =====================================
   install_python:
     runs-on: ubuntu-latest
-    needs: 
-      - setup
-    # permissions:
-    #   security-events: write
+      
     strategy:
       fail-fast: false
-      matrix:
-        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
-        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
     steps:
 
     # - name: Show infos
@@ -70,16 +45,16 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.local
-        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+        key: poetry-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}
 
-    - name: Set up Python ${{ matrix.python_version }}
+    - name: Set up Python ${{ inputs.python_version }}
       if: steps.cached-poetry-install.outputs.cache-hit != 'true'
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python_version }}
+        python-version: ${{ inputs.python_version }}
         #cache: 'poetry'
 
-    - name: Install Poetry ${{ matrix.poetry_version }} (cached)
+    - name: Install Poetry ${{ inputs.poetry_version }} (cached)
       if: steps.cached-poetry-install.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
       with:
@@ -87,7 +62,7 @@ jobs:
         virtualenvs-in-project: true
         virtualenvs-path: .venv
         installer-parallel: true
-        version: ${{ matrix.poetry_version }}
+        version: ${{ inputs.poetry_version }}
 
 
     # Prepare devel environment
@@ -102,28 +77,28 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies (cached)
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
-    - name: Debug Infos
-      run: |
-        set +eu
-        echo "PATH=$PATH"
-        echo PWD=$(pwd)
-        echo "HOME=$HOME"
+    # - name: Debug Infos
+    #   run: |
+    #     set +eu
+    #     echo "PATH=$PATH"
+    #     echo PWD=$(pwd)
+    #     echo "HOME=$HOME"
 
-        whereis poetry || true
-        python3 -m site
+    #     whereis poetry || true
+    #     python3 -m site
 
-        echo "WORKING DIR"
-        ls -ahl .
-        echo "LOCAL"
-        ls -ahl ~/.local/bin
-        echo "VENV"
-        ls -ahl .venv/bin
+    #     echo "WORKING DIR"
+    #     ls -ahl .
+    #     echo "LOCAL"
+    #     ls -ahl ~/.local/bin
+    #     echo "VENV"
+    #     ls -ahl .venv/bin
 
 
 
@@ -133,15 +108,11 @@ jobs:
   install_paasify:
     runs-on: ubuntu-latest
     needs:
-      - setup
       - install_python
     # permissions:
     #   security-events: write
     strategy:
       fail-fast: false
-      matrix:
-        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
-        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
     steps:
 
     # Load caches
@@ -157,21 +128,21 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.local
-        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+        key: poetry-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}
 
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v3
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Load cached project
       id: cached-poetry-project
       uses: actions/cache@v3
       with:
         path: .
-        key: prj-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**') }}
+        key: prj-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}-${{ hashFiles('**') }}
 
 
     # Install project
