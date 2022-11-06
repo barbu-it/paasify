@@ -68,6 +68,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python_version }}
+        cache: 'poetry'
+
 
 
     - name: Load cached poetry
@@ -103,18 +105,19 @@ jobs:
     - name: Debug Infos
       run: |
         set +eu
-        echo PWD
-        pwd
-
-        echo "HOME"
-        ls -ahl .
-        echo "LOCAL"
-        ls -ahl ~/.local
-        echo "VENV"
-        ls -ahl .venv
+        echo "PATH=$PATH"
+        echo PWD=$(pwd)
+        echo "HOME=$HOME"
 
         whereis poetry
         python3 -m site
+
+        echo "WORKING DIR"
+        ls -ahl .
+        echo "LOCAL"
+        ls -ahl ~/.local/bin
+        echo "VENV"
+        ls -ahl .venv/bin
 
   install_paasify:
     runs-on: ubuntu-latest
@@ -151,6 +154,7 @@ jobs:
     - name: Debug Infos
       run: |
         set +eu
+        echo "PATH=$PATH"
         echo PWD=$(pwd)
         echo "HOME=$HOME"
 
@@ -160,9 +164,9 @@ jobs:
         echo "WORKING DIR"
         ls -ahl .
         echo "LOCAL"
-        ls -ahl ~/.local
+        ls -ahl ~/.local/bin
         echo "VENV"
-        ls -ahl .venv
+        ls -ahl .venv/bin
 
 
 
