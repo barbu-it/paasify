@@ -34,9 +34,11 @@ jobs:
   # test_paasify:
   #   needs: release_paasify
   #   uses: ./.github/workflows/_test.yml
-  
+
   test_paasify:
     uses: ./.github/workflows/_test.yml
+    needs: 
+      - install_paasify
     with:
       python_versions: "['3.9']"
       poetry_versions: "['1.2.1']"
