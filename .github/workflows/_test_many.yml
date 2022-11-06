@@ -1,0 +1,56 @@
+name: Test Many workflow
+
+on: 
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Version of python to use'
+        required: true
+        type: string
+        default: "3.9"
+
+      poetry_version:
+        description: 'Version of Poetry to use'
+        required: true
+        type: string
+        default: "1.2.1"
+
+    secrets:
+      access_token:
+        description: 'Github Secret Token to check out the repo'
+
+
+
+jobs:
+
+
+  install_paasify:
+    uses: ./.github/workflows/_install2.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.8', '3.9']
+        poetry_version: ['1.2.1']
+    with:
+      python_version: ${{ inputs.python_version }}
+      poetry_version: ${{ inputs.poetry_version }}
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+
+  test_paasify:
+    uses: ./.github/workflows/_test2.yml
+    needs:
+      - install_paasify
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.8', '3.9']
+        poetry_version: ['1.2.1']
+    with:
+      python_version: ${{ inputs.python_version }}
+      poetry_version: ${{ inputs.poetry_version }}
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+

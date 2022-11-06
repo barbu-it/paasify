@@ -14,9 +14,8 @@ on:
 
 jobs:
 
-
   install_paasify:
-    uses: ./.github/workflows/_install2.yml
+    uses: ./.github/workflows/_test_many.yml
     strategy:
       fail-fast: false
       matrix:
@@ -29,20 +28,37 @@ jobs:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
 
-  test_paasify:
-    uses: ./.github/workflows/_test2.yml
-    needs:
-      - install_paasify
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ['3.8', '3.9']
-        poetry_version: ['1.2.1']
-    with:
-      python_version: ${{ matrix.python_version }}
-      poetry_version: ${{ matrix.poetry_version }}
-    secrets:
-      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+# ############
+
+#   install_paasify:
+#     uses: ./.github/workflows/_install2.yml
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python_version: ['3.8', '3.9']
+#         poetry_version: ['1.2.1']
+#     with:
+#       python_version: ${{ matrix.python_version }}
+#       poetry_version: ${{ matrix.poetry_version }}
+#     secrets:
+#       access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+
+#   test_paasify:
+#     uses: ./.github/workflows/_test2.yml
+#     needs:
+#       - install_paasify
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python_version: ['3.8', '3.9']
+#         poetry_version: ['1.2.1']
+#     with:
+#       python_version: ${{ matrix.python_version }}
+#       poetry_version: ${{ matrix.poetry_version }}
+#     secrets:
+#       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
 
 
