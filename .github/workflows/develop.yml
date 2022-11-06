@@ -4,9 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "*-alpha"
-      - "*-beta"
-      - "*-rc"
+      - never   # Temp disabled
+      # - "*-alpha"
+      # - "*-beta"
+      # - "*-rc"
 
 jobs:
 
@@ -31,9 +32,6 @@ jobs:
   #     release: alpha
   #     # Other choices: alpha/beta/rc
       
-  # test_paasify:
-  #   needs: release_paasify
-  #   uses: ./.github/workflows/_test.yml
 
   test_paasify:
     uses: ./.github/workflows/_test.yml
