@@ -104,7 +104,7 @@ jobs:
       with:
         github_token: "${{ secrets.ACCESS_TOKEN }}"
         prerelease: "${{ steps.release.outputs.release }}"
-        changelog: true
+        changelog: false
         increment: PATCH
 
     - name: Print Version
