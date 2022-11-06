@@ -17,6 +17,9 @@ jobs:
     with:
       python_versions: "['3.9']"
       poetry_versions: "['1.2.1']"
+    secrets:
+      GITHUB_TOKEN: "${{ secrets.ACCESS_TOKEN }}"
+      
     # DO:
       # install_paasify:
       # install_env:
