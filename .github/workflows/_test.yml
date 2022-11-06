@@ -1,0 +1,83 @@
+name: Test Paasify
+
+on: 
+  workflow_call:
+    inputs:
+      python_versions:
+        description: 'Version of python to build ["3.7", "3.8", "3.9"]'
+        required: true
+        type: string
+        default: '["3.9"]'
+
+      poetry_versions:
+        description: 'Version of Poetry to use'
+        required: true
+        type: string
+        default: '["1.2.1"]'
+
+    secrets:
+      access_token:
+        description: 'Github Secret Token to check out the repo'
+
+
+jobs:
+
+  # Setup
+  # =====================================
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      python_versions: ${{ steps.setVariables.outputs.python_versions }}
+      poetry_versions: ${{ steps.setVariables.outputs.poetry_versions }}
+    steps:
+
+      - name: Retrieve matrix parameters
+        id: setVariables
+        run: |
+          echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
+          echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
+
+        env:
+          python_versions: ${{ inputs.python_versions }}
+          poetry_versions: ${{ inputs.poetry_versions }}
+
+
+
+  # Test Paasify
+  # =====================================
+  test_paasify:
+    runs-on: ubuntu-latest
+    needs: 
+      - install_paasify
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
+        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
+    
+    steps:
+
+    # Load caches
+    # -----------------------------
+    - name: Load cached poetry
+      id: cached-poetry-install
+      uses: actions/cache@v3
+      with:
+        path: ~/.local
+        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
+
+    - name: Load cached project
+      id: cached-poetry-project
+      uses: actions/cache@v3
+      with:
+        path: .
+        key: prj-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**') }}
+
+    # Test project
+    # -----------------------------
+    - name: Test paasify
+      run: |
+        source .venv/bin/activate
+        poetry run pytest --cov
+
+        

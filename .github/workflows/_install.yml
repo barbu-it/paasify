@@ -19,8 +19,8 @@ on:
       access_token:
         description: 'Github Secret Token to check out the repo'
 
-jobs:
 
+jobs:
 
   # Setup
   # =====================================
@@ -30,7 +30,9 @@ jobs:
       python_versions: ${{ steps.setVariables.outputs.python_versions }}
       poetry_versions: ${{ steps.setVariables.outputs.poetry_versions }}
     steps:
-      - id: setVariables
+
+      - name: Retrieve matrix parameters
+        id: setVariables
         run: |
           echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
           echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
@@ -130,7 +132,6 @@ jobs:
   install_paasify:
     runs-on: ubuntu-latest
     needs: 
-      - setup
       - install_python
     # permissions:
     #   security-events: write
@@ -180,41 +181,3 @@ jobs:
         poetry install --no-interaction
 
 
-
-  # Test Paasify
-  # =====================================
-  test_paasify:
-    runs-on: ubuntu-latest
-    needs: 
-      - setup
-      - install_paasify
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ${{fromJson(needs.setup.outputs.python_versions)}}
-        poetry_version: ${{fromJson(needs.setup.outputs.poetry_versions)}}
-    
-    steps:
-
-    # Load caches
-    # -----------------------------
-    - name: Load cached poetry
-      id: cached-poetry-install
-      uses: actions/cache@v3
-      with:
-        path: ~/.local
-        key: poetry-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}
-        
-    - name: Load cached project
-      id: cached-poetry-project
-      uses: actions/cache@v3
-      with:
-        path: .
-        key: prj-${{ runner.os }}-${{ matrix.python_version }}-${{ matrix.poetry_version }}-${{ hashFiles('**') }}
-
-    # Test project
-    # -----------------------------
-    - name: Test paasify
-      run: |
-        source .venv/bin/activate
-        poetry run pytest --cov
