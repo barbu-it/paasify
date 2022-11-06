@@ -40,7 +40,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
@@ -100,6 +99,20 @@ jobs:
         poetry-version: ["1.2.1"]
 
     steps:
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+        version: ${{ matrix.poetry-version }}
+        #installation-arguments: --with=dev --with=doc --with=community
 
     - name: Retrieve working dir
       uses: actions/download-artifact@master
