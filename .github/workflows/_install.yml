@@ -18,7 +18,6 @@ on:
     secrets:
       access_token:
         description: 'Github Secret Token to check out the repo'
-        default: "${{ secrets.GITHUB_TOKEN }}"
 
 jobs:
 
