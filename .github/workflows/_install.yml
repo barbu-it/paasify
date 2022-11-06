@@ -83,6 +83,7 @@ jobs:
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
+        virtualenvs-path: .venv
         installer-parallel: true
         version: ${{ matrix.poetry_version }}
 
@@ -128,5 +129,7 @@ jobs:
     # Install project
     # -----------------------------
     - name: Install paasify
-      run: poetry install --no-interaction
+      run: |
+        source .venv/bin/activate
+        poetry install --no-interaction
 
