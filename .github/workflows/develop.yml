@@ -4,44 +4,61 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - never   # Temp disabled
-      # - "*-alpha"
-      # - "*-beta"
-      # - "*-rc"
+      - "*-alpha"
+      - "*-beta"
+      - "*-rc"
 
 jobs:
 
-  # Prepare 
-  # --------------
-  install_paasify:
-    uses: ./.github/workflows/_install.yml
-    with:
-      python_versions: "['3.9']"
-      poetry_versions: "['1.2.1']"
-    secrets:
-      access_token: "${{ secrets.ACCESS_TOKEN }}"
-
-    # DO:
-      # install_paasify:
-      # install_env:
-
-  # release_paasify:
-  #   needs: install_paasify
-  #   uses: ./.github/workflows/_release.yml
-  #   with:
-  #     release: alpha
-  #     # Other choices: alpha/beta/rc
-      
 
   test_paasify:
-    uses: ./.github/workflows/_test.yml
-    needs: 
-      - install_paasify
+    uses: ./.github/workflows/_test_many.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.9']
+        poetry_version: ['1.2.1']
     with:
-      python_versions: "['3.9']"
-      poetry_versions: "['1.2.1']"
+      python_version: ${{ matrix.python_version }}
+      poetry_version: ${{ matrix.poetry_version }}
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+
+
+
+
+  # # Prepare 
+  # # --------------
+  # install_paasify:
+  #   uses: ./.github/workflows/_install.yml
+  #   with:
+  #     python_versions: "['3.9']"
+  #     poetry_versions: "['1.2.1']"
+  #   secrets:
+  #     access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+  #   # DO:
+  #     # install_paasify:
+  #     # install_env:
+
+  # # release_paasify:
+  # #   needs: install_paasify
+  # #   uses: ./.github/workflows/_release.yml
+  # #   with:
+  # #     release: alpha
+  # #     # Other choices: alpha/beta/rc
+      
+
+  # test_paasify:
+  #   uses: ./.github/workflows/_test.yml
+  #   needs: 
+  #     - install_paasify
+  #   with:
+  #     python_versions: "['3.9']"
+  #     poetry_versions: "['1.2.1']"
+  #   secrets:
+  #     access_token: "${{ secrets.ACCESS_TOKEN }}"
 
 
   # # Build 

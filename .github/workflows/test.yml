@@ -3,18 +3,15 @@ name: Test workflow
 on:
   workflow_dispatch:
   push:
-    branches:
+    branches-ignore:
       - "*-alpha"
       - "*-beta"
       - "*-rc"
 
-      # Enable on all branches
-
-
 
 jobs:
 
-  install_paasify:
+  test_paasify:
     uses: ./.github/workflows/_test_many.yml
     strategy:
       fail-fast: false
