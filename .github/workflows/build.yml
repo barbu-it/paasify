@@ -66,65 +66,65 @@ jobs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
-#    # Install project
-#    # -----------------------------
-#
-#    - name: Install paasify
-#      run: poetry install --no-interaction
-#
-#    - name: Run pytest
-#      run: poetry run pytest --cov 
-#
-#
-#    # Configure release files and version
-#    # -----------------------------
-#    - id: cz
-#      name: Create bump and changelog
-#      uses: commitizen-tools/commitizen-action@master
-#      with:
-#        github_token: "${{ secrets.ACCESS_TOKEN }}"
-#        prerelease: "${{ steps.release.outputs.release }}"
-#        changelog: false
-#        increment: PATCH
-#
-#    - name: Print Version
-#      run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-#
-#
-#    # Build package
-#    # -----------------------------
-#   
-#    - name: Build packages
-#      run: poetry build --no-interaction
-#
-#
-#    # Create a github release
-#    # -----------------------------
-#    
-#    - uses: "marvinpinto/action-automatic-releases@latest"
-#      with:
-#        #repo_token: "${{ secrets.GITHUB_TOKEN }}"
-#        repo_token: "${{ secrets.ACCESS_TOKEN }}"
-#        automatic_release_tag: "latest-${{ steps.release.outputs.release }}"
-#        draft: true
-#        title: "Development Build"
-#        files: |
-#          LICENSE.txt
-#          CHANGELOG.md
-#          dist/*.whl
-#          dist/*.tar.gz
-#
-#
-#    # PROD ONLY !!
-#    # Prepare secrets
-#    #- name: Configure secret key
-#    #  run: 
-#    #    - name: Add mask
-#    #    run: |
-#    #      echo "::add-mask::${{ secrets.PYPI_API_TOKEN }}" 
-#    #      poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-#
-#    ## Publish to pypi
-#    #- name: Publish package and wheel on Pypi.org
-#    #  run: poetry publish --build --no-interaction
-#
+    # Install project
+    # -----------------------------
+
+    - name: Install paasify
+      run: poetry install --no-interaction
+
+    - name: Run pytest
+      run: poetry run pytest --cov 
+
+
+    # Configure release files and version
+    # -----------------------------
+    - id: cz
+      name: Create bump and changelog
+      uses: commitizen-tools/commitizen-action@master
+      with:
+        github_token: "${{ secrets.ACCESS_TOKEN }}"
+        prerelease: "${{ steps.release.outputs.release }}"
+        changelog: false
+        increment: PATCH
+
+    - name: Print Version
+      run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+
+
+    # Build package
+    # -----------------------------
+   
+    - name: Build packages
+      run: poetry build --no-interaction
+
+
+    # Create a github release
+    # -----------------------------
+    
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        #repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        repo_token: "${{ secrets.ACCESS_TOKEN }}"
+        automatic_release_tag: "latest-${{ steps.release.outputs.release }}"
+        draft: true
+        title: "Development Build"
+        files: |
+          LICENSE.txt
+          CHANGELOG.md
+          dist/*.whl
+          dist/*.tar.gz
+
+
+    # PROD ONLY !!
+    # Prepare secrets
+    #- name: Configure secret key
+    #  run: 
+    #    - name: Add mask
+    #    run: |
+    #      echo "::add-mask::${{ secrets.PYPI_API_TOKEN }}" 
+    #      poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+
+    ## Publish to pypi
+    #- name: Publish package and wheel on Pypi.org
+    #  run: poetry publish --build --no-interaction
+
