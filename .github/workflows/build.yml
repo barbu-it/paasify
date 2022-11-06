@@ -11,9 +11,11 @@ on:
       - "dev-*"
 
 jobs:
-  python_ci:
+  python_release_dev:
 
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+
     strategy:
       fail-fast: false
       # TOFIX:
@@ -106,6 +108,7 @@ jobs:
           dist/*.tar.gz
 
 
+    # PROD ONLY !!
     # Prepare secrets
     #- name: Configure secret key
     #  run: 
