@@ -1,13 +1,17 @@
-name: Build Paasify
+name: Paasify Beta Builds
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - develop
-      # To be removed after tests
-      - "*-build"
-      - "dev-*"
+      - "*-alpha"
+      - "*-beta"
+      - "*-rc"
+
+      #- develop
+      ## To be removed after tests
+      #- "*-build"
+      #- "dev-*"
 
 jobs:
   python_release_dev:
@@ -76,7 +80,7 @@ jobs:
       uses: commitizen-tools/commitizen-action@master
       with:
         github_token: ${{ secrets.ACCESS_TOKEN }}
-        prerelease: beta
+        prerelease: "${GITHUB_REF##*-}"
         changelog: false
         increment: PATCH
 
@@ -98,7 +102,7 @@ jobs:
       with:
         #repo_token: "${{ secrets.GITHUB_TOKEN }}"
         repo_token: "${{ secrets.ACCESS_TOKEN }}"
-        automatic_release_tag: "latest-dev"
+        automatic_release_tag: "latest-${GITHUB_REF##*-}"
         draft: true
         title: "Development Build"
         files: |
