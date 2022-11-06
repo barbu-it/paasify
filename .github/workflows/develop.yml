@@ -25,6 +25,8 @@ jobs:
 
   build_paasify:
     uses: ./.github/workflows/_build.yml
+    needs:
+      - test_paasify
     strategy:
       fail-fast: false
       matrix:
