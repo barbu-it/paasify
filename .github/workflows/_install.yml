@@ -30,7 +30,7 @@ jobs:
       - id: setVariables
         run: |
           echo "python_versions=$python_versions" >> $GITHUB_OUTPUT
-          echo "python_versions=$poetry_versions" >> $GITHUB_OUTPUT
+          echo "poetry_versions=$poetry_versions" >> $GITHUB_OUTPUT
 
       # echo "::set-output name=python_versions::$python_versions"
       # echo "::set-output name=poetry_versions::$poetry_versions"
