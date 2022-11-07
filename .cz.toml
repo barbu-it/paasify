@@ -5,7 +5,7 @@ version = "0.1.0a0"
 #tag_format = "$major.$minor.$patch$prerelease"
 #major_version_zero = true
 ## annotated_tag = true
-#update_changelog_on_bump = false
+update_changelog_on_bump = true
 #version_files = [
 #    "paasify/version.py:__version__",
 #    "pyproject.py:version"
