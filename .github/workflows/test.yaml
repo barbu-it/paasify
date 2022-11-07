@@ -1,0 +1,73 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+  push:
+    # branches-ignore:
+    #   - "*-alpha"
+    #   - "*-beta"
+    #   - "*-rc"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      
+        # Install build env
+        - name: Set up Python 3
+          uses: actions/setup-python@v3
+          with:
+            python-version: 3.9
+        
+        - name: Load cached env
+          id: cached-env-install
+          uses: actions/cache@v3
+          with:
+            path: ~/.local
+            key: dev_env-${{ runner.os }}-3.9
+
+        - name: Install virtualenv and poetry
+          if: steps.cached-env-install.outputs.cache-hit != 'true'
+          run: |
+            python -m pip install --upgrade virtualenv poetry
+            virtualenv ~/.venv
+            poetry config poetry config virtualenvs.path ~/.venv
+            poetry config virtualenvs.in-project False
+            poetry config virtualenvs.create true
+            source .venv/scripts/activate
+
+        # Install project        
+        - uses: actions/checkout@v3
+
+        - name: Load cached venv
+          id: cached-project-deps
+          uses: actions/cache@v3
+          with:
+            path: .venv
+            key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+          
+        - name: Install project dependencies
+          if: steps.cached-project-deps.outputs.cache-hit != 'true'
+          run: |
+            poetry install -vv --no-interaction --no-root
+        
+        # - name: Lint with flake8
+        #   run: |
+        #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        
+        - name: Check formatting with black
+          uses: psf/black@stable
+          with:
+            src: "paasify/ tests/"
+            options: "--check --verbose"
+        
+        - name: Check Python import sorting
+          run: isort --check paasify tests
+        
+        - name: Run unit tests
+          run: |
+            pytest test
