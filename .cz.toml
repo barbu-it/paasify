@@ -9,8 +9,9 @@ tag_format = "$minor.$major.$patch$prerelease"
 
 # While the project has not released stable version
 major_version_zero = true
+changelog_file = "CHANGELOG.md"
 
-## annotated_tag = true
+annotated_tag = true
 version_files = [
     "paasify/version.py:__version__",
     "pyproject.toml:version"

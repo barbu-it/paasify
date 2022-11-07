@@ -94,12 +94,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
           changelog_increment_filename: body.md
-          #dry_run: true
           push: false
 
       - name: Print Version
         run: |
+          echo "======"
           cat body.md
+          echo "======"
+          echo "======"
+          cat CHANGELOG.md
+          echo "======"
 
           source ~/.venv/bin/activate
           echo "Bumped to version ${{ steps.cz.outputs.version }}"
