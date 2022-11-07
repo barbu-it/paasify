@@ -36,8 +36,8 @@ jobs:
             set -x
             python -m pip install --upgrade pip virtualenv 
             virtualenv ~/.venv
-            source ~/.venv/bin/activate
 
+            source ~/.venv/bin/activate
             pip install --upgrade poetry==1.2.1
             poetry config virtualenvs.path ~/.venv
             poetry config virtualenvs.in-project false
@@ -57,6 +57,7 @@ jobs:
         - name: Install project dependencies
           if: steps.cached-project-deps.outputs.cache-hit != 'true'
           run: |
+            source ~/.venv/bin/activate
             poetry install -vv --no-interaction --no-root
         
         # - name: Lint with flake8
@@ -74,4 +75,5 @@ jobs:
         
         - name: Run unit tests
           run: |
+            source ~/.venv/bin/activate
             pytest test
