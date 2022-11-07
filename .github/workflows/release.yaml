@@ -126,14 +126,14 @@ jobs:
       # Bump dist project
       # -----------------------------
 
-      # - id: cz
-      #   name: Create bump and changelog
-      #   uses: commitizen-tools/commitizen-action@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     prerelease: ${{inputs.prerelease}}
-      #     changelog: ${{inputs.changelog}}
-      #     increment: ${{inputs.increment}}
+      - id: cz
+        name: Create bump and changelog
+        uses: commitizen-tools/commitizen-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{inputs.prerelease}}
+          changelog: ${{inputs.changelog}}
+          increment: ${{inputs.increment}}
 
       # - name: Print Version
       #   run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
@@ -141,16 +141,16 @@ jobs:
 
 
 
-      # Bump project
-      # -----------------------------
-      - name: Change paasify release
-        run: |
-          source ~/.venv/bin/activate
-          set -x
-          paasify --version
-          poetry version -vvv prepatch
-          paasify --version
-          cz --no-raise 21 --no-raise 3 bump $(paasify --version)
+      # # Bump project
+      # # -----------------------------
+      # - name: Change paasify release
+      #   run: |
+      #     source ~/.venv/bin/activate
+      #     set -x
+      #     paasify --version
+      #     poetry version -vvv prepatch
+      #     paasify --version
+      #     cz --no-raise 21 --no-raise 3 bump $(paasify --version)
 
 
       # Create sdist
@@ -166,9 +166,9 @@ jobs:
         with:
           #repo_token: "${{ secrets.GITHUB_TOKEN }}"
           repo_token: "${{ secrets.ACCESS_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "latest-${{inputs.prerelease}}"
           prerelease: true
-          title: "Development Build"
+          title: "Last ${{inputs.prerelease}} Build"
           files: |
             LICENSE.txt
             CHANGELOG.md
