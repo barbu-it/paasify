@@ -37,7 +37,7 @@ jobs:
             virtualenv ~/.venv
             source ~/.venv/bin/activate
 
-            python -m pip install --upgrade poetry=1.2.1
+            python -m pip install --upgrade poetry==1.2.1
             poetry config poetry config virtualenvs.path ~/.venv
             poetry config virtualenvs.in-project False
             poetry config virtualenvs.create true
