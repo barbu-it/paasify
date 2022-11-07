@@ -1,6 +1,6 @@
 "Current project version"
 
-__version__ = "0.0.1"
+__version__ = "0.0.2a0"
 
 
 # Display version if direct call

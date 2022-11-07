@@ -1,6 +1,5 @@
-## Unreleased
+## 0.0.2a0 (2022-11-07)
 
-### Refactor
+### Fix
 
-- reset version number
-- import main code base
+- versionning scheme
