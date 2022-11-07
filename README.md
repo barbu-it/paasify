@@ -86,12 +86,4 @@ This project is brought to you thanks to Barbu-IT.
 
 * alpha: 
 
-### Other links
-
-TOFIX LINKS:
-
-* https://git.jeznet.org/mrjk-lab/paasify
-* https://git.jeznet.org/mrjk-lab/paasify2
-* https://git.jeznet.org/mrjk-foss/docker-compose
-* https://git.jeznet.org/lab/example-paasify-stack
 
