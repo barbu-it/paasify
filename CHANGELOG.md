@@ -1,7 +1,6 @@
-## 0.0.2b0 (2022-11-07)
+## 0.0.1 (2022-11-07)
 
-## 0.0.2a0 (2022-11-07)
+### New
 
-### Fix
-
-- versionning scheme
+- reset version number
+- import main code base
