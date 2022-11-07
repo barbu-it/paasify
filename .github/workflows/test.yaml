@@ -1,0 +1,126 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+  push:
+    # branches-ignore:
+    #   - "*-alpha"
+    #   - "*-beta"
+    #   - "*-rc"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      
+        # Install build env
+        - name: Set up Python 3
+          uses: actions/setup-python@v4
+          with:
+            python-version: 3.9
+        
+        - name: Load cached env
+          id: cached-env-install
+          uses: actions/cache@v3
+          with:
+            path: ~/.local
+            key: dev_env-${{ runner.os }}-3.9
+
+        - name: Install virtualenv and poetry (cached)
+          if: steps.cached-env-install.outputs.cache-hit != 'true'
+          run: |
+            set -x
+            python -m pip install --upgrade pip virtualenv 
+            virtualenv ~/.venv
+
+            source ~/.venv/bin/activate
+            pip install --upgrade poetry==1.2.1
+            poetry config virtualenvs.path ~/.venv
+            poetry config virtualenvs.in-project false
+            poetry config virtualenvs.create false
+            
+
+        # Install project        
+        - uses: actions/checkout@v3
+          with:
+            token: ${{ secrets.ACCESS_TOKEN }}
+            submodules: true
+
+        - name: Load cached venv
+          id: cached-project-deps
+          uses: actions/cache@v3
+          with:
+            path: ~/.venv
+            key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+          
+        - name: Install project dependencies (cached)
+          if: steps.cached-project-deps.outputs.cache-hit != 'true'
+          run: |
+            source ~/.venv/bin/activate
+            poetry install -vv --no-interaction --no-root
+        
+        - name: Install project
+          run: |
+            source ~/.venv/bin/activate
+            poetry install -vv --no-interaction --only-root
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    # defaults:
+    #   run:
+    #     working-directory: ~/work/paasify/paasify
+    steps:
+
+      # Load project
+      - name: Load cached env
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dev_env-${{ runner.os }}-3.9
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+        
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+
+
+      - name: Run black
+        run: |
+          source ~/.venv/bin/activate
+          black --check --verbose paasify
+
+      - name: Run unit tests
+        run: |
+          set -x
+          source ~/.venv/bin/activate
+          env | sort
+          cd $GITHUB_WORKSPACE
+          ls -ahl ~/.venv/bin/
+          python -m site
+          python -m pytest
+          
+          pytest tests
+
+      # echo "PWD = ${PWD//\//#}"
+      # ls -ahl "$HOME"
+      # ls -ahl /home/runner/work/paasify/paasify || true
+      # env | sort
+
+      # echo ===============
+      # cd /home/runner/work/paasify/paasify
