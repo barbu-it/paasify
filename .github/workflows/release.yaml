@@ -189,9 +189,12 @@ jobs:
         with:
           #repo_token: "${{ secrets.GITHUB_TOKEN }}"
           repo_token: "${{ secrets.ACCESS_TOKEN }}"
-          automatic_release_tag: latest-${{inputs.prerelease}}
+          
+          # Broken automatic_release_tag: latest-${{inputs.prerelease}}
+          automatic_release_tag: latest-alpha
           prerelease: true
-          title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
+          # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
+          title: "Latest alpha build: ${{steps.cz.outputs.version}}"
           files: |
             LICENSE.txt
             CHANGELOG.md
