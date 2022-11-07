@@ -148,8 +148,10 @@ jobs:
           source ~/.venv/bin/activate
           set -x
           paasify --version
-          poetry version -vvv patch
+          poetry version -vvv prepatch
           paasify --version
+          cz --no-raise 21 --no-raise 3 bump $(paasify --version)
+
 
       # Create sdist
       # -----------------------------
@@ -157,3 +159,18 @@ jobs:
         run: |
           source ~/.venv/bin/activate
           poetry build -vvv
+
+
+      # Create a github release
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          #repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: "${{ secrets.ACCESS_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE.txt
+            CHANGELOG.md
+            dist/*.whl
+            dist/*.tar.gz
