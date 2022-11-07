@@ -41,7 +41,7 @@ jobs:
             pip install --upgrade poetry==1.2.1
             poetry config virtualenvs.path ~/.venv
             poetry config virtualenvs.in-project False
-            poetry config virtualenvs.create false
+            poetry config virtualenvs.create False
             
 
         # Install project        
