@@ -94,7 +94,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
           changelog_increment_filename: body.md
-          push: false
+          push: true
 
       - name: Print Version
         run: |
