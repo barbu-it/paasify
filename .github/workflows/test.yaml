@@ -73,9 +73,9 @@ jobs:
   test:
     needs: install
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ~/work/paasify/paasify
+    # defaults:
+    #   run:
+    #     working-directory: ~/work/paasify/paasify
     steps:
 
       # Load project        

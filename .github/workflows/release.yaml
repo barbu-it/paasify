@@ -47,10 +47,10 @@ on:
         default: false
 
 
-defaults:
-  run:
-    shell: bash
-    working-directory: prj
+# defaults:
+#   run:
+#     shell: bash
+#     working-directory: prj
 
 
 jobs:
