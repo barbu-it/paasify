@@ -200,7 +200,6 @@ jobs:
         with:
           token: "${{ secrets.ACCESS_TOKEN }}"
           body_path: "body.md"
-          tag_name: ${{ env.REVISION }}
           prerelease: true
           #draft: true
           name: "Latest ${{steps.release.outputs.prerelease}} build: ${{steps.cz.outputs.version}}"
