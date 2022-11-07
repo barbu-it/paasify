@@ -32,7 +32,7 @@ jobs:
             path: ~/.local
             key: dev_env-${{ runner.os }}-3.9
 
-        - name: Install virtualenv and poetry
+        - name: Install virtualenv and poetry (cached)
           if: steps.cached-env-install.outputs.cache-hit != 'true'
           run: |
             set -x
@@ -59,7 +59,7 @@ jobs:
             path: ~/.venv
             key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
           
-        - name: Install project dependencies
+        - name: Install project dependencies (cached)
           if: steps.cached-project-deps.outputs.cache-hit != 'true'
           run: |
             source ~/.venv/bin/activate
@@ -68,7 +68,7 @@ jobs:
         - name: Install project
           run: |
             source ~/.venv/bin/activate
-            poetry install -vv --no-interaction
+            poetry install -vv --no-interaction --only-root
 
   test:
     needs: install
@@ -95,8 +95,9 @@ jobs:
 
       - name: Run unit tests
         run: |
+          set -x
           source ~/.venv/bin/activate
-          echo PWD=$PWD
-          
+          echo "PWD=$PWD"
+
           poetry run pytest tests
 
