@@ -48,6 +48,8 @@ jobs:
 
         # Install project        
         - uses: actions/checkout@v3
+          with:
+            submodules: true
 
         - name: Load cached venv
           id: cached-project-deps
