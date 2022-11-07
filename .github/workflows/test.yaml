@@ -64,16 +64,16 @@ jobs:
         #   run: |
         #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         
-        - name: Check formatting with black
-          uses: psf/black@stable
-          with:
-            src: "paasify/ tests/"
-            options: "--check --verbose"
+        # - name: Check formatting with black
+        #   uses: psf/black@stable
+        #   with:
+        #     src: "paasify/  # tests/"
+        #     options: "--check --verbose"
         
-        - name: Check Python import sorting
-          run: isort --check paasify tests
+        # - name: Check Python import sorting
+        #   run: isort --check paasify # tests
         
-        - name: Run unit tests
-          run: |
-            source ~/.venv/bin/activate
-            pytest test
+        # - name: Run unit tests
+        #   run: |
+        #     source ~/.venv/bin/activate
+        #     pytest test
