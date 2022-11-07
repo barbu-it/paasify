@@ -35,6 +35,7 @@ black = "^22.8.0"
 pytest-regressions = "^2.4.1"
 pytest-clarity = "^1.0.1"
 pytest-coverage = "^0.0"
+poetry-bumpversion = "^0.3.0"
 
 [tool.poetry.group.doc.dependencies]
 json-schema-for-humans = "^0.41.8"

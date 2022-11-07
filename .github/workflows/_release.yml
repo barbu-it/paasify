@@ -1,0 +1,98 @@
+name: Release Paasify
+
+on: 
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Version of python to use'
+        required: true
+        type: string
+        default: "3.9"
+
+      poetry_version:
+        description: 'Version of Poetry to use'
+        required: true
+        type: string
+        default: "1.2.1"
+
+      prerelease:
+        description: 'Prerelease type: alpha, beta or rc'
+        type: string
+        default: "alpha"
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+
+      increment:
+        description: 'Increment type: MAJOR, MINOR or PATCH '
+        type: string
+        default: "PATCH"
+        type: choice
+        options:
+          - MAJOR
+          - MINOR
+          - PATCH
+
+      changelog:
+        description: 'Generate Changelog'
+        type: boolean
+        default: false
+
+    secrets:
+      access_token:
+        description: 'Github Secret Token to check out the repo'
+
+
+jobs:
+
+  # Build Paasify
+  # =====================================
+  release_paasify:
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    
+    steps:
+
+    # Load caches
+    # -----------------------------
+    - name: Load cached poetry
+      id: cached-poetry-install
+      uses: actions/cache@v3
+      with:
+        path: ~/.local
+        key: poetry-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}
+
+    - name: Load cached project
+      id: cached-poetry-project
+      uses: actions/cache@v3
+      with:
+        path: .
+        key: prj-${{ runner.os }}-${{ inputs.python_version }}-${{ inputs.poetry_version }}-${{ hashFiles('**') }}
+
+    # Bump dist project
+    # -----------------------------
+
+    - id: cz
+      name: Create bump and changelog
+      uses: commitizen-tools/commitizen-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        prerelease: ${{inputs.prerelease}}
+        changelog: ${{inputs.changelog}}
+        increment: ${{inputs.increment}}
+
+    - name: Print Version
+      run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+
+
+    # Bump project
+    # -----------------------------
+    - name: Change paasify release
+      run: |
+        source .venv/bin/activate
+        poetry version -vvv ${{ steps.cz.outputs.version }}
+
