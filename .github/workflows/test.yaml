@@ -78,7 +78,14 @@ jobs:
     #     working-directory: ~/work/paasify/paasify
     steps:
 
-      # Load project        
+      # Load project
+      - name: Load cached env
+          id: cached-env-install
+          uses: actions/cache@v3
+          with:
+            path: ~/.local
+            key: dev_env-${{ runner.os }}-3.9
+
       - name: Load cached venv
         id: cached-project-deps
         uses: actions/cache@v3
@@ -91,6 +98,8 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           submodules: true
 
+
+
       - name: Run black
         run: |
           source ~/.venv/bin/activate
@@ -102,7 +111,7 @@ jobs:
           source ~/.venv/bin/activate
           env | sort
           cd $GITHUB_WORKSPACE
-          ls -ahlo
+          ls -ahl ~/.venv/bin/
           python -m site
           python -m pytest
           

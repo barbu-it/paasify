@@ -26,8 +26,6 @@ on:
   #     - "*-rc"
 
 
-  workflow_call:
-
   workflow_dispatch:
     inputs:
 
@@ -186,13 +184,16 @@ jobs:
           set -x
           source ~/.venv/bin/activate
           poetry build -vvv
-          ls -ahl dist/
-          
 
-          ls -ahl
-          echo "$PWD"
 
-          env | sort
+        # ls -ahl dist/
+        
+        # ls -ahl ~/.venv/bin/
+
+        # ls -ahl
+        # echo "$PWD"
+
+        # env | sort
 
 
 
