@@ -47,6 +47,12 @@ on:
         default: false
 
 
+defaults:
+  run:
+    shell: bash
+    working-directory: prj
+
+
 jobs:
 
 
@@ -108,9 +114,9 @@ jobs:
   release:
     needs: install
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ~/work/paasify/paasify
+    # defaults:
+    #   run:
+    #     working-directory: ./work/paasify/paasify
 
     steps:
 
@@ -163,8 +169,18 @@ jobs:
       # -----------------------------
       - name: Build paasify release
         run: |
+          set -x
           source ~/.venv/bin/activate
           poetry build -vvv
+          ls -ahl dist/
+          
+
+          ls -ahl
+          echo "$PWD"
+
+          env | sort
+
+
 
 
       # Create a github release
