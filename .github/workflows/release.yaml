@@ -126,17 +126,19 @@ jobs:
       # Bump dist project
       # -----------------------------
 
-      - id: cz
-        name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{inputs.prerelease}}
-          changelog: ${{inputs.changelog}}
-          increment: ${{inputs.increment}}
+      # - id: cz
+      #   name: Create bump and changelog
+      #   uses: commitizen-tools/commitizen-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     prerelease: ${{inputs.prerelease}}
+      #     changelog: ${{inputs.changelog}}
+      #     increment: ${{inputs.increment}}
 
-      - name: Print Version
-        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+      # - name: Print Version
+      #   run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+      #           poetry version -vvv ${{ steps.cz.outputs.version }}
+
 
 
       # Bump project
@@ -146,7 +148,7 @@ jobs:
           source ~/.venv/bin/activate
           set -x
           paasify --version
-          poetry version -vvv ${{ steps.cz.outputs.version }}
+          poetry version -vvv patch
           paasify --version
 
       # Create sdist

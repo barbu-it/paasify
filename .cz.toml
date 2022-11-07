@@ -1,9 +1,9 @@
 [tool]
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.0.2a1"
+version = "0.1.0a0"
 #tag_format = "$major.$minor.$patch$prerelease"
-major_version_zero = true
+#major_version_zero = true
 ## annotated_tag = true
 #update_changelog_on_bump = false
 #version_files = [
