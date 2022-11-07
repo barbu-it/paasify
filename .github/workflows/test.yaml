@@ -83,7 +83,7 @@ jobs:
           black --check --verbose paasify
 
       - name: Run unit tests
-          run: |
-            source ~/.venv/bin/activate
-            pytest test
+        run: |
+          source ~/.venv/bin/activate
+          pytest test
 
