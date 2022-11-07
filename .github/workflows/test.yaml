@@ -13,7 +13,9 @@ on:
       - develop
 
 jobs:
-  build:
+
+
+  install:
     runs-on: ubuntu-latest
     steps:
       
@@ -60,6 +62,32 @@ jobs:
             source ~/.venv/bin/activate
             poetry install -vv --no-interaction --no-root
         
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+
+
+
+      - name: Hello world
+        run: |
+          set -x
+
+          echo "DEBUG"
+          echo "PWD=$PWD"
+          echo "HOME=$HOME"
+          echo "USER=$USER"
+          echo "PATH=$PATH"
+
+          echo "Env ================"
+          env | sort
+
+          echo "Current dir ================"
+          ls -ahl $PWD
+
+          echo "HOME dir ================"
+          ls -ahl ~/
+
         # - name: Lint with flake8
         #   run: |
         #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
