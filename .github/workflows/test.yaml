@@ -85,5 +85,5 @@ jobs:
       - name: Run unit tests
         run: |
           source ~/.venv/bin/activate
-          pytest test
+          pytest tests
 
