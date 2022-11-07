@@ -1,4 +1,4 @@
-name: Test workflow
+name: Release workflow
 
 on:
   workflow_dispatch:
@@ -105,7 +105,7 @@ jobs:
           source ~/.venv/bin/activate
           poetry install -vv --no-interaction --only-root
 
-  test:
+  release:
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -143,8 +143,15 @@ jobs:
       # -----------------------------
       - name: Change paasify release
         run: |
-          source .venv/bin/activate
+          source ~/.venv/bin/activate
           set -x
           paasify --version
           poetry version -vvv ${{ steps.cz.outputs.version }}
           paasify --version
+
+      # Create sdist
+      # -----------------------------
+      - name: Change paasify release
+        run: |
+          source ~/.venv/bin/activate
+          poetry build -vvv
