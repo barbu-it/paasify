@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  test_paasify:
+  install_paasify:
     uses: ./.github/workflows/_test_many.yml
     strategy:
       fail-fast: false
@@ -26,7 +26,7 @@ jobs:
   build_paasify:
     uses: ./.github/workflows/_build.yml
     needs:
-      - test_paasify
+      - install_paasify
     strategy:
       fail-fast: false
       matrix:

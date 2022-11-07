@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  test_paasify:
+  install_paasify:
     uses: ./.github/workflows/_test_many.yml
     strategy:
       fail-fast: false

@@ -52,5 +52,5 @@ jobs:
     - name: Build paasify
       run: |
         source .venv/bin/activate
-        poetry poetry build -vvv
+        poetry build -vvv
 
