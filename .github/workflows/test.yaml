@@ -33,11 +33,12 @@ jobs:
         - name: Install virtualenv and poetry
           if: steps.cached-env-install.outputs.cache-hit != 'true'
           run: |
+            set -x
             python -m pip install --upgrade pip virtualenv 
             virtualenv ~/.venv
             source ~/.venv/bin/activate
 
-            python -m pip install --upgrade poetry==1.2.1
+            pip install --upgrade poetry==1.2.1
             poetry config poetry config virtualenvs.path ~/.venv
             poetry config virtualenvs.in-project False
             poetry config virtualenvs.create true
