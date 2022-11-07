@@ -81,6 +81,8 @@ jobs:
           key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
         
       - uses: actions/checkout@v3
+        with:
+          submodules: true
 
       - name: Run black
         run: |
