@@ -97,7 +97,9 @@ jobs:
         run: |
           set -x
           source ~/.venv/bin/activate
-          echo "PWD=$PWD"
+          echo "PWD = ${PWD//\//#}"
+          ls -ahl "$HOME"
+          ls -ahl /home/runner/work/paasify/paasify || true
 
           poetry run pytest tests
 
