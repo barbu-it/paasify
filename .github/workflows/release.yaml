@@ -126,6 +126,8 @@ jobs:
   release:
     needs: install
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+
     # defaults:
     #   run:
     #     working-directory: ./work/paasify/paasify
@@ -153,28 +155,15 @@ jobs:
         uses: commitizen-tools/commitizen-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{inputs.prerelease}}
-          changelog: ${{inputs.changelog}}
-          increment: ${{inputs.increment}}
+          prerelease: ${{github.event.inputs.prerelease}}
+          changelog: ${{github.event.inputs.changelog}}
+          increment: ${{github.event.inputs.increment}}
 
       - name: Print Version
-        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-
-
-                # poetry version -vvv ${{ steps.cz.outputs.version }}
-
-
-
-      # # Bump project
-      # # -----------------------------
-      # - name: Change paasify release
-      #   run: |
-      #     source ~/.venv/bin/activate
-      #     set -x
-      #     paasify --version
-      #     poetry version -vvv prepatch
-      #     paasify --version
-      #     cz --no-raise 21 --no-raise 3 bump $(paasify --version)
+        run: |
+          echo "Bumped to version ${{ steps.cz.outputs.version }}"
+          echo "Project version: poetry version -s)"
+          echo "Paasify version: paasify --version)"
 
 
       # Create sdist
@@ -196,21 +185,37 @@ jobs:
         # env | sort
 
 
-
-
       # Create a github release
-      - name: Create Github Release
+      - name: Create Latest Github Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           #repo_token: "${{ secrets.GITHUB_TOKEN }}"
           repo_token: "${{ secrets.ACCESS_TOKEN }}"
           
           # Broken automatic_release_tag: latest-${{inputs.prerelease}}
-          automatic_release_tag: latest-alpha
+          automatic_release_tag: latest-${{github.event.inputs.prerelease}}
           prerelease: true
           draft: true
           # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
-          title: "Latest alpha build: ${{steps.cz.outputs.version}}"
+          title: "Latest ${{github.event.inputs.prerelease}} build: v${{steps.cz.outputs.version}}"
+          files: |
+            LICENSE.txt
+            CHANGELOG.md
+            dist/*.whl
+            dist/*.tar.gz
+
+      - name: Create ${{steps.cz.outputs.version}} Github Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          #repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: "${{ secrets.ACCESS_TOKEN }}"
+          
+          # Broken automatic_release_tag: latest-${{inputs.prerelease}}
+          automatic_release_tag: "v${{steps.cz.outputs.version}}"
+          prerelease: true
+          draft: false
+          # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
+          title: "Latest alpha build: v${{steps.cz.outputs.version}}"
           files: |
             LICENSE.txt
             CHANGELOG.md
