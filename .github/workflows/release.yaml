@@ -135,9 +135,9 @@ jobs:
           changelog: ${{inputs.changelog}}
           increment: ${{inputs.increment}}
 
-      # - name: Print Version
-      #   run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-      #           poetry version -vvv ${{ steps.cz.outputs.version }}
+      - name: Print Version
+        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+                poetry version -vvv ${{ steps.cz.outputs.version }}
 
 
 
@@ -155,20 +155,21 @@ jobs:
 
       # Create sdist
       # -----------------------------
-      - name: Change paasify release
+      - name: Build paasify release
         run: |
           source ~/.venv/bin/activate
           poetry build -vvv
 
 
       # Create a github release
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Create Github Release
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           #repo_token: "${{ secrets.GITHUB_TOKEN }}"
           repo_token: "${{ secrets.ACCESS_TOKEN }}"
           automatic_release_tag: "latest-${{inputs.prerelease}}"
           prerelease: true
-          title: "Last ${{inputs.prerelease}} Build"
+          title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
           files: |
             LICENSE.txt
             CHANGELOG.md
