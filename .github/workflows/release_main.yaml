@@ -98,9 +98,10 @@ jobs:
 
       - name: Print Version
         run: |
+          cat body.md
           echo "Bumped to version ${{ steps.cz.outputs.version }}"
-          echo "Project version: poetry version -s)"
-          echo "Paasify version: paasify --version)"
+          echo "Project version: $(poetry version -s)"
+          echo "Paasify version: $(paasify --version)"
 
 
       # Create sdist
