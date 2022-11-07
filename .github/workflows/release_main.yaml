@@ -94,13 +94,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
-          changelog_increment_filename: dist/CHANGES.md
+          changelog_increment_filename: CHANGES.md
           push: true
 
       - name: Print Version
         run: |
-          echo "====== dist/CHANGES.md"
-          cat dist/CHANGES.md
+          echo "====== CHANGES.md"
+          cat CHANGES.md
           echo "====== CHANGELOG.md"
           cat CHANGELOG.md
           echo "======"
@@ -123,12 +123,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: "${{ secrets.ACCESS_TOKEN }}"
-          body_path: "dist/CHANGES.md"
+          body_path: "CHANGES.md"
           prerelease: false
           name: "Latest stable build: ${{steps.cz.outputs.version}}"
           tag_name: "${{steps.cz.outputs.version}}"
           files: |
             LICENSE.txt
+            CHANGES.md
             CHANGELOG.md
             dist/*.whl
             dist/*.tar.gz
