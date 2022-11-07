@@ -96,5 +96,5 @@ jobs:
       - name: Run unit tests
         run: |
           source ~/.venv/bin/activate
-          pytest tests
+          poetry run pytest tests
 
