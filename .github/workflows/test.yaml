@@ -33,9 +33,9 @@ jobs:
         - name: Install virtualenv and poetry
           if: steps.cached-env-install.outputs.cache-hit != 'true'
           run: |
-            python -m pip install --upgrade virtualenv 
+            python -m pip install --upgrade pip virtualenv 
             virtualenv ~/.venv
-            source .venv/bin/activate
+            source ~/.venv/bin/activate
 
             python -m pip install --upgrade poetry=1.2.1
             poetry config poetry config virtualenvs.path ~/.venv
@@ -50,7 +50,7 @@ jobs:
           id: cached-project-deps
           uses: actions/cache@v3
           with:
-            path: .venv
+            path: ~/.venv
             key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
           
         - name: Install project dependencies
