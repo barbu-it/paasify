@@ -15,24 +15,30 @@ on:
         type: string
         default: "1.2.1"
 
+
       prerelease:
         description: 'Prerelease type: alpha, beta or rc'
-        #type: string
         default: "alpha"
-        type: choice
-        options:
-          - alpha
-          - beta
-          - rc
+
+        type: string
+        
+        # type: choice
+        # options:
+        #   - alpha
+        #   - beta
+        #   - rc
 
       increment:
         description: 'Increment type: MAJOR, MINOR or PATCH '
         default: "PATCH"
-        type: choice
-        options:
-          - MAJOR
-          - MINOR
-          - PATCH
+
+        type: string
+
+        # type: choice
+        # options:
+        #   - MAJOR
+        #   - MINOR
+        #   - PATCH
 
       changelog:
         description: 'Generate Changelog'
