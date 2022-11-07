@@ -176,6 +176,7 @@ jobs:
           prerelease: ${{steps.release.outputs.prerelease}}
           changelog: ${{github.event.inputs.changelog}}
           increment: ${{github.event.inputs.increment}}
+          changelog_increment_filename: body.md
 
       - name: Print Version
         run: |
@@ -191,6 +192,27 @@ jobs:
           set -x
           source ~/.venv/bin/activate
           poetry build -vvv
+
+
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: "${{ secrets.ACCESS_TOKEN }}"
+          body_path: "body.md"
+          prerelease: true
+          #draft: true
+          name: "Latest ${{steps.release.outputs.prerelease}} build: ${{steps.cz.outputs.version}}"
+          tag_name: "${{steps.cz.outputs.version}}"
+          files: |
+            LICENSE.txt
+            CHANGELOG.md
+            dist/*.whl
+            dist/*.tar.gz
+
+        # env:
+        #   GITHUB_TOKEN: "${{ secrets.ACCESS_TOKEN }}"
+
 
 
         # ls -ahl dist/
@@ -222,20 +244,20 @@ jobs:
       #      dist/*.whl
       #      dist/*.tar.gz
 
-      - name: Create ${{steps.cz.outputs.version}} Github Release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          #repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          repo_token: "${{ secrets.ACCESS_TOKEN }}"
+      # - name: Create ${{steps.cz.outputs.version}} Github Release
+      #   uses: "marvinpinto/action-automatic-releases@latest"
+      #   with:
+      #     #repo_token: "${{ secrets.GITHUB_TOKEN }}"
+      #     repo_token: "${{ secrets.ACCESS_TOKEN }}"
           
-          # Broken automatic_release_tag: latest-${{inputs.prerelease}}
-          automatic_release_tag: "${{steps.cz.outputs.version}}"
-          prerelease: true
-          draft: false
-          # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
-          title: "Latest ${{steps.release.outputs.prerelease}} build: ${{steps.cz.outputs.version}}"
-          files: |
-            LICENSE.txt
-            CHANGELOG.md
-            dist/*.whl
-            dist/*.tar.gz
+      #     # Broken automatic_release_tag: latest-${{inputs.prerelease}}
+      #     automatic_release_tag: "${{steps.cz.outputs.version}}"
+      #     prerelease: true
+      #     #draft: false
+      #     # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
+      #     title: "Latest ${{steps.release.outputs.prerelease}} build: ${{steps.cz.outputs.version}}"
+      #     files: |
+      #       LICENSE.txt
+      #       CHANGELOG.md
+      #       dist/*.whl
+      #       dist/*.tar.gz
