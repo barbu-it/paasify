@@ -17,7 +17,7 @@ on:
 
       prerelease:
         description: 'Prerelease type: alpha, beta or rc'
-        type: string
+        #type: string
         default: "alpha"
         type: choice
         options:
@@ -27,7 +27,6 @@ on:
 
       increment:
         description: 'Increment type: MAJOR, MINOR or PATCH '
-        type: string
         default: "PATCH"
         type: choice
         options:
