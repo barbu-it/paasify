@@ -1,11 +1,14 @@
 [tool]
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "v0.0.1"
+version = "0.0.1"
 update_changelog_on_bump = true
 
-tag_format = "v$major.$minor.$patch$prerelease"
-#major_version_zero = true
+tag_format = "$minor.$major.$patch$prerelease.$devrelease"
+
+# While the project has not released stable version
+major_version_zero = true
+
 ## annotated_tag = true
 version_files = [
     "paasify/version.py:__version__",

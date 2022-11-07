@@ -80,11 +80,11 @@ jobs:
 
       # Load project
       - name: Load cached env
-          id: cached-env-install
-          uses: actions/cache@v3
-          with:
-            path: ~/.local
-            key: dev_env-${{ runner.os }}-3.9
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dev_env-${{ runner.os }}-3.9
 
       - name: Load cached venv
         id: cached-project-deps
