@@ -62,7 +62,7 @@ jobs:
             source ~/.venv/bin/activate
             poetry install -vv --no-interaction --no-root
         
-          - name: Install project
+        - name: Install project
           run: |
             source ~/.venv/bin/activate
             poetry install -vv --no-interaction
