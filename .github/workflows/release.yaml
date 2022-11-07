@@ -208,6 +208,7 @@ jobs:
           # Broken automatic_release_tag: latest-${{inputs.prerelease}}
           automatic_release_tag: latest-alpha
           prerelease: true
+          draft: true
           # Broken title: "Last ${{inputs.prerelease}} Build: ${{steps.cz.outputs.version}}"
           title: "Latest alpha build: ${{steps.cz.outputs.version}}"
           files: |
