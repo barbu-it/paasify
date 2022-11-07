@@ -67,36 +67,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # - name: Hello world
-      #   run: |
-      #     set -x
-
-      #     echo "DEBUG"
-      #     echo "PWD=$PWD"
-      #     echo "HOME=$HOME"
-      #     echo "USER=$USER"
-      #     echo "PATH=$PATH"
-
-      #     echo "Env ================"
-      #     env | sort
-
-      #     echo "Current dir ================"
-      #     ls -ahl $PWD
-
-      #     echo "HOME dir ================"
-      #     ls -ahl ~/
-
-        # - name: Lint with flake8
-        #   run: |
-        #     flake8 paasify --count --select=E9,F63,F7,F82 --show-source --statistics
+      # Load project        
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
         
-        - name: Check formatting with black
-          uses: psf/black@stable
-          with:
-            src: "paasify/  # tests/"
-            options: "--check --verbose"
-        
-        - name: Run unit tests
+      - uses: actions/checkout@v3
+
+      - name: Run black
+        run: |
+          source ~/.venv/bin/activate
+          black --check --verbose paasify
+
+      - name: Run unit tests
           run: |
             source ~/.venv/bin/activate
             pytest test
