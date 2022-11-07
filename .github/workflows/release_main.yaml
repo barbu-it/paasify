@@ -10,6 +10,7 @@ jobs:
 
   install:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
     steps:
     
       # Install build env
@@ -93,15 +94,14 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
-          changelog_increment_filename: body.md
+          changelog_increment_filename: dist/CHANGES.md
           push: true
 
       - name: Print Version
         run: |
-          echo "======"
-          cat body.md
-          echo "======"
-          echo "======"
+          echo "====== dist/CHANGES.md"
+          cat dist/CHANGES.md
+          echo "====== CHANGELOG.md"
           cat CHANGELOG.md
           echo "======"
 
@@ -123,7 +123,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: "${{ secrets.ACCESS_TOKEN }}"
-          body_path: "body.md"
+          body_path: "dist/CHANGES.md"
           prerelease: false
           name: "Latest stable build: ${{steps.cz.outputs.version}}"
           tag_name: "${{steps.cz.outputs.version}}"
