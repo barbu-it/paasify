@@ -10,20 +10,20 @@ on:
   #   #   - "*-rc"
 
 
-  pull_request:
-    branches:
-      - main
-      - develop
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
 
-  workflow_run:
-    workflows:
-      - Test workflow
-    types:
-      - completed
-    branches:
-      - "*-alpha"
-      - "*-beta"
-      - "*-rc"
+  # workflow_run:
+  #   workflows:
+  #     - Test workflow
+  #   types:
+  #     - completed
+  #   branches:
+  #     - "*-alpha"
+  #     - "*-beta"
+  #     - "*-rc"
 
 
   workflow_call:
