@@ -67,41 +67,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      # - name: Hello world
+      #   run: |
+      #     set -x
 
+      #     echo "DEBUG"
+      #     echo "PWD=$PWD"
+      #     echo "HOME=$HOME"
+      #     echo "USER=$USER"
+      #     echo "PATH=$PATH"
 
-      - name: Hello world
-        run: |
-          set -x
+      #     echo "Env ================"
+      #     env | sort
 
-          echo "DEBUG"
-          echo "PWD=$PWD"
-          echo "HOME=$HOME"
-          echo "USER=$USER"
-          echo "PATH=$PATH"
+      #     echo "Current dir ================"
+      #     ls -ahl $PWD
 
-          echo "Env ================"
-          env | sort
-
-          echo "Current dir ================"
-          ls -ahl $PWD
-
-          echo "HOME dir ================"
-          ls -ahl ~/
+      #     echo "HOME dir ================"
+      #     ls -ahl ~/
 
         # - name: Lint with flake8
         #   run: |
-        #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        #     flake8 paasify --count --select=E9,F63,F7,F82 --show-source --statistics
         
-        # - name: Check formatting with black
-        #   uses: psf/black@stable
-        #   with:
-        #     src: "paasify/  # tests/"
-        #     options: "--check --verbose"
+        - name: Check formatting with black
+          uses: psf/black@stable
+          with:
+            src: "paasify/  # tests/"
+            options: "--check --verbose"
         
-        # - name: Check Python import sorting
-        #   run: isort --check paasify # tests
-        
-        # - name: Run unit tests
-        #   run: |
-        #     source ~/.venv/bin/activate
-        #     pytest test
+        - name: Run unit tests
+          run: |
+            source ~/.venv/bin/activate
+            pytest test
+
