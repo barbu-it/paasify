@@ -100,6 +100,10 @@ jobs:
           echo "PWD = ${PWD//\//#}"
           ls -ahl "$HOME"
           ls -ahl /home/runner/work/paasify/paasify || true
+          env | sort
+
+          echo ===============
+          cd /home/runner/work/paasify/paasify
 
           poetry run pytest tests
 

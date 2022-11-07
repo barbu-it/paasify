@@ -1,0 +1,150 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*-alpha"
+    # branches-ignore:
+    #   - "*-alpha"
+    #   - "*-beta"
+    #   - "*-rc"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  workflow_call:
+    inputs:
+
+      prerelease:
+        description: 'Prerelease type: alpha, beta or rc'
+        default: "alpha"
+
+        type: string
+        
+        # type: choice
+        # options:
+        #   - alpha
+        #   - beta
+        #   - rc
+
+      increment:
+        description: 'Increment type: MAJOR, MINOR or PATCH '
+        default: "PATCH"
+
+        type: string
+
+        # type: choice
+        # options:
+        #   - MAJOR
+        #   - MINOR
+        #   - PATCH
+
+      changelog:
+        description: 'Generate Changelog'
+        type: boolean
+        default: false
+
+
+jobs:
+
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+    
+      # Install build env
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      
+      - name: Load cached env
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dev_env-${{ runner.os }}-3.9
+
+      - name: Install virtualenv and poetry (cached)
+        if: steps.cached-env-install.outputs.cache-hit != 'true'
+        run: |
+          set -x
+          python -m pip install --upgrade pip virtualenv 
+          virtualenv ~/.venv
+
+          source ~/.venv/bin/activate
+          pip install --upgrade poetry==1.2.1
+          poetry config virtualenvs.path ~/.venv
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.create false
+          
+
+      # Install project        
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+        
+      - name: Install project dependencies (cached)
+        if: steps.cached-project-deps.outputs.cache-hit != 'true'
+        run: |
+          source ~/.venv/bin/activate
+          poetry install -vv --no-interaction --no-root
+      
+      - name: Install project
+        run: |
+          source ~/.venv/bin/activate
+          poetry install -vv --no-interaction --only-root
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+
+      # Load project        
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+        
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      # Bump dist project
+      # -----------------------------
+
+      - id: cz
+        name: Create bump and changelog
+        uses: commitizen-tools/commitizen-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{inputs.prerelease}}
+          changelog: ${{inputs.changelog}}
+          increment: ${{inputs.increment}}
+
+      - name: Print Version
+        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+
+
+      # Bump project
+      # -----------------------------
+      - name: Change paasify release
+        run: |
+          source .venv/bin/activate
+          set -x
+          paasify --version
+          poetry version -vvv ${{ steps.cz.outputs.version }}
+          paasify --version
