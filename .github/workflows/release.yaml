@@ -33,30 +33,30 @@ on:
         description: 'Prerelease type: alpha, beta or rc'
         default: "alpha"
 
-        type: string
+        #type: string
         
-        # type: choice
-        # options:
-        #   - alpha
-        #   - beta
-        #   - rc
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
 
       increment:
         description: 'Increment type: MAJOR, MINOR or PATCH '
         default: "PATCH"
 
-        type: string
+        #type: string
 
-        # type: choice
-        # options:
-        #   - MAJOR
-        #   - MINOR
-        #   - PATCH
+        type: choice
+        options:
+          - MAJOR
+          - MINOR
+          - PATCH
 
       changelog:
         description: 'Generate Changelog'
         type: boolean
-        default: false
+        default: true
 
 
 # defaults:
