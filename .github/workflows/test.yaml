@@ -102,6 +102,7 @@ jobs:
           source ~/.venv/bin/activate
           env | sort
           cd $GITHUB_WORKSPACE
+          ls -ahl 
           poetry run pytest tests
 
       # echo "PWD = ${PWD//\//#}"
