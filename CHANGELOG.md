@@ -1,3 +1,10 @@
+## 0.0.5 (2022-11-07)
+
+### Fix
+
+- wrong CAHNGES.md
+- wrong ci params
+
 ## 0.0.4 (2022-11-07)
 
 ### Fix
