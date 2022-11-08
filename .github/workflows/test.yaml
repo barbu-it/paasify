@@ -37,9 +37,6 @@ jobs:
       matrix:
         python_version: ['3.9']
         poetry_version: ['1.2.1']
-    with:
-      python_version: ${{ matrix.python_version }}
-      poetry_version: ${{ matrix.poetry_version }}
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
