@@ -19,7 +19,7 @@ env:
 on:
   pull_request:
     types:
-      - enqueued
+      - submitted
     branches:
       - 'main'
 
