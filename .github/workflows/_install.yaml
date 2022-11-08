@@ -1,7 +1,7 @@
 name: Install Paasify
 
 on: 
-  workflow_call: &INPUTS
+  workflow_call:
     inputs:
       python_version:
         description: 'Version of python to use'
@@ -19,7 +19,6 @@ on:
       access_token:
         description: 'Github Secret Token to check out the repo'
 
-  workflow_dispatch: *INPUTS
 
 
 jobs:
