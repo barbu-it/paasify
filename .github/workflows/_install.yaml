@@ -54,6 +54,11 @@ jobs:
           
 
       # Install project dependencies
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
       - name: Load cached venv
         id: cached-project-deps
         uses: actions/cache@v3
@@ -61,11 +66,6 @@ jobs:
           path: ~/.venv
           key: venv--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}--${{ hashFiles('**/poetry.lock') }}
         
-      - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }}
-          submodules: true
-
       - name: Install project dependencies (cached)
         if: steps.cached-project-deps.outputs.cache-hit != 'true'
         run: |
