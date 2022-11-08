@@ -91,32 +91,31 @@ jobs:
 
 
       # Load dist        
-      - name: Load cached venv
+      - name: Load cached dist
         id: cached-project-dist
         uses: actions/cache@v3
         with:
           path: dist
           key: dist-${{ runner.os }}-3.9-${{ github.ref_name }}
 
-      - name: 'Get Previous tag'
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        with:
-          fallback: 0.0.1 # Optional fallback tag to use when no tag can be found
-
       - name: Build paasify release
         run: |
           set -x
           source ~/.venv/bin/activate
 
-          poetry build -vvv
-          cz changelog --start-rev ${{ steps.previoustag.outputs.tag }} --file-name dist/UPDATES.md
+          PREV_TAG=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2 | head -n 1 | sed 's@.*/@@')
 
+          poetry build -vvv
+
+          ls -ahl
+          ls -ahl  dist/
+
+          cz changelog --start-rev "$PREV_TAG" --file-name dist/UPDATES.md
 
 
 
   publish_gh:
-    needs: install
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -129,7 +128,7 @@ jobs:
 
       # Load dist        
       - name: Load cached venv
-        id: cached-project-deps
+        id: cached-project-dist
         uses: actions/cache@v3
         with:
           path: dist
