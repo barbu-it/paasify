@@ -1,18 +1,38 @@
-name: Create stable release
+name: Create dev release
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - '!**'
-    # tags-ignore:
-    #   - '[0-9]+.[0-9]+.[0-9]+'
+
+  workflow_dispatch:
+    inputs:
+
+      prerelease:
+        description: 'Prerelease type: alpha, beta, rc or empty for stable'
+        default: "alpha"
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+
+      increment:
+        description: 'Increment type: MAJOR, MINOR, PATCH or <empty>'
+        default: ""
+        type: choice
+        options:
+          - ""
+          - MAJOR
+          - MINOR
+          - PATCH
+
+      changelog:
+        description: 'Generate Changelog'
+        type: boolean
+        default: true
+
 
 jobs:
 
   install:
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
     uses: ./.github/workflows/_install.yml
     strategy:
       fail-fast: false
@@ -22,10 +42,8 @@ jobs:
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
-
   # install:
   #   runs-on: ubuntu-latest
-  #   if: "!startsWith(github.event.head_commit.message, 'bump:')"
   #   steps:
     
   #     # Install build env
@@ -79,7 +97,6 @@ jobs:
   #         source ~/.venv/bin/activate
   #         poetry install -vv --no-interaction --only-root
 
-
   release:
     needs: install
     runs-on: ubuntu-latest
@@ -104,12 +121,30 @@ jobs:
       # Bump dist project
       # -----------------------------
 
+      - id: release
+        run: |2
+          BRANCH=${GITHUB_REF#refs/heads/}
+          prerelease="${{github.event.inputs.prerelease}}"
+          case "$BRANCH" in
+            *-alpha) prerelease=alpha ;;
+            *-beta) prerelease=beta ;;
+            *-rc) prerelease=rc ;;
+          esac
+
+          if [[ "$prerelease" != "${{github.event.inputs.prerelease}}" ]]; then
+            echo "Change pre-release because of branch name: '$BRANCH'"
+            echo "  ${{github.event.inputs.prerelease}} -> ${prerelease}"
+          fi
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+
       - id: cz
         name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          changelog: true
+          changelog: ${{github.event.inputs.changelog}}
+          prerelease: ${{steps.release.outputs.prerelease}}
+          increment: ${{github.event.inputs.increment}}
 
       - name: Print Version
         run: |
@@ -117,40 +152,4 @@ jobs:
           echo "Bumped to version ${{ steps.cz.outputs.version }}"
           echo "Project version: $(poetry version -s)"
           echo "Paasify version: $(paasify --version)"
-
-
-      # # Create sdist
-      # # -----------------------------
-
-      # # Load dist        
-      # - name: Load cached venv
-      #   id: cached-project-deps
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: dist
-      #     key: dist-${{ runner.os }}-3.9-${{ steps.cz.outputs.version }}
-
-      # - name: Build paasify release
-      #   run: |
-      #     set -x
-      #     source ~/.venv/bin/activate
-      #     cp UPDATES.md dist/UPDATES.md
-      #     poetry build -vvv
-          
-
-
-      # - name: Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     token: "${{ secrets.ACCESS_TOKEN }}"
-      #     body_path: "UPDATES.md"
-      #     prerelease: false
-      #     name: "Version: ${{steps.cz.outputs.version}} (stable)"
-      #     tag_name: "${{steps.cz.outputs.version}}"
-      #     files: |
-      #       LICENSE.txt
-      #       CHANGELOG.md
-      #       dist/UPDATES.md
-      #       dist/*.whl
-      #       dist/*.tar.gz
 

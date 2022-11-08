@@ -14,61 +14,74 @@ on:
 
 jobs:
 
-
   install:
-    runs-on: ubuntu-latest
-    steps:
+    uses: ./.github/workflows/_install.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.9']
+        poetry_version: ['1.2.1']
+    with:
+      python_version: ${{ matrix.python_version }}
+      poetry_version: ${{ matrix.poetry_version }}
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+
+  # install:
+  #   runs-on: ubuntu-latest
+  #   steps:
       
-        # Install build env
-        - name: Set up Python 3
-          uses: actions/setup-python@v4
-          with:
-            python-version: 3.9
+  #       # Install build env
+  #       - name: Set up Python 3
+  #         uses: actions/setup-python@v4
+  #         with:
+  #           python-version: 3.9
         
-        - name: Load cached env
-          id: cached-env-install
-          uses: actions/cache@v3
-          with:
-            path: ~/.local
-            key: dev_env-${{ runner.os }}-3.9
+  #       - name: Load cached env
+  #         id: cached-env-install
+  #         uses: actions/cache@v3
+  #         with:
+  #           path: ~/.local
+  #           key: dev_env-${{ runner.os }}-3.9
 
-        - name: Install virtualenv and poetry (cached)
-          if: steps.cached-env-install.outputs.cache-hit != 'true'
-          run: |
-            set -x
-            python -m pip install --upgrade pip virtualenv 
-            virtualenv ~/.venv
+  #       - name: Install virtualenv and poetry (cached)
+  #         if: steps.cached-env-install.outputs.cache-hit != 'true'
+  #         run: |
+  #           set -x
+  #           python -m pip install --upgrade pip virtualenv 
+  #           virtualenv ~/.venv
 
-            source ~/.venv/bin/activate
-            pip install --upgrade poetry==1.2.1
-            poetry config virtualenvs.path ~/.venv
-            poetry config virtualenvs.in-project false
-            poetry config virtualenvs.create false
+  #           source ~/.venv/bin/activate
+  #           pip install --upgrade poetry==1.2.1
+  #           poetry config virtualenvs.path ~/.venv
+  #           poetry config virtualenvs.in-project false
+  #           poetry config virtualenvs.create false
             
 
-        # Install project        
-        - uses: actions/checkout@v3
-          with:
-            token: ${{ secrets.ACCESS_TOKEN }}
-            submodules: true
+  #       # Install project        
+  #       - uses: actions/checkout@v3
+  #         with:
+  #           token: ${{ secrets.ACCESS_TOKEN }}
+  #           submodules: true
 
-        - name: Load cached venv
-          id: cached-project-deps
-          uses: actions/cache@v3
-          with:
-            path: ~/.venv
-            key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
+  #       - name: Load cached venv
+  #         id: cached-project-deps
+  #         uses: actions/cache@v3
+  #         with:
+  #           path: ~/.venv
+  #           key: venv-${{ runner.os }}-3.9-${{ hashFiles('**/poetry.lock') }}
           
-        - name: Install project dependencies (cached)
-          if: steps.cached-project-deps.outputs.cache-hit != 'true'
-          run: |
-            source ~/.venv/bin/activate
-            poetry install -vv --no-interaction --no-root
+  #       - name: Install project dependencies (cached)
+  #         if: steps.cached-project-deps.outputs.cache-hit != 'true'
+  #         run: |
+  #           source ~/.venv/bin/activate
+  #           poetry install -vv --no-interaction --no-root
         
-        - name: Install project
-          run: |
-            source ~/.venv/bin/activate
-            poetry install -vv --no-interaction --only-root
+  #       - name: Install project
+  #         run: |
+  #           source ~/.venv/bin/activate
+  #           poetry install -vv --no-interaction --only-root
 
   test:
     needs: install
