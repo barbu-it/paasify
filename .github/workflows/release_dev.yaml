@@ -118,7 +118,8 @@ jobs:
           path: ~/.local
           key: python_env--${{ runner.os }}--${{env.python_version}}--${{env.poetry_version}}
 
-      - uses: actions/checkout@v3
+      - name: Fetch source code
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           submodules: true
