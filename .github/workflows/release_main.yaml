@@ -17,18 +17,19 @@ env:
 
 # New way
 on:
-  pull_request:
-    types:
-      - enqueued
-    branches:
-      - 'main'
+  workflow_dispatch:
+
+  # pull_request:
+  #   types:
+  #     - submitted
+  #   branches:
+  #     - 'main'
 
 
 jobs:
 
   install:
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
-    uses: ./.github/workflows/_install.yaml
+    
     strategy:
       fail-fast: false
     with:
@@ -37,12 +38,14 @@ jobs:
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
+    if: "github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'bump:')"
+    uses: ./.github/workflows/_install.yaml
 
   release:
     needs: install
     runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
-
+    
+    if: "github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'bump:')"
     steps:
 
       # Load project
@@ -85,40 +88,3 @@ jobs:
           echo "Bumped to version ${{ steps.cz.outputs.version }}"
           echo "Project version: $(poetry version -s)"
           echo "Paasify version: $(paasify --version)"
-
-
-      # # Create sdist
-      # # -----------------------------
-
-      # # Load dist        
-      # - name: Load cached venv
-      #   id: cached-project-deps
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: dist
-      #     key: dist-${{ runner.os }}-3.9-${{ steps.cz.outputs.version }}
-
-      # - name: Build paasify release
-      #   run: |
-      #     set -x
-      #     source ~/.venv/bin/activate
-      #     cp UPDATES.md dist/UPDATES.md
-      #     poetry build -vvv
-          
-
-
-      # - name: Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     token: "${{ secrets.ACCESS_TOKEN }}"
-      #     body_path: "UPDATES.md"
-      #     prerelease: false
-      #     name: "Version: ${{steps.cz.outputs.version}} (stable)"
-      #     tag_name: "${{steps.cz.outputs.version}}"
-      #     files: |
-      #       LICENSE.txt
-      #       CHANGELOG.md
-      #       dist/UPDATES.md
-      #       dist/*.whl
-      #       dist/*.tar.gz
-
