@@ -20,11 +20,11 @@ on:
           - rc
 
       increment:
-        description: 'Increment type: MAJOR, MINOR, PATCH or <empty>'
-        default: " "
+        description: 'Increment type: MAJOR, MINOR, PATCH or AUTO'
+        default: "AUTO"
         type: choice
         options:
-          - " "
+          - AUTO
           - MAJOR
           - MINOR
           - PATCH
@@ -139,7 +139,11 @@ jobs:
       - id: release
         run: |2
           BRANCH=${GITHUB_REF#refs/heads/}
-          prerelease="${{github.event.inputs.prerelease}}"
+
+          prerelease=''
+          if [[ "${{github.event.inputs.prerelease}}" != 'AUTO' ]]; then
+            prerelease="${{github.event.inputs.prerelease}}"
+          fi
           case "$BRANCH" in
             *-alpha) prerelease=alpha ;;
             *-beta) prerelease=beta ;;
