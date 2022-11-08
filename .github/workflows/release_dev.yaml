@@ -33,7 +33,7 @@ on:
 jobs:
 
   install:
-    uses: ./.github/workflows/_install.yml
+    uses: ./.github/workflows/_install.yaml
     strategy:
       fail-fast: false
     with:

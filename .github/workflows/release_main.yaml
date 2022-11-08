@@ -13,7 +13,7 @@ jobs:
 
   install:
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
-    uses: ./.github/workflows/_install.yml
+    uses: ./.github/workflows/_install.yaml
     strategy:
       fail-fast: false
     with:
