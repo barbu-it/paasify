@@ -17,7 +17,9 @@ env:
 
 # New way
 on:
-  workflow_dispatch:    inputs:
+
+  workflow_dispatch:
+    inputs:
 
       increment:
         description: 'Increment type: MAJOR, MINOR, PATCH or AUTO'
@@ -30,11 +32,12 @@ on:
           - PATCH
 
       prerelease:
-        description: 'Prerelease type: alpha, beta, rc or empty for stable'
+        description: 'Prerelease type: rc or stable for stable'
         default: "alpha"
         type: choice
         options:
           - rc
+          - stable
 
 
 jobs:
@@ -90,12 +93,19 @@ jobs:
         run: |2
           BRANCH=${GITHUB_REF_NAME}
 
-          prerelease=''
-          if [[ "${{github.event.inputs.prerelease}}" != 'AUTO' ]]; then
-            prerelease="${{github.event.inputs.prerelease}}"
+          prerelease="${{github.event.inputs.prerelease}}"
+          if [[ "${{github.event.inputs.prerelease}}" == 'stable' ]]; then
+            prerelease=''
+          fi
+
+          increment="${{github.event.inputs.increment}}"
+          if [[ "${{github.event.inputs.increment}}" == 'AUTO' ]]; then
+            increment=''
           fi
 
           echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          echo "increment=${increment}" >> "$GITHUB_OUTPUT"
+
       - id: cz
         name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
@@ -103,7 +113,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
           prerelease: ${{steps.release.outputs.prerelease}}
-          increment: ${{github.event.inputs.increment}}
+          increment: ${{steps.release.outputs.increment}}
 
       - name: Print Version
         run: |

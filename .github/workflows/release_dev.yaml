@@ -21,7 +21,7 @@ on:
           - PATCH
 
       prerelease:
-        description: 'Prerelease type: alpha, beta, rc or empty for stable'
+        description: 'Prerelease type: alpha, beta or rc'
         default: "alpha"
         type: choice
         options:
@@ -48,6 +48,7 @@ jobs:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
     uses: ./.github/workflows/_install.yaml
+
   release:
     needs: install
     runs-on: ubuntu-latest
@@ -86,21 +87,28 @@ jobs:
         run: |2
           BRANCH=${GITHUB_REF_NAME}
 
-          prerelease=''
-          if [[ "${{github.event.inputs.prerelease}}" != 'AUTO' ]]; then
-            prerelease="${{github.event.inputs.prerelease}}"
+          prerelease="${{github.event.inputs.prerelease}}"
+          if [[ "${{github.event.inputs.prerelease}}" == 'stable' ]]; then
+            prerelease=''
           fi
+
           case "$BRANCH" in
             *-alpha) prerelease=alpha ;;
             *-beta) prerelease=beta ;;
             *-rc) prerelease=rc ;;
           esac
-
           if [[ "$prerelease" != "${{github.event.inputs.prerelease}}" ]]; then
             echo "Change pre-release because of branch name: '$BRANCH'"
             echo "  ${{github.event.inputs.prerelease}} -> ${prerelease:-DISABLED}"
           fi
+
+          increment="${{github.event.inputs.increment}}"
+          if [[ "${{github.event.inputs.increment}}" == 'AUTO' ]]; then
+            increment=''
+          fi
+
           echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          echo "increment=${increment}" >> "$GITHUB_OUTPUT"
 
       - id: cz
         name: Create bump and changelog
@@ -109,7 +117,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: ${{github.event.inputs.changelog}}
           prerelease: ${{steps.release.outputs.prerelease}}
-          increment: ${{github.event.inputs.increment}}
+          increment: ${{steps.release.outputs.increment}}
 
       - name: Print Version
         run: |
