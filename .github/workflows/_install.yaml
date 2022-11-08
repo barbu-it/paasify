@@ -31,14 +31,14 @@ jobs:
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
-          python-version: ${{github.event.inputs.python_version}}
+          python-version: ${{inputs.python_version}}
       
       - name: Load cached env
         id: cached-env-install
         uses: actions/cache@v3
         with:
           path: ~/.local
-          key: dev_env-${{ runner.os }}-${{github.event.inputs.poetry_version}}
+          key: dev_env-${{ runner.os }}-${{inputs.poetry_version}}
 
       - name: Install virtualenv and poetry (cached)
         if: steps.cached-env-install.outputs.cache-hit != 'true'
@@ -47,7 +47,7 @@ jobs:
           virtualenv ~/.venv
 
           source ~/.venv/bin/activate
-          pip install --upgrade poetry==${{github.event.inputs.python_version}}
+          pip install --upgrade poetry==${{inputs.python_version}}
           poetry config virtualenvs.path ~/.venv
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.create false
@@ -59,7 +59,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.venv
-          key: venv-${{ runner.os }}-${{github.event.inputs.python_version}}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{inputs.python_version}}-${{ hashFiles('**/poetry.lock') }}
         
       - uses: actions/checkout@v3
         with:
