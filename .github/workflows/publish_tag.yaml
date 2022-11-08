@@ -1,0 +1,124 @@
+name: Publish tag release
+
+env:
+  python_version: "3.9"
+  poetry_version: "1.2.1"
+
+on:
+  push:
+    tags:
+      # This is prod for now, to be changed to dev
+      - '[0-9]+.[0-9]+.[0-9]+.*'
+
+      
+jobs:
+
+  install:
+    
+    strategy:
+      fail-fast: false
+    with:
+      python_version: '3.9'
+      poetry_version: '1.2.1'
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+    uses: ./.github/workflows/_install.yaml
+
+
+  build:
+    needs: install
+    runs-on: ubuntu-latest
+
+    if: "github.ref_type == 'tag'"
+    steps:
+
+      # Load project
+      # ---------------------
+      - name: Load cached python environment
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: python_env--${{ runner.os }}--${{env.python_version}}--${{env.poetry_version}}
+
+      - name: Fetch source code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv--${{ runner.os }}--${{env.python_version}}--${{env.poetry_version}}--${{ hashFiles('**/poetry.lock') }}
+        
+
+
+      # Load dist
+      # ---------------------
+      - name: Load cached dist
+        id: cached-project-dist
+        uses: actions/cache@v3
+        with:
+          path: dist
+          key: dist-${{ runner.os }}--${{env.python_version}}--${{ github.ref_name }}
+
+      - name: Build paasify release
+        run: |
+          set -x
+          source ~/.venv/bin/activate
+
+          PREV_TAG=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2 | head -n 1 | sed 's@.*/@@')
+
+          poetry build -vvv
+
+          ls -ahl
+          ls -ahl  dist/
+
+          if cz changelog --start-rev "$PREV_TAG" --file-name dist/UPDATES.md ; then
+            echo "Changelog creation succeeded"
+          else
+            echo "Could not generate changelog"
+          fi
+
+
+
+  publish_gh:
+    needs: build
+    runs-on: ubuntu-latest
+
+    if: "github.ref_type == 'tag'"
+    steps:
+
+      # Load dist
+      # ---------------------
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Load cached dist
+        id: cached-project-dist
+        uses: actions/cache@v3
+        with:
+          path: dist
+          key: dist-${{ runner.os }}--${{env.python_version}}--${{ github.ref_name }}
+
+      - name: Publish Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: "${{ secrets.ACCESS_TOKEN }}"
+          body_path: "dist/UPDATES.md"
+          prerelease: false
+          name: "Version: ${{github.ref_name}} (stable)"
+          tag_name: "${{github.ref_name}}"
+          files: |
+            LICENSE.txt
+            CHANGELOG.md
+            dist/UPDATES.md
+            dist/*.whl
+            dist/*.tar.gz
+
+
