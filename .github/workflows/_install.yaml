@@ -56,7 +56,8 @@ jobs:
 
       # Install project dependencies
       # ---------------------
-      - uses: actions/checkout@v3
+      - name: Fetch source code
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           submodules: true

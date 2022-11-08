@@ -4,14 +4,24 @@ env:
   python_version: "3.9"
   poetry_version: "1.2.1"
 
+
+# # Old way
+# on:
+#   push:
+#     branches:
+#       - main
+#     tags:
+#       - '!**'
+#     # tags-ignore:
+#     #   - '[0-9]+.[0-9]+.[0-9]+'
+
+# New way
 on:
-  push:
+  pull_request:
+    types:
+      - enqueued
     branches:
-      - main
-    tags:
-      - '!**'
-    # tags-ignore:
-    #   - '[0-9]+.[0-9]+.[0-9]+'
+      - 'main'
 
 
 jobs:
