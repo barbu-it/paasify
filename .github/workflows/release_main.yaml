@@ -1,4 +1,4 @@
-name: Release stable
+name: Create stable release
 
 on:
   push:
