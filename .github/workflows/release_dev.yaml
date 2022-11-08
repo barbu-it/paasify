@@ -98,7 +98,7 @@ jobs:
 
           if [[ "$prerelease" != "${{github.event.inputs.prerelease}}" ]]; then
             echo "Change pre-release because of branch name: '$BRANCH'"
-            echo "  ${{github.event.inputs.prerelease}} -> ${prerelease}"
+            echo "  ${{github.event.inputs.prerelease}} -> ${prerelease:-DISABLED}"
           fi
           echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
 

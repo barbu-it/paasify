@@ -17,13 +17,24 @@ env:
 
 # New way
 on:
-  workflow_dispatch:
+  workflow_dispatch:    inputs:
 
-  # pull_request:
-  #   types:
-  #     - submitted
-  #   branches:
-  #     - 'main'
+      increment:
+        description: 'Increment type: MAJOR, MINOR, PATCH or AUTO'
+        default: "AUTO"
+        type: choice
+        options:
+          - AUTO
+          - MAJOR
+          - MINOR
+          - PATCH
+
+      prerelease:
+        description: 'Prerelease type: alpha, beta, rc or empty for stable'
+        default: "alpha"
+        type: choice
+        options:
+          - rc
 
 
 jobs:
@@ -44,7 +55,7 @@ jobs:
   release:
     needs: install
     runs-on: ubuntu-latest
-    
+
     if: "github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'bump:')"
     steps:
 
@@ -75,12 +86,24 @@ jobs:
       # Bump dist project
       # -----------------------------
 
+      - id: release
+        run: |2
+          BRANCH=${GITHUB_REF_NAME}
+
+          prerelease=''
+          if [[ "${{github.event.inputs.prerelease}}" != 'AUTO' ]]; then
+            prerelease="${{github.event.inputs.prerelease}}"
+          fi
+
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
       - id: cz
         name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
+          prerelease: ${{steps.release.outputs.prerelease}}
+          increment: ${{github.event.inputs.increment}}
 
       - name: Print Version
         run: |
