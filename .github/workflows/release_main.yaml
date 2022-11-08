@@ -7,7 +7,6 @@ on:
 
 jobs:
 
-
   install:
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
@@ -94,13 +93,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
-          changelog_increment_filename: CHANGES.md
+          changelog_increment_filename: UPDATES.md
           push: true
 
       - name: Print Version
         run: |
-          echo "====== CHANGES.md"
-          cat CHANGES.md
+          echo "====== UPDATES.md"
+          cat UPDATES.md
           echo "====== CHANGELOG.md"
           cat CHANGELOG.md
           echo "======"
@@ -111,26 +110,38 @@ jobs:
           echo "Paasify version: $(paasify --version)"
 
 
-      # Create sdist
-      # -----------------------------
-      - name: Build paasify release
-        run: |
-          set -x
-          source ~/.venv/bin/activate
-          poetry build -vvv
+      # # Create sdist
+      # # -----------------------------
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          token: "${{ secrets.ACCESS_TOKEN }}"
-          body_path: "CHANGES.md"
-          prerelease: false
-          name: "Latest stable build: ${{steps.cz.outputs.version}}"
-          tag_name: "${{steps.cz.outputs.version}}"
-          files: |
-            LICENSE.txt
-            CHANGES.md
-            CHANGELOG.md
-            dist/*.whl
-            dist/*.tar.gz
+      # # Load dist        
+      # - name: Load cached venv
+      #   id: cached-project-deps
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: dist
+      #     key: dist-${{ runner.os }}-3.9-${{ steps.cz.outputs.version }}
+
+      # - name: Build paasify release
+      #   run: |
+      #     set -x
+      #     source ~/.venv/bin/activate
+      #     cp UPDATES.md dist/UPDATES.md
+      #     poetry build -vvv
+          
+
+
+      # - name: Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     token: "${{ secrets.ACCESS_TOKEN }}"
+      #     body_path: "UPDATES.md"
+      #     prerelease: false
+      #     name: "Version: ${{steps.cz.outputs.version}} (stable)"
+      #     tag_name: "${{steps.cz.outputs.version}}"
+      #     files: |
+      #       LICENSE.txt
+      #       CHANGELOG.md
+      #       dist/UPDATES.md
+      #       dist/*.whl
+      #       dist/*.tar.gz
 
