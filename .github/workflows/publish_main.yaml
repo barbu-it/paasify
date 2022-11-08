@@ -1,4 +1,8 @@
-name: Publish stable release
+name: Publish stable release (TOFIX)
+
+env:
+  python_version: "3.9"
+  poetry_version: "1.2.1"
 
 on:
   push:

@@ -1,0 +1,81 @@
+name: Install Paasify
+
+on: 
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Version of python to use'
+        required: true
+        type: string
+        default: "3.9"
+
+      poetry_version:
+        description: 'Version of Poetry to use'
+        required: true
+        type: string
+        default: "1.2.1"
+
+    secrets:
+      access_token:
+        description: 'Github Secret Token to check out the repo'
+
+
+
+jobs:
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+    
+      # Install build env
+      # ---------------------
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{inputs.python_version}}
+      
+      - name: Load cached python environment
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: python_env--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}
+
+      - name: Install virtualenv and poetry (cached)
+        if: steps.cached-env-install.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip virtualenv 
+          virtualenv ~/.venv
+
+          source ~/.venv/bin/activate
+          pip install --upgrade poetry==${{inputs.poetry_version}}
+          poetry config virtualenvs.path ~/.venv
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.create false
+          
+
+      # Install project dependencies
+      # ---------------------
+      - name: Fetch source code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.venv
+          key: venv--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}--${{ hashFiles('**/poetry.lock') }}
+        
+      - name: Install project dependencies (cached)
+        if: steps.cached-project-deps.outputs.cache-hit != 'true'
+        run: |
+          source ~/.venv/bin/activate
+          poetry install -vv --no-interaction --no-root
+      
+      - name: Install project
+        run: |
+          source ~/.venv/bin/activate
+          poetry install -vv --no-interaction --only-root
