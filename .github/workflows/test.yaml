@@ -7,10 +7,10 @@ on:
     #   - "*-alpha"
     #   - "*-beta"
     #   - "*-rc"
-  pull_request:
-    branches:
-      - main
-      - develop
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
 
 jobs:
 
