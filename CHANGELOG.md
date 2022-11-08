@@ -1,3 +1,11 @@
+## 0.0.7 (2022-11-08)
+
+### Fix
+
+- ci tools
+- workflow name
+- missing UPDATES.md
+
 ## 0.0.6 (2022-11-08)
 
 ### Fix
