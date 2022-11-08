@@ -1,17 +1,16 @@
-name: Create stable release
+name: Publish stable release
 
 on:
   push:
-    branches:
-      - main
-    tags-ignore:
+    tags:
+      # This is prod for now, to be changed to dev
       - '[0-9]+.[0-9]+.[0-9]+'
 
+      
 jobs:
 
   install:
     runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
     steps:
     
       # Install build env
@@ -65,10 +64,10 @@ jobs:
           source ~/.venv/bin/activate
           poetry install -vv --no-interaction --only-root
 
-  release:
+
+  build:
     needs: install
     runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
 
     steps:
 
@@ -86,62 +85,68 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      # Bump dist project
-      # -----------------------------
-
-      - id: cz
-        name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          changelog: true
-          #changelog_increment_filename: UPDATES.md
-          push: true
-
-      - name: Print Version
+      - name: show env
         run: |
-          echo "====== CHANGELOG.md"
-          cat CHANGELOG.md
-          echo "======"
+          env | sort
 
+
+      # Load dist        
+      - name: Load cached dist
+        id: cached-project-dist
+        uses: actions/cache@v3
+        with:
+          path: dist
+          key: dist-${{ runner.os }}-3.9-${{ github.ref_name }}
+
+      - name: Build paasify release
+        run: |
+          set -x
           source ~/.venv/bin/activate
-          echo "Bumped to version ${{ steps.cz.outputs.version }}"
-          echo "Project version: $(poetry version -s)"
-          echo "Paasify version: $(paasify --version)"
+
+          PREV_TAG=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2 | head -n 1 | sed 's@.*/@@')
+
+          poetry build -vvv
+
+          ls -ahl
+          ls -ahl  dist/
+
+          cz changelog --start-rev "$PREV_TAG" --file-name dist/UPDATES.md
 
 
-      # # Create sdist
-      # # -----------------------------
 
-      # # Load dist        
-      # - name: Load cached venv
-      #   id: cached-project-deps
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: dist
-      #     key: dist-${{ runner.os }}-3.9-${{ steps.cz.outputs.version }}
+  publish_gh:
+    needs: build
+    runs-on: ubuntu-latest
 
-      # - name: Build paasify release
-      #   run: |
-      #     set -x
-      #     source ~/.venv/bin/activate
-      #     cp UPDATES.md dist/UPDATES.md
-      #     poetry build -vvv
-          
+    steps:
 
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
+          submodules: true
 
-      # - name: Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     token: "${{ secrets.ACCESS_TOKEN }}"
-      #     body_path: "UPDATES.md"
-      #     prerelease: false
-      #     name: "Version: ${{steps.cz.outputs.version}} (stable)"
-      #     tag_name: "${{steps.cz.outputs.version}}"
-      #     files: |
-      #       LICENSE.txt
-      #       CHANGELOG.md
-      #       dist/UPDATES.md
-      #       dist/*.whl
-      #       dist/*.tar.gz
+      # Load dist        
+      - name: Load cached venv
+        id: cached-project-dist
+        uses: actions/cache@v3
+        with:
+          path: dist
+          key: dist-${{ runner.os }}-3.9-${{ github.ref_name }}
+
+      - name: Publish Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: "${{ secrets.ACCESS_TOKEN }}"
+          body_path: "dist/UPDATES.md"
+          prerelease: false
+          name: "Version: ${{github.ref_name}} (stable)"
+          tag_name: "${{github.ref_name}}"
+          files: |
+            LICENSE.txt
+            CHANGELOG.md
+            dist/UPDATES.md
+            dist/*.whl
+            dist/*.tar.gz
+
 
