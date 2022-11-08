@@ -16,18 +16,19 @@ jobs:
 
   install:
     uses: ./.github/workflows/_install.yaml
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ['3.9']
-        poetry_version: ['1.2.1']
     with:
       python_version: ${{ matrix.python_version }}
       poetry_version: ${{ matrix.poetry_version }}
     secrets:
       access_token: "${{ secrets.ACCESS_TOKEN }}"
 
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.9']
+        poetry_version: ['1.2.1']
 
+    
   test:
     needs: install
     runs-on: ubuntu-latest
@@ -37,8 +38,6 @@ jobs:
       matrix:
         python_version: ['3.9']
         poetry_version: ['1.2.1']
-    secrets:
-      access_token: "${{ secrets.ACCESS_TOKEN }}"
 
     steps:
 
