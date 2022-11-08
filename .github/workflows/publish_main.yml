@@ -92,12 +92,11 @@ jobs:
 
       # Load dist        
       - name: Load cached venv
-        id: cached-project-deps
+        id: cached-project-dist
         uses: actions/cache@v3
         with:
           path: dist
           key: dist-${{ runner.os }}-3.9-${{ github.ref_name }}
-
 
       - name: 'Get Previous tag'
         id: previoustag
