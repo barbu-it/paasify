@@ -28,17 +28,18 @@ jobs:
     steps:
     
       # Install build env
+      # ---------------------
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
           python-version: ${{inputs.python_version}}
       
-      - name: Load cached env
+      - name: Load cached python environment
         id: cached-env-install
         uses: actions/cache@v3
         with:
           path: ~/.local
-          key: dev_env--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}
+          key: python_env--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}
 
       - name: Install virtualenv and poetry (cached)
         if: steps.cached-env-install.outputs.cache-hit != 'true'
@@ -54,6 +55,7 @@ jobs:
           
 
       # Install project dependencies
+      # ---------------------
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
