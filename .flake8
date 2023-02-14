@@ -1,0 +1,12 @@
+[flake8]
+
+exclude =
+  cafram
+  docs/*
+  .direnv
+  .venv
+  tests/*
+
+extend-ignore =
+  # E501 line too long
+  E501

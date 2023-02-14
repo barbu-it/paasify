@@ -1,0 +1,17 @@
+---
+
+services:
+  traefik:
+    ports:
+      - "$app_expose_ip:443:443"
+        #labels:
+        #  - "traefik.http.routers.dashboard.tls=true"
+    environment:
+
+      # Entrypoints
+      - TRAEFIK_ENTRYPOINTS_websecure_ADDRESS=:443 # <== Defining an entrypoint for port :80 named default
+
+        # # Forced Http redirect to https
+        # - TRAEFIK_ENTRYPOINTS_web_HTTP_REDIRECTIONS_ENTRYPOINT_PERMANENT=true
+        # - TRAEFIK_ENTRYPOINTS_web_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME=https
+        # - TRAEFIK_ENTRYPOINTS_web_HTTP_REDIRECTIONS_ENTRYPOINT_TO=websecure

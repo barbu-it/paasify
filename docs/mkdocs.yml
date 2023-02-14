@@ -1,0 +1,152 @@
+docs_dir: src/
+site_dir: build/site/
+
+site_url: https://barbu-it.github.io/paasify/
+repo_url: https://github.com/barbu-it/paasify
+site_name: "Paasify Documentation"
+site_author: mrjk
+site_description: "Paasify Documentation"
+
+copyright: |
+  <p>
+  This website contains anonymous web analytics scripts.</br>
+  Documentation under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" >GPLv3 license</a>, 2022 - <script>document.write(new Date().getFullYear());</script>.
+  </p>
+  <noscript><p><img src="https://m.barbu-it.com/matomo.php?idsite=2&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+
+watch:
+  - src/static
+  - src/docs
+  - src/index.md
+  - src/plugins_apidoc
+  - src/refs
+  - src/schema_doc
+  - src/tutorial
+
+  - ../paasify
+
+extra_css:
+  - static/mkdocstrings.css
+extra_javascript:
+  - static/paasify.js
+  - static/matomo.js
+
+nav:
+    - Documentation:
+      - docs/install.md
+      - docs/concepts.md
+      # - docs/configuration.md
+      - docs/usage.md
+      #- docs/distribute.md
+      #- docs/extend.md
+      #- docs/best_practices.md
+      - docs/faq.md
+
+    - Guides:
+      #- tutorial/quickstart.md
+      - jupyter/*.ipynb
+
+    - Collections:
+      - plugins_apidoc/index.md
+      - Apps:
+        - plugins_apidoc/app_*.md
+      - Jsonnet:
+        - plugins_apidoc/jsonnet_*.md
+
+    - Reference:
+      - Overview: refs/index.md
+      - Command line: refs/cli_usage.md
+      - Configuration:
+          - Project: refs/schema_prj.md
+          - Config: refs/schema_prj_config.md
+          - Stacks: refs/schema_prj_stacks.md
+          - Sources: refs/schema_prj_sources.md
+      - Plugins:
+          - refs/extend_base.md
+          - refs/extend_tags.md
+
+    - About:
+      - Overview: develop/ref.md
+      - refs/changelog.md
+      - Code of conduct: develop/conduct_code.md
+      - refs/license.md
+
+      - Contribute:
+        - Overview: develop/intro.md
+        - develop/install.md
+        - develop/paasify.md
+        - develop/docs.md
+        - develop/release.md
+
+      - Python API:
+        - refs/schema_app.md
+        - refs/python_api_app.md
+        - refs/python_api_project.md
+        - refs/python_api_other.md
+
+
+# https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/
+
+plugins:
+  - search
+  - exclude-search:
+      exclude:
+        - ref/python_api*
+
+  - mkdocstrings
+  - mkdocs-jupyter
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocs-simple-hooks:
+      hooks:
+        on_files: "docs.gen_apidoc:on_files_hook"
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+
+theme:
+    name: material
+    locale: en
+    features:
+      - content.code.annotate
+      - navigation.tracking
+      - navigation.tabs
+      - navigation.tabs.sticky
+      - navigation.sections
+#      - navigation.expand
+#      - toc.integrate
+      - navigation.top
+      - search.highlight
+      - content.tabs.link
+
+    logo: logo/paasify_logo.svg
+    favicon: logo/favicon.ico
+
+    palette:
+
+      # Palette toggle for light mode
+      - scheme: default
+        primary: indigo
+        accent: yellow
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+
+      # Palette toggle for dark mode
+      - scheme: slate
+        primary: indigo
+        accent: yellow
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode

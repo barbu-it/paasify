@@ -1,0 +1,6 @@
+# Blank app that does nothing
+
+services:
+  default:
+    image: ${app_image:-alpine}
+    restart: "no"

@@ -1,0 +1,7 @@
+# Blank app that does nothing
+
+services:
+  default:
+    image: ${app_image:-alpine}
+    restart: "no"
+    stop_grace_period: 1s

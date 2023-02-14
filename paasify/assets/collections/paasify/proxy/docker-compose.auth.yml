@@ -1,0 +1,8 @@
+
+services:
+  traefik:
+    labels:
+      # To declare
+      - "traefik.http.middlewares.${traefik_svc_auth:-default}.basicauth.usersfile=/etc/traefik/users.auth"
+      # To apply
+      #- "traefik.http.routers.whoami.middlewares=${traefik_svc_auth:-default}"

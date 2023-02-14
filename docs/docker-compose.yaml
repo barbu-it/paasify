@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+
+
+  mkdocs:
+    #image: ghcr.io/peaceiris/mkdocs-material:latest
+    image: paasify-doc:latest
+    ports:
+      - "8042:8042"
+
+    stdin_open: true
+    tty: true
+    command:
+      - "mkdocs"
+      - "serve"
+      - "--dev-addr=0.0.0.0:8042"
+      - "--config-file"
+      - "./mkdocs.yml"
+    # working_dir: /app
+    volumes:
+      - $PWD:/docs/
+
+  jupyter:
+    image: paasify-doc:latest
+    ports:
+      - "8043:8043"
+    command:
+      - "jupyter-notebook"
+      - --allow-root
+      - "--autoreload"
+      - "--notebook-dir=./src/jupyter"
+      - "--ip=0.0.0.0"
+      - "--port=8043"
+    volumes:
+      - $PWD:/docs/
+      # ermissions issues as run as root
+      #- $PWD/dist/jupyter_token:/root/.local/share/jupyter/runtime/
+      #- $PWD/dist/jupyter_secret:/root/.local/share/jupyter/
+
+
+  # Beta
+  # code-server:
+  #   image: lscr.io/linuxserver/code-server:latest
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Europe/London
+  #     - HASHED_PASSWORD= #optional
+  #     - SUDO_PASSWORD=password #optional
+  #     - SUDO_PASSWORD_HASH= #optional
+  #     - DEFAULT_WORKSPACE=/docs #optional
+  #     #- PASSWORD=password #optional
+  #     #- PROXY_DOMAIN=code-server.my.domain #optional
+  #   volumes:
+  #     - $PWD/code_config:/config
+  #     - $PWD:/config/workspace/docs/
+  #   ports:
+  #     - 8044:8443

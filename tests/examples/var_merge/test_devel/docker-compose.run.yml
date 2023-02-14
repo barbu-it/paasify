@@ -1,0 +1,32 @@
+name: var_merge_app2_copy3
+networks:
+  default:
+    external: true
+    name: var_merge_app2_copy3_default
+services:
+  main_app2:
+    environment:
+      DEBUG1: ENABLED_FROM_APP_TAG
+      DEBUG2: ENABLED_FROM_LOCAL_APP
+      OVERRIDE1: OK_override
+      base_var1: my_prefix1_my_middle1
+      base_var2: my_prefix2
+      custom_from_var1: OK_from_config_global
+      custom_from_var2: OK_from_config_stack
+      custom_from_var3: OK empty because tag override is only allowed for jsonnet
+        files
+      escaped_var1: TEST_OK
+      escaped_var2: $$OK_var_escaped_missing
+      user1: OK_FALLBACK_compose_user
+      user2: OK_from_app_vars
+    hostname: app2_copy3
+    image: alpine
+    labels:
+      paasify.fqdn: app2_copy3.var-merge.localhost
+      paasify.path: tests/examples/var_merge/test_devel
+      paasify.principal: true
+    networks:
+      default:
+        priority: 0
+    restart: unless-stopped
+version: '3.8'

@@ -1,0 +1,20 @@
+---
+
+services:
+
+  traefik:
+    environment:
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}=true
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_EMAIL=${app_admin_email}
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_STORAGE=/data/acme-${traefik_svc_certresolver}.json
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_DNSCHALLENGE=true
+
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_DNSCHALLENGE_PROVIDER=${traefik_cert_provider}
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_DNSCHALLENGE_RESOLVERS=${traefik_cert_provider_resolvers}
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_DNSCHALLENGE_DELAYBEFORECHECK=${traefik_cert_provider_delay:-10}
+
+      # ACME support for ovh
+      - OVH_ENDPOINT=${traefik_cert_provider_endpoint}
+      - OVH_APPLICATION_KEY=${traefik_cert_provider_app_key}
+      - OVH_APPLICATION_SECRET=${traefik_cert_provider_app_secret}
+      - OVH_CONSUMER_KEY=${traefik_cert_provider_consumer_key}

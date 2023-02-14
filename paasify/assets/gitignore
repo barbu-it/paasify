@@ -1,0 +1,5 @@
+.paasify/_*
+*/data/*
+*/share/*
+*/tmp/*
+*/db_data/*

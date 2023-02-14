@@ -1,0 +1,6 @@
+---
+
+services:
+  traefik:
+    ports:
+      - "$app_expose_ip:80:80"

@@ -1,0 +1,81 @@
+name: traefik
+networks:
+  default:
+    name: devbox_core-traefik
+services:
+  traefik:
+    environment:
+      TRAEFIK_ACCESSLOG: 'true'
+      TRAEFIK_ACCESSLOG_FILEPATH: ''
+      TRAEFIK_API: 'true'
+      TRAEFIK_API_DASHBOARD: 'true'
+      TRAEFIK_API_DEBUG: 'true'
+      TRAEFIK_API_INSECURE: 'true'
+      TRAEFIK_ENTRYPOINTS_default-http: 'True'
+      TRAEFIK_ENTRYPOINTS_default-http_ADDRESS: :80
+      TRAEFIK_LOG_LEVEL: debug
+      TRAEFIK_PILOT_DASHBOARD: 'false'
+      TRAEFIK_PROVIDERS_DOCKER: 'true'
+      TRAEFIK_PROVIDERS_DOCKER_CONSTRAINTS: Label(`traefik.group`,`devbox_core-traefik`)
+      TRAEFIK_PROVIDERS_DOCKER_ENDPOINT: unix:///var/run/docker.sock
+      TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: 'false'
+      TRAEFIK_PROVIDERS_DOCKER_NETWORK: devbox_core-traefik
+      TRAEFIK_PROVIDERS_DOCKER_SWARMMODE: 'false'
+      TRAEFIK_PROVIDERS_DOCKER_WATCH: 'true'
+      TRAEFIK_PROVIDERS_FILE_DIRECTORY: /etc/traefik
+    image: traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.group: devbox_core-traefik
+      traefik.http.routers.devbox_core-traefik.entrypoints: default-http
+      traefik.http.routers.devbox_core-traefik.rule: Host(`traefik.devbox.192.168.186.129.nip.io`)
+      traefik.http.routers.devbox_core-traefik.service: devbox_core-traefik
+      traefik.http.services.devbox_core-traefik.loadbalancer.server.port: '8080'
+    networks:
+      default:
+    ports:
+    - host_ip: 192.168.186.129
+      mode: ingress
+      protocol: tcp
+      published: '80'
+      target: 80
+    - host_ip: 192.168.186.129
+      mode: ingress
+      protocol: tcp
+      published: '8080'
+      target: 8080
+    restart: always
+    volumes:
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/traefik/data
+      target: /data
+      type: bind
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/traefik/conf
+      target: /etc/traefik
+      type: bind
+    - bind:
+        create_host_path: true
+      source: $HOME/volumes/data/prj/mrjk/POC/paasify3/examples/ex3/devbox_core/traefik/logs
+      target: /logs
+      type: bind
+    - bind:
+        create_host_path: true
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      type: bind
+x-paasify:
+  app:
+    cmd: my command
+    cmd_help:
+    cmd_shell:
+    cmd_status:
+    image: traefik
+    port: 8080
+    service: traefik
+    version: v1.6
+  conf:
+    traefik_svc_entrypoints: default-http
+    traefik_svc_tls: false

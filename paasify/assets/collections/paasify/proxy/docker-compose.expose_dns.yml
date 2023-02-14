@@ -1,0 +1,14 @@
+---
+version: "3.7"
+
+services:
+  traefik:
+    ports:
+      - "$app_expose_ip:53:53/tcp"
+      - "$app_expose_ip:53:53/udp"
+
+    environment:
+
+      # Entrypoints
+      - TRAEFIK_ENTRYPOINTS_dnsudp_ADDRESS=:53/udp
+      - TRAEFIK_ENTRYPOINTS_dnsctp_ADDRESS=:53/tcp

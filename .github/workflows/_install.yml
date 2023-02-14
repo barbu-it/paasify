@@ -1,0 +1,113 @@
+name: Install Project
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Version of python to use'
+        required: true
+        type: string
+        default: "3.9"
+
+      poetry_version:
+        description: 'Version of Poetry to use'
+        required: true
+        type: string
+        default: "1.3.2"
+
+    secrets:
+      access_token:
+        description: 'Github Secret Token to check out the repo'
+
+env:
+  VIRTUAL_ENV: .venv
+
+jobs:
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Install build env
+      # ---------------------
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{inputs.python_version}}
+
+      - name: Load cached python environment
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: python_env--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}
+
+      #- name: Install poetry (cached)
+      #  if: steps.cached-env-install.outputs.cache-hit != 'true'
+      #  run: |
+      #    curl -sSL https://install.python-poetry.org | python3 -
+      #    poetry config virtualenvs.create true
+      #    poetry config virtualenvs.in-project true
+      #    echo ~/.local/bin/ >> $GITHUB_PATH
+
+      - name: Install Poetry (cached)
+        if: steps.cached-env-install.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          version: "${{inputs.poetry_version}}"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - name: Install task (cached)
+        if: steps.cached-env-install.outputs.cache-hit != 'true'
+        run: |
+          GITHUB_RELEASE_URL="https://github.com/go-task/task/releases/download"
+          TASK_VERSION=v3.18.0
+          TASK_ARCH=amd64
+          TASK_URL="${GITHUB_RELEASE_URL}/$TASK_VERSION/task_linux_${TASK_ARCH}.tar.gz"
+          curl -L --output /tmp/go-task.tar.gz "$TASK_URL"
+          mkdir -p  ~/.local/bin/
+          tar xzvf /tmp/go-task.tar.gz  -C  ~/.local/bin/ task
+          echo  ~/.local/bin/ >> $GITHUB_PATH
+
+      #- name: Install Task
+      #  uses: arduino/setup-task@v1
+      #  with:
+      #    version: 3.12.1
+
+
+      # Install project dependencies
+      # ---------------------
+      - name: Fetch source code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      - name: Environment Info
+        run: |
+          set -x
+          poetry --version
+          task --version
+          poetry config --list
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv--${{ runner.os }}--${{inputs.python_version}}--${{inputs.poetry_version}}--${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add venv to PATH
+        run: |
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies (cached)
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: |
+          task -v bootstrap
+
+      - name: Install project
+        run: |
+          task -v setup

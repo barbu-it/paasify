@@ -1,0 +1,30 @@
+app_product: traefik
+app_image_name: traefik
+app_image_version: v2.9
+app_port: '8080'
+
+traefik_net_name: $app_network_name
+
+  #traefik_net_external: false
+  # Simple version: traefik_docker_constraint: "Label(`traefik.group`,`$app_network_name`)"
+traefik_docker_constraint: "LabelRegex(`traefik.group`, `(^|,)${traefik_net_name}(,|$$)`)"
+
+
+  # traefik_svc_tls: true
+
+  # # Take over network_proxy !
+  # app_network_name: ${net_proxy}
+  #
+  # traefik_docker_constraint: Label(`traefik.group`,`$app_network_name`)
+  #
+  # # Let's encrypt support
+  # traefik_svc_certresolver: default
+  # traefik_svc_certresolver_provider: null
+  # traefik_svc_certresolver_resolvers:
+
+  #
+  # # OVH support for Let's encrypt
+  # traefik_svc_certresolver_ovh_endpoint: ovh-eu
+  # traefik_svc_certresolver_ovh_app_key:
+  # traefik_svc_certresolver_ovh_app_secret:
+  # traefik_svc_certresolver_ovh_consumer_key:

@@ -1,0 +1,25 @@
+# Python files
+**/__pycache__
+dist/*
+**/.ipynb_checkpoints*
+
+# Temporary files
+.coverage
+*.code-workspace
+#docs/build/*
+
+# User customization
+.envrc.*
+scripts/Taskfile.extra.yml
+
+# Tools dirs
+.direnv/
+.task/
+.vscode/*
+
+# Temp
+#docs/code_config/*
+lab/*
+tmp/*
+tests_dev/*
+*OLD*

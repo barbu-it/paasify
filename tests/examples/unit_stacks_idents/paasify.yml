@@ -1,0 +1,75 @@
+
+sources:
+  - name: custom_source
+    #  remote: "test-remote.git"
+      #remote: https://github.com/mrjk/ssl-vault.git
+
+
+stacks:
+
+  # Shortcuts
+  # =============
+
+  # N1
+  # Simplest form, custom_app1 will be named and
+  # installed into custom_app dir
+  - custom_source:custom_app1
+
+  # N2
+  # Simplest form for a local app, just for a local stack
+  - my_local_app1
+
+  # N3
+  # Simplest for for a local app in a subdir
+  - my/local/app
+
+  # Minimal
+  # =============
+
+  # N4
+  # Call to an existing application, but as the app name
+  # is rstripped from its last number, this will conflict
+  # with N1
+  #- app: custom_source:custom_app2
+
+  # N5
+  # Another local app, like N2
+  - name: my_local_app2
+
+  # N6
+  # Local nested app like N3
+  - dir: local/app/path
+
+  # Stack with app and name
+  # =============
+
+  # N7
+  # Stack with app and custom name
+  - app: custom_source:custom_app5
+    name: custom_name
+
+  # N8
+  # Stack with app in default collection and custom name
+  - app: dummy
+    name: tutu
+
+  # Stack with app and path
+  # =============
+
+  # N9
+  # Stack with a collection app in a nested path
+  - app: custom_source:custom_app
+    dir: nested/path1
+
+  # N10
+  # Stack with app from default collection in nested path
+  - app: dummy
+    dir: nested/path2
+
+  # Stack with name and path
+  # =============
+
+  # N11
+  # Local stack with name and nested path
+  - name: my_local_app3
+    dir: nested/path3

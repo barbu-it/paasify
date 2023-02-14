@@ -1,0 +1,9 @@
+version: "3.3"
+services:
+  homepage:
+    image: ghcr.io/benphelps/homepage:latest
+    volumes:
+      - $app_dir_conf:/app/config # Make sure your local config directory exists
+      - $app_dir_template/icons:/app/public/icons # To allow icons, call in your config: /icons/myicon.png
+        # - $app_dir_share:/app/public/icons # To allow icons, call in your config: /icons/myicon.png
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations

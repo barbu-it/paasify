@@ -1,0 +1,21 @@
+name: var_merge_app2_copy2
+networks:
+  default:
+    name: var_merge_app2_copy2_default
+services:
+  main_app2:
+    environment:
+      escaped_var1: TEST_OK
+      escaped_var2: $$OK_var_escaped_missing
+      user1: OK_FALLBACK_compose_user
+      user2: OK_from_app_vars
+    hostname: app2_copy2
+    image: alpine
+    labels:
+      paasify.fqdn: app2_copy2.var-merge.localhost
+      paasify.path: tests/examples/var_merge/app2_copy2
+      paasify.principal: true
+    networks:
+      default:
+    restart: unless-stopped
+version: '3.8'

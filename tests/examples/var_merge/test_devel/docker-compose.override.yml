@@ -1,0 +1,7 @@
+services:
+  main_app2:
+    environment:
+      OVERRIDE1: OK_override
+
+      base_var1: "$base_var1"
+      base_var2: "$base_var2"

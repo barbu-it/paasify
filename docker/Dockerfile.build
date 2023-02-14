@@ -1,0 +1,82 @@
+
+# Builder image
+# ==================
+
+FROM python:3.9-slim  as builder
+
+USER root
+
+# For Debian
+# Build dependencies
+RUN apt-get update \
+    && apt-get install gcc g++ make jsonnet libjsonnet-dev -y \
+    && apt-get clean
+
+# For Alpine
+# RUN apk update && \
+#     apk add python3-dev \
+#     gcc \
+#     make \
+#     libc-dev \
+#     jsonnet-dev \
+#     jsonnet
+# Missing libffi-dev ???
+
+
+# Install python dependencies as user
+RUN pip3 install --upgrade pip
+COPY dist/requirements.txt /requirements.txt
+#RUN --mount=type=cache,target=/root/.cache/pip pip3 install -r /requirements.txt
+RUN pip3 install -r /requirements.txt
+# See: https://towardsdatascience.com/how-to-build-slim-docker-images-fast-ecc246d7f4a7
+# See: https://testdriven.io/blog/docker-best-practices/#lint-and-scan-your-dockerfiles-and-images
+# See: https://sysdig.com/blog/dockerfile-best-practices/
+
+
+# App image
+# ==================
+
+FROM python:3.9-slim  as app
+
+# Install helpers (optional)
+RUN apt-get update \
+    && apt-get install tree -y \
+    && apt-get clean
+
+# Install jsonnet
+RUN apt-get update \
+    && apt-get install curl jsonnet -y \
+    && apt-get clean
+
+# Install docker-compose standalone (not as docker plugin)
+ARG DOCKER_COMPOSE_VERSION=v2.10.2
+RUN curl -SL https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+RUN chmod +x /usr/local/bin/docker-compose && ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+# TODO: Support DIND setup !
+# Add docker client and expose socket ?
+# Add full dockerd
+
+# Import installed python libs
+COPY --from=builder /usr/local/lib/python3.9/ /usr/local/lib/python3.9/
+COPY --from=builder /usr/local/share/ /usr/local/share/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+
+# Create limited user
+RUN mkdir -p /app /work
+
+# Deploy pasify
+ARG PAASIFY_VERSION
+COPY dist/paasify-${PAASIFY_VERSION}.tar.gz /app
+RUN pip3 install /app/paasify-${PAASIFY_VERSION}.tar.gz
+
+
+# Create limited user
+RUN useradd \
+    --home-dir /work \
+    --shell=/bin/bash work \
+    && chown -R work /work
+ENV PATH="/work/.local/bin:${PATH}"
+USER work
+WORKDIR /work

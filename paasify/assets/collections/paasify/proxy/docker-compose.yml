@@ -1,0 +1,81 @@
+---
+version: "3.7"
+
+# Notes:
+#  Only entrypoints with chars and number are accepted, because:
+#  - bash does not allow hyphen in their name
+#  - Traefik does not allow underscore when shell configuration is used
+
+
+  # x-paasify:
+  #   app:
+  #     service: traefik
+  #     port: 8080
+  #     image: traefik
+  #     version: v1.6
+  #     cmd: my command
+  #     cmd_help:
+  #     cmd_shell:
+  #     cmd_status:
+  #   conf:
+  #     traefik_svc_tls: false
+  #     traefik_svc_entrypoints: default-http
+
+networks:
+  default:
+    #external: true
+    name: ${traefik_net_name}
+
+
+services:
+  traefik:
+    image: ${app_image_name}:${app_image_version}
+    restart: always
+    networks:
+      default:
+        aliases:
+          - traefik
+          - traefik.proxy
+
+    environment:
+
+      # Core config
+      - TRAEFIK_API=true
+      - TRAEFIK_API_DEBUG=false
+      - TRAEFIK_API_DASHBOARD=true
+      - TRAEFIK_API_INSECURE=true
+      # Logging
+      - TRAEFIK_LOG_LEVEL=$app_log_level
+      - TRAEFIK_ACCESSLOG=$app_log_access
+      - TRAEFIK_ACCESSLOG_FILEPATH=/logs/access.log
+
+      # Docker configuration
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_WATCH=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      - TRAEFIK_PROVIDERS_DOCKER_NETWORK=${traefik_net_name-}
+      - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=unix:///var/run/docker.sock
+      - TRAEFIK_PROVIDERS_DOCKER_SWARMMODE=false
+      - TRAEFIK_PROVIDERS_FILE_DIRECTORY=/etc/traefik
+
+      # This will restrict traefik to conatiners having label `proxy.group`
+      - TRAEFIK_PROVIDERS_DOCKER_CONSTRAINTS=${traefik_docker_constraint}
+      # traefik_docker_constraint: "LabelRegex(`traefik.group`, `(^|,)${traefik_net_name}(,|$$)`)"
+      #- TRAEFIK_PROVIDERS_DOCKER_DEFAULTRULE=Host(`{{ .Name }}.{{ index .Labels \"proxy.name\"}}`)
+
+      # Entrypoints, always listen both http and https
+      - TRAEFIK_ENTRYPOINTS_web=True
+      - TRAEFIK_ENTRYPOINTS_web_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_websecure_ADDRESS=:443
+
+      # Deprecated
+      # - TRAEFIK_PILOT_DASHBOARD=false
+
+    labels:
+      - traefik.group=${traefik_net_name}
+
+    volumes:
+      - $app_dir_conf:/etc/traefik
+      - $app_dir_data:/data
+      - $app_dir_logs:/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro

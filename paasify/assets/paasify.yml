@@ -1,0 +1,28 @@
+config:
+
+  # Load extra vars
+  # -----------------
+  # extra_vars:
+  #   - ../vars.extra.yml
+
+  vars:
+
+    # Determine your application domain
+    # app_domain: devbox.home
+
+    # Default network name for all stacks
+    # app_network_name: $net_proxy_public
+
+sources:
+
+  # Add you sources below
+  # - name: default
+  #   remote: git@github.com:user/repo.git
+  #   #remote: ../../my_local_collection
+
+stacks:
+
+  # Add you stacks below
+  # - app: httpd
+  #   vars:
+  #     app_name: web

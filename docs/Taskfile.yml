@@ -1,0 +1,163 @@
+version: '3'
+
+vars:
+  GIT_REF:
+    sh: git rev-parse --short HEAD
+  GIT_BRANCH:
+    sh: git rev-parse --abbrev-ref HEAD
+  APP_VERSION:
+    sh: poetry version -s 2>/dev/null || true
+  REMOTE_NAME:
+    sh: echo "${PROJECT_REMOTE_NAME:-origin}"
+
+env:
+  # Annoying jupyter ...
+  JUPYTER_PLATFORM_DIRS: 1
+
+tasks:
+
+  default:
+    summary: Show all commands
+    cmds:
+      - task --list
+
+  # Publishing
+  # -----------------
+
+  publish:
+    desc: Publish documentation
+    deps:
+      - publish_gh_mkdocs
+
+
+  publish_gh_mkdocs:
+    summary: 'Publish documentation on: https://barbu-it.github.io/paasify/'
+    vars:
+      GIT_REF:
+        sh: git rev-parse --short HEAD
+      GIT_BRANCH:
+        sh: git rev-parse --abbrev-ref HEAD
+      APP_VERSION:
+        sh: poetry version -s 2>/dev/null || true
+      APP_MINOR:
+        sh: git describe --tags --abbrev=0 | sed -E  's/(v?[0-9]+\.([0-9]+)).*/\1/'
+    env:
+      # We disable precommit for this
+      PRE_COMMIT_ALLOW_NO_CONFIG: 1
+
+      # Pre-commit really start to be annoying ....
+      SKIP: trailing-whitespace,end-of-file-fixer
+    cmds:
+      - mkdocs gh-deploy --message 'Deployed {{.APP_VERSION}} - {{.GIT_REF}} from {{.GIT_BRANCH}}' --remote-name {{.REMOTE_NAME}}
+
+
+  # Mike support (Local Python)
+  # -----------------
+
+  version_list:
+    summary: List documentation versions
+    cmds:
+      - mike list
+
+  # MkDocs (Local Python)
+  # -----------------
+
+  serve_mkdocs:
+    aliases:
+      - serve
+    desc: Run mkdocs website
+    interactive: true
+    cmds:
+      - >
+        echo "Documentation: http://127.0.0.1:8000"
+      - mkdocs serve
+
+
+  # Jupyter (Local Python)
+  # -----------------
+
+  serve_jupyter:
+    desc: Run jupyter playbook editor website
+    interactive: true
+    cmds:
+      - >
+        echo "Jupyter: http://127.0.0.1:8888"
+      - jupyter-notebook --autoreload --notebook-dir src/jupyter/
+
+
+  # Online VS-Code (docker)
+  # -----------------
+  serve_docker:
+    alias:
+      - vscode
+      - edit
+    desc: Run documentation IDE
+    cmds:
+      - docker-compose up -- {{.CLI_ARGS}}
+
+
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#   build_doc:
+#     desc: Generate API doc
+#     deps: [install]
+#     run: once
+#     cmds:
+#       - ./gen_apidoc.sh
+#     sources:
+#       - ../paasify/*.py
+#
+#
+#   # Dockerized tools
+#   # -----------------
+#   serve_ide:
+#     desc: Run documentation IDE
+#     deps: [build_doc]
+#     cmds:
+#       - docker-compose up -d
+#       - |
+#         sleep 3
+#         echo "Documentation: http://127.0.0.1:8042"
+#         echo "Jupyter:       $( docker-compose logs | grep -m 1 ' or http:' | sed 's/.* or //' )"
+#
+#   stop_ide:
+#     desc: Stop documentation IDE
+#     cmds:
+#       - docker-compose rm -f
+#       #- docker-compose stop
+#
+#
+#   # Local tools
+#   # -----------------
+#   serve:
+#     desc: Run mkdocs website
+#     deps: [build_doc]
+#     interactive: true
+#     cmds:
+#       - >
+#         echo "Documentation: http://127.0.0.1:8000"
+#       - mkdocs serve
+#
+#   serve_jupyter:
+#     desc: Run jupyter playbook editor website
+#     interactive: true
+#     cmds:
+#       - >
+#         echo "Jupyter: http://127.0.0.1:8888"
+#       - jupyter-notebook --autoreload --notebook-dir src/jupyter/
+#

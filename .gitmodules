@@ -1,0 +1,3 @@
+[submodule "cafram"]
+	path = cafram
+	url = https://github.com/barbu-it/cafram

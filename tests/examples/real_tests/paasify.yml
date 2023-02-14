@@ -1,0 +1,140 @@
+config:
+  #namespace: TOTO
+
+  extra_vars:
+    - vars.test.yml
+      #- ../does_not_exists.yml
+
+  vars:
+    # Global variables
+    app_domain: test-example.com
+    app_admin_email: admin@test-example.com  # This is a bug :(
+    app_tz: America/Toronto
+
+
+    # Variables sets
+    test2_var_test_global1: True
+    test2_var_test_global2: False
+    test2_var_test_global3: False
+
+    test2_pl_var1: "glob1"
+    test2_pl_var2: "glob2"
+    test2_pl_var3: "glob3"
+
+    # Never be true here
+    test2_var_test_stack1: False
+
+sources:
+  # OKK PASSED
+  #- git@git.github.com:example-foss/docker-compose.git
+  #- name: git@git.github.com:example-foss/docker-compose.git
+  # FAIL AND OK: - short: git@git.github.com:example-foss/docker-compose.git
+  #- name: default
+  #  remote: git@git.github.com:example-foss/docker-compose.git
+  # - remote: git@git.github.com:example-foss/docker-compose.git
+  #
+  # - remote: git@git.github.com:example-foss/docker-toto.git
+  # - remote: git@git.github.com:example-foss/docker-compose.git
+  #   name: default
+  #
+  # TODO FAILED
+  # TODO TESTS
+  # - remote: /srv/containers/_COMMON/collections/mrjk-foss/docker-compose
+  # TOFIX
+  #- remote: ../../_COMMON/collections/example-foss/docker-compose/
+  #- does-not-exists
+  #
+
+  - https://github.com/dabealu/docker
+    #- https://github.com/Madh93/homelab
+    #- https://github.com/tomMoulard/make-my-server
+    #- https://github.com/Hermsi1337/docker-compose
+    #- remote: https://github.com/daggerok/docker
+    #  name: daggerok
+
+
+
+stacks:
+
+  - default:example
+
+  - app: example
+    dir: test2
+    name: app2
+    vars:
+      app_desc: This tests a variable parsing
+
+      test2_var_test_stack1: True
+      test2_var_test_global2: True
+      test2_pl_var2: "$test2_pl_var2 + stack"
+      test2_pl_var3: "$test2_pl_var3 + stack"
+
+      docker_debug_vars: False
+      paasify_extra_vars: False
+
+      example_dump_vars: true
+      _example_dump_vars_prefixes:
+        - tag
+        - test2
+    tags:
+      - example:
+          test2_pl_var3: "$test2_pl_var3 + tag"
+          example_desc: Like seen in docker-compose.yml, without values.
+
+
+  - app: dummy
+    dir: test3
+    name: app3
+    vars:
+      app_desc: A dump of all variables of the context
+      example_dump_vars: true
+      _example_dump_vars_prefixes: ""
+    tags:
+      - example:
+        #     example_desc: Dump of all vars
+
+
+  - app: dummy
+    dir: test1
+    name: app1
+    vars:
+      app_desc: This tests a variable inheritance and composition acrosse scopes (global/stack/tag)
+
+      example_dump_vars: true
+      _example_dump_vars_prefixes:
+        - tag
+        - example
+
+      # Data for tests
+      example_name: my-name
+      example_domain: my-domain.com
+
+    tags:
+      - example:
+          example_desc: Like seen in docker-compose.yml, without values.
+      - example:
+          example_desc: We change the name, and fqdn is reprocessed as well (test1)
+          example_name: OVERRIDE2
+      - example:
+          example_desc: We change the domain, and fqdn is reprocessed as well (test2)
+          example_domain: OVERRIDE3
+      - example:
+          example_desc: We change the name/domain, and fqdn is reprocessed as well (test3)
+          example_name: OVERRIDE41
+          example_domain: OVERRIDE42
+
+      - example:
+          example_desc: The hardcoded fqdn always win
+          example_fqdn: OVERRIDE5
+      - example:
+          example_desc: Even if you change name or domain
+          example_fqdn: OVERRIDE6
+          example_name: OVERRIDE61
+          example_domain: OVERRIDE62
+
+
+
+            #- docker-debug:
+            #    var_test_tag1: True
+            #    test2_var_test_global3: True
+            #    test2_pl_var3: "$test2_pl_var3 + tag"

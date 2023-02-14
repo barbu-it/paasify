@@ -1,0 +1,142 @@
+version: '3'
+
+vars:
+  SRC_DIR: paasify
+  TEST_DIR: tests/
+  POETRY_VERSION: '1.2.2'
+  DIRENV_VERSION: 'latest'
+  TASK_VERSION: 'v3.18.0'
+  COMP_DIR:
+    sh: echo "${VIRTUAL_ENV:-$PWD}/comp"
+
+anchors:
+  sources_module: &PAASIFY_MODULE
+    - "{{.SRC_DIR}}/*.py"
+  sources_python: &PAASIFY_CODE
+    - "{{.SRC_DIR}}/*.py"
+    - "{{.SRC_DIR}}/tests/*"
+  cmd_check_git: &CHECK_STAGE_GIT >2
+    git status --porcelain | grep '^.M {{.SRC_DIR}}/' && {
+      echo "ERROR: Uncommited files !";
+      exit 1;
+    } || exit 0
+
+tasks:
+
+  # Helpers
+  # ---------------
+  fake_fix:
+    desc: Generate fake patch commits
+    cmds:
+      - 'git commit --allow-empty  -m "fix: simple bugfix1"'
+      - 'git commit --allow-empty  -m "fix: simple bugfix2"'
+      - 'git commit --allow-empty  -m "fix: simple bugfix3"'
+
+  fake_feat:
+    desc: Generate fake feature commits
+    cmds:
+      - 'git commit --allow-empty  -m "feat: new feature1"'
+      - 'git commit --allow-empty  -m "feat: new feature2"'
+      - 'git commit --allow-empty  -m "feat: new feature3"'
+
+
+  # Project CI
+  # ---------------
+
+  test:
+    desc: Run tests
+    run: once
+    sources: *PAASIFY_CODE
+    cmds:
+      - pytest -sx {{.CLI_ARGS}}
+
+  lint_precommit:
+    desc: Run pre-commit hooks
+    run: once
+    cmds:
+      - pre-commit run --show-diff-on-failure
+        #- pre-commit run --all-files --show-diff-on-failure
+
+  lint_black:
+    desc: Autolint codes
+    run: once
+    sources: *PAASIFY_CODE
+    cmds:
+      - *CHECK_STAGE_GIT
+      - >2
+        black {{.SRC_DIR}} || { echo "Please review your changes and add them into git"; false; }
+
+  report_black:
+    desc: Autolint codes
+      #run: once
+    sources: *PAASIFY_CODE
+    cmds:
+      - black --check {{.SRC_DIR}}
+
+
+  # Reporting tools
+  # ---------------
+
+  report_cov:
+    desc: Test coverage status
+    run: once
+      #sources: *PAASIFY_MODULE
+    cmds:
+      - pytest --cov={{.SRC_DIR}} tests {{.CLI_ARGS}}
+
+  report_lint:
+    desc: Report linting status
+    run: once
+      #sources: *PAASIFY_CODE
+    cmds:
+      - pylint --output-format=colorized {{.SRC_DIR}} || true
+
+
+  # Completion for develop user
+  # ---------------
+
+  install_comp:
+    desc: Install project completion
+    deps:
+      - install_comp_poetry
+      - install_comp_task
+      - install_comp_gh
+      - install_comp_paasify
+    cmds:
+      - 'echo "Enable completions with: . scripts/activate.sh"'
+
+  install_comp_poetry:
+    desc: Install poetry completion in the project
+    cmds:
+      - mkdir -p "{{.COMP_DIR}}"
+      - poetry completions bash >> "{{.COMP_DIR}}/poetry.sh"
+
+  install_comp_task:
+    desc: Install task in the project
+    cmds:
+      - mkdir -p "{{.COMP_DIR}}"
+      - curl https://raw.githubusercontent.com/go-task/task/master/completion/bash/task.bash --output "{{.COMP_DIR}}/task.sh"
+
+  install_comp_gh:
+    desc: Install gh completion in the project
+    cmds:
+      - mkdir -p "{{.COMP_DIR}}"
+      - gh completion --shell bash > "{{.COMP_DIR}}/gh.sh"
+
+  install_comp_paasify:
+    desc: Install paasify completion in the project
+    cmds:
+      - mkdir -p "{{.COMP_DIR}}"
+      - cmd: command -v paasify && paasify --show-completion > "{{.COMP_DIR}}/paasify.sh"
+        ignore_error: true
+
+  # Other tools
+  # ---------------
+
+  gen_favicon:
+    desc: Generate favison from SVG logo
+    dir: ..
+    cmds:
+      - scripts/gen_favicon.sh logo/paasify_logo.svg logo/favicon.ico
+
+

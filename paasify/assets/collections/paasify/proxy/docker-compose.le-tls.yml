@@ -1,0 +1,10 @@
+---
+
+services:
+
+  traefik:
+    environment:
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}=true
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_TLSCHALLENGE=true
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_EMAIL=${app_admin_email}
+      - TRAEFIK_CERTIFICATESRESOLVERS_${traefik_svc_certresolver}_ACME_STORAGE=/data/acme-${traefik_svc_certresolver}.json

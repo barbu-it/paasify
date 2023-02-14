@@ -1,0 +1,82 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop
+      - "*-alpha"
+      - "*-beta"
+      - "*-rc"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  VIRTUAL_ENV: .venv
+
+jobs:
+
+  install:
+    uses: ./.github/workflows/_install.yml
+    with:
+      python_version: ${{ matrix.python_version }}
+      poetry_version: ${{ matrix.poetry_version }}
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.9']
+        poetry_version: ['1.3.2']
+
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.9']
+        poetry_version: ['1.3.2']
+
+    steps:
+
+      # Load project
+      # ---------------------
+      - name: Load cached python environment
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: python_env--${{ runner.os }}--${{matrix.python_version}}--${{matrix.poetry_version}}
+
+      - name: Fetch source code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv--${{ runner.os }}--${{matrix.python_version}}--${{matrix.poetry_version}}--${{ hashFiles('**/poetry.lock') }}
+
+      # This step is only needed if you don't want to use `poetry run <cmd>`
+      - name: Add venv to PATH
+        run: |
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+
+      # Run tests
+      # ---------------------
+      - name: Run tests
+        run: |
+          poetry run paasify
+          echo PATH=$PATH
+          # paasify

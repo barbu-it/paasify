@@ -1,0 +1,12 @@
+# Global Barbu-IT config
+# ======================
+
+# Global variables
+# ----------------
+global_var: I'm global !
+
+
+# Default app variables
+# ----------------
+app_tz: America/Mexico
+app_image: alpine

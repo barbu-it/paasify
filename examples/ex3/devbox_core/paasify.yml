@@ -1,0 +1,84 @@
+config:
+  #namespace: toto.titi-dsf
+  vars:
+    app_domain: devbox.192.168.186.129.nip.io
+    app_expose_ip: 192.168.186.129
+
+    #app_tz: America/Toronto
+    app_tz: Europe/Paris
+
+    top_var1: "My value"
+    top_var2: "TOP VAR1=> ${top_var1}"
+
+  tags_prefix:
+  - _paasify
+
+sources:
+  - name: default
+    remote: https://github.com/mrjk-foss/docker-compose.git
+
+stacks:
+  - path: traefik
+    app: default:traefik
+    tags:
+      - ep_http
+      - expose_admin
+      - debug
+      - traefik-svc:
+          traefik_net_external: false
+          traefik_svc_port: "8080"
+#      - test-paasify-api
+
+
+  - app: default:minio
+    #path: sub1/minio2
+    env:
+      - app_admin_passwd: vojOubdirbovOnlij0
+      - app_image: quay.io/minio/minio:latest
+    tags:
+      # - docker-net-provider:
+      #     docker_net_ident: minio
+      #     #docker_net_name: devbox_core-minio
+      #     docker_net_name: "${app_namespace}-minio"
+      #     docker_net_external: False
+      #     top_var3: yolooooo
+
+      - traefik-svc:
+          traefik_svc_name: minio-api
+          traefik_svc_port: 9000
+      - traefik-svc:
+          traefik_svc_name: minio-console
+          traefik_svc_port: 9001
+          #traefik_svc_domain: null
+
+
+  - app: default:authelia
+    tags:
+      - traefik-svc
+
+  - app: default:librespeed
+    tags:
+      - traefik-svc
+
+
+  # - app: default:emby
+  #   vars:
+  #     - traefik_svc_port: 8096
+  #   tags:
+  #     - traefik-svc
+
+
+# authelia
+# consul
+# drone
+# emby
+# gaia
+# gitea
+# ldap-account-manager
+# ldap-user-manager
+# librespeed
+# minio
+# openldap
+# README.md
+# traefik
+# vault

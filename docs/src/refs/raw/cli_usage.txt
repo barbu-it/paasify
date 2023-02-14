@@ -1,0 +1,85 @@
+
+ Usage: paasify [OPTIONS] COMMAND [ARGS]...
+
+ Paasify - build your compose-files with ease
+ version: 0.1.0a6
+
+ Paasify is a tool that build and deploy docker-compose.yml files from a central
+ configuration file called paasify.yml. In this file, define collections sources
+ and select your app. Then deploy your stacks, test, review and commit your
+ changes (and reiterate).
+
+ Full documentation: https://barbu-it.github.io/paasify/
+
+ 🧭 Quickstart:
+
+     To start a new project call my_prj:
+         paasify init my_prj
+
+     Then add sources and stacks:
+         vim my_prj/paasify.yml
+
+     Once you're ready, deploy your stacks:
+         paasify -c my_prj apply
+
+
+ 💡 Getting help:
+
+     For more detailed information on each commands, please use the --help flag
+     Some commands provide an --explain flag
+     Extra logging is available, use -v flags to increase verbosity
+
+
+ 📢 Community:
+
+     Project website:                https://github.com/barbu-it/paasify
+     Ask questions or report a bug:  https://github.com/barbu-it/paasify/issues
+     Original author: mrjk           https://github.com/mrjk
+     License: GPLv3
+
+╭─ Options ──────────────────────────────────────────────────────────────────────╮
+│ --verbose             -v      INTEGER RANGE [0<=x<=5]  Increase verbosity      │
+│                                                        [default: 0]            │
+│ --config              -c      PATH                     Path of paasify.yml     │
+│                                                        configuration file.     │
+│                                                        [env var:               │
+│                                                        PAASIFY_PROJECT_DIR]    │
+│                                                        [default: None]         │
+│ --version             -V                               Show version info       │
+│ --trace                                                Show traces             │
+│ --install-completion                                   Install completion for  │
+│                                                        the current shell.      │
+│ --show-completion                                      Show completion for the │
+│                                                        current shell, to copy  │
+│                                                        it or customize the     │
+│                                                        installation.           │
+│ --help                -h                               Show this message and   │
+│                                                        exit.                   │
+╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ─────────────────────────────────────────────────────────────────────╮
+│ help         Show this help message                                            │
+│ info         Show context infos                                                │
+│ new          Create a new paasify project                                      │
+╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Stacks Commands ──────────────────────────────────────────────────────────────╮
+│ apply              Build and apply stack                                       │
+│ build              Build docker-files                                          │
+│ down               Stop docker stack                                           │
+│ logs               Show stack logs                                             │
+│ ls                 List all stacks                                             │
+│ ps                 Show docker stack instances                                 │
+│ recreate           Stop, rebuild and create stack                              │
+│ up                 Start docker stack                                          │
+│ vars               Dump stack variables                                        │
+╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Document Commands ────────────────────────────────────────────────────────────╮
+│ document_collection        Build collection documentation                      │
+│ document_conf              Build configuration schema documentation            │
+╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Sources Commands ─────────────────────────────────────────────────────────────╮
+│ src install                       Install sources                              │
+│ src ls                            List sources                                 │
+│ src tree                          Show source tree                             │
+│ src update                        Update sources                               │
+╰────────────────────────────────────────────────────────────────────────────────╯
+

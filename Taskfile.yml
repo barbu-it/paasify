@@ -1,0 +1,171 @@
+version: '3'
+
+vars:
+  PRJ_DIR: paasify
+
+includes:
+
+  dev:
+    taskfile: ./scripts/Taskfile.dev.yml
+    internal: true
+    dir: .
+
+  doc:
+    taskfile: ./docs/Taskfile.yml
+    # internal: true
+    dir: ./docs
+    optional: true
+
+  #docker:
+  #  taskfile: ./docker/Taskfile.yml
+  #  optional: true
+
+  extra:
+    taskfile: ./scripts/Taskfile.extra.yml
+    dir: .
+    optional: true
+
+tasks:
+
+  # Generic helpers
+  # -----------------
+
+  default:
+    summary: Show all commands
+    cmds:
+      - task --list
+
+  # Project helpers
+  # -----------------
+
+  bootstrap:
+    desc: Bootstrap environment
+    vars:
+      venv:
+        sh: echo "${VIRTUAL_ENV:-.venv}/bin"
+    sources:
+      - poetry.lock
+      - pyproject.toml
+      - "{{ .venv }}}/bin"
+    cmds:
+      - eval "$(./scripts/platform.sh env)" && ./scripts/bootstrap_deps.sh
+
+  completion:
+    desc: Install completion for various tools
+    cmds:
+      - task: dev:install_comp
+
+  setup:
+    desc: Setup project
+    deps:
+      - bootstrap
+    sources:
+      - "{{.PRJ_DIR}}/*"
+    cmds:
+      - poetry install -vv --no-interaction --only-root
+
+  update:
+    desc: Synchronize git
+    cmds:
+      - git fetch -a && git pull
+      - task: setup
+
+
+  # Build workflow
+  # -----------------
+
+  build:
+    desc: Create a python package
+    run: once
+    sources:
+      - pyproject.toml
+    cmds:
+      - task: clean
+      - poetry build
+      - cp CHANGELOG.md dist/CHANGELOG.md
+
+  clean:
+    desc: Clean generated packages
+    status:
+      - test ! -d dist/
+    cmds:
+      - rm -rf dist/ && mkdir -p dist
+
+
+  # Test Workflow
+  # ---------------
+  fix_qa:
+    desc: Fix quality issues
+    deps:
+      - dev:lint_black
+      - dev:lint_precommit
+
+  run_qa:
+    desc: Run short quality tests
+    deps:
+      - dev:report_lint
+      - dev:report_black
+
+  run_tests:
+    desc: Run full test suites
+    deps:
+      - dev:test
+    cmds:
+      - task: dev:report_cov
+      - task: dev:report_lint
+
+
+  # Versionning workflow
+  # -----------------
+  version:
+    desc: Show versions status
+    aliases:
+      - v
+    cmds:
+      - ./scripts/bump.sh {{.CLI_ARGS}}
+
+  bump:
+    desc: Bump version
+    cmds:
+      - ./scripts/bump.sh --exec {{.CLI_ARGS}}
+
+  changelog:
+    desc: Show release changelog
+    aliases:
+      - ch
+    cmds:
+      - cz changelog --dry-run --incremental
+
+
+  # Publish workflow
+  # -----------------
+
+  publish:
+    desc: Publish everything (GH, Pypi, Doc)
+    cmds:
+      - task: publish_gh
+      - task: publish_pypi
+      - task: doc:publish
+
+  publish_pypi:
+    summary: Publish python package on pypi.org
+    deps:
+      - build
+    preconditions:
+      - sh: '[[ -n "${POETRY_PYPI_TOKEN_PYPI-}" ]]'
+        msg: Please set POETRY_PYPI_TOKEN_PYPI environment variable
+    cmds:
+      - poetry publish --skip-existing
+
+  publish_gh:
+    summary: Publish python package on a github release
+    preconditions:
+      - sh: '[[ -n "${GH_TOKEN-}" ]]'
+        msg: Please set GH_TOKEN environment variable
+    vars:
+      INPUT_TOKEN:
+        sh: echo "$GH_TOKEN"
+    deps:
+      - build
+    cmds:
+      - ./scripts/publish_gh.sh

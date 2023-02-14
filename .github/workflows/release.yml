@@ -1,0 +1,95 @@
+name: Release Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Prerelease type: develop or stable'
+        default: "develop"
+        type: choice
+        options:
+          - develop
+          - stable
+
+
+env:
+  PYTHON_VERSION: "3.9"
+  POETRY_VERSION: "1.3.2"
+
+
+jobs:
+
+  context:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Extract context infos
+      id: version
+      #shell: bash
+      run: |
+        echo "python=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+        echo "poetry=$POETRY_VERSION" >> $GITHUB_OUTPUT
+
+    outputs:
+      poetry: "${{ steps.version.outputs.poetry }}"
+      python: "${{ steps.version.outputs.python }}"
+
+
+  install:
+    needs: context
+    uses: ./.github/workflows/_install.yml
+    with:
+      python_version: "${{ needs.context.outputs.python}}"
+      poetry_version: "${{ needs.context.outputs.poetry}}"
+    secrets:
+      access_token: "${{ secrets.ACCESS_TOKEN }}"
+
+
+  release_stable:
+    needs:
+      - context
+      - install
+    runs-on: ubuntu-latest
+    concurrency: release
+
+    steps:
+
+      # Load project
+      # ---------------------
+      - name: Load cached python environment
+        id: cached-env-install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: python_env--${{ runner.os }}--${{ needs.context.outputs.python}}--${{ needs.context.outputs.poetry}}
+
+      - name: Fetch source code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+          fetch-depth: '0'
+
+      - name: Load cached venv
+        id: cached-project-deps
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv--${{ runner.os }}--${{ needs.context.outputs.python}}--${{ needs.context.outputs.poetry}}--${{ hashFiles('**/poetry.lock') }}
+
+      # This step is only needed if you don't want to use `poetry run <cmd>`
+      - name: Add venv to PATH
+        run: |
+          echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
+
+      # Run tests
+      # ---------------------
+      - name: Release stable version
+        env:
+          GIT_COMMITTER_NAME: Github Actions
+          GIT_COMMITTER_EMAIL: mrjk.78@gmail.com
+          GIT_AUTHOR_NAME: mrjk
+          GIT_AUTHOR_EMAIL: mrjk.78@gmail.com
+          GH_TOKEN: "${{ secrets.ACCESS_TOKEN }}"
+        run: |
+          task -v release_version || true
+          task -v gh:release_${{github.event.inputs.target}}

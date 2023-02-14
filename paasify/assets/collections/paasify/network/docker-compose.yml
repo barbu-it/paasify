@@ -1,0 +1,112 @@
+
+# Best practices:
+# Only define your most critical networks here, especially
+# those who require hosts with a fixed IP.
+# All VMs with no network configuration will end-up here.
+#   As most apps are web services, it could be good to plug your proxy on this one: traefik
+#   Apps with a db will still use its default network PLUS its db network
+# Each network can accept ~250 clients, not more. So go with /24, we can't really go upper anyway.
+#   However db networks can be reduced to /26 (62 hosts)
+# For the best experience, DO NOT USE 172.16.0.0/16 already taken default range !
+# The only goal of this stack is to reserve some ranges of IPs, nothing else !
+#
+#
+# Tips:
+# * Do not try to guess all usage, usually it's means for proxy and storage at first
+#   other topics will come later.
+#
+# Operator:
+# /etc/docker/daemon.json
+# Change le default subnet range, et restart
+  # {
+  #  "default-address-pools":[
+  #    {"base":"172.16.0.0/16","size":24},
+  #    {"base":"172.16.0.0/16","size":26}  # Reduced size, remove previous line, if we want more, we'll ask more
+  #  ]
+  #}
+          #- subnet: 192.168.42.144/28
+          # 192.168.42.145 -> 192.168.42.158
+          # 192.168.42.159
+
+          #        - osstorage
+          #        - proxy
+          #        - traefik
+          #        - auth  : authentik or authelia
+          #        - vault : hashicorp access
+          #
+          #        # Other: Central db clusters
+          #        - collectd
+          #        - prometheus
+          #        - mysql
+          #        - mysql2
+
+
+# See: https://docs.docker.com/compose/compose-file/#networks-top-level-element
+#
+
+networks:
+
+  default:
+    # Default lan for this namespace, where all vms goes by default, enable on the network of your choice
+    #name: ${app_namespace}_${app_name}_default
+
+
+  # Setup to allow instances to be reachable directly from host lan.
+  # You must add this route to your lan router: 192.168.1/26 => docker_host
+  # Then traefik directly expose its ports from the host. Works with swarm.
+  # Allow later to put another proxy in front of traefik, if needed
+  fixed_range_lan:
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+
+  # To be tested!
+  # Fixed IPs for private cluster IPs
+  # We take the range just AFTER: 172.16.0.0/16
+  fixed_range_private:
+    ipam:
+      config:
+        - subnet: 172.17.1.0/16
+
+  # To be tested!
+  # Let's declare and "book" a large range, for future use. it will be wider, but not too much and include our
+  # important network elements.
+  # We take the range just BEFORE: 172.16.0.0/16
+  interlan:
+    ipam:
+      config:
+        - subnet: 172.10.1.0/20
+
+
+  # Setup to allow instances to be reachable directly from host lan.
+  # You must add this route to your lan router: 192.168.1/26 => docker_host
+  # Traefik is no longer necessary in this case, but still useful to provide auto-vhost feature.
+  # Good for multiple instances of services like samba, ssh, rsync, mail ... everything that require a dideicated IP
+  # NOTE: When tested, I hit a loooots of unknown network latencies ... to be investigated, it whould work correctly
+  home_lan_dhcp:
+    driver: bridge
+
+    # Enable this if you want this network to be routable from your lan. Need ip_forward enabled. And check your firewall rules !
+    # Mention your lan interface you want to connect
+    driver_opts:
+      parent: enp1s0
+
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          ip_range: 192.168.1/26  # Allow up to 62 containers on your network, safe to avoid to break your small dhcp router
+          gateway: 192.168.1.1
+
+
+
+services:
+  dummy:
+    image: alpine:latest
+    restart: "no"
+      #networks:
+      #  - default
+
+      # Usage for server if they need it in lans
+      #networks:
+      #  default:
+      #    ipv4_address: 192.168.43.10

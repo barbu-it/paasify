@@ -1,0 +1,244 @@
+$defs:
+  stacks:
+    title: Paasify Stack configuration
+    type: array
+    default: []
+  Config:
+    title: Paasify Project settings
+    description: Configure main project settings. It provides global settings but
+      also defaults vars and tags for all stacks.
+    oneOf:
+    - type: object
+      additionalProperties: false
+      title: Project configuration
+      description: Configure project as a dict value. Most of these settings are overridable
+        via environment vars.
+      default: {}
+      properties:
+        namespace:
+          title: Project namespace
+          description: Name of the project namespace. If not set, defaulted to directory
+            name
+          oneOf:
+          - title: None
+            description: Defaulted by the project dir name
+            type: 'null'
+          - title: String
+            description: Custom namespace name string
+            type: string
+        vars:
+          title: Environment configuration
+          description: Environment configuration. Paasify leave two choices for the
+            configuration, either use the native dict configuration or use the docker-compatible
+            format
+          oneOf:
+          - title: Env configuration as list
+            description: Configure variables as a list. This is the recommended way
+              asit preserves the variable parsing order, useful for templating. This
+              format allow multiple configuration format.
+            type: array
+            default: []
+            additionalProperties:
+              description: Environment configuration. Paasify leave two choices for
+                the configuration, either use the native dict configuration or use
+                the docker-compatible format
+              oneOf:
+              - title: Variable definition as key/value
+                description: 'Simple key value variable declaration, under the form
+                  of: {KEY: VALUE}. This does preserve value type.'
+                type: object
+                propertyNames: &id001
+                  pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+                minProperties: 1
+                maxProperties: 1
+                patternProperties: &id002
+                  ^[A-Za-z_][A-Za-z0-9_]*$:
+                    title: Environment Key value
+                    description: Value must be serializable type
+                    oneOf:
+                    - title: As string
+                      type: string
+                    - title: As boolean
+                      type: boolean
+                    - title: As integer
+                      type: integer
+                    - title: As null
+                      description: If set to null, this will remove variable
+                      type: 'null'
+                examples:
+                - env:
+                  - MYSQL_ADMIN_USER: MyUser
+                  - MYSQL_ADMIN_DB: MyDB
+              - title: Variable definition as string (Compat)
+                description: 'Value must be a string, under the form of: KEY=VALUE.
+                  This does not preserve value type.'
+                type: string
+                pattern: ^[A-Za-z_][A-Za-z0-9_]*=.*$
+                examples:
+                - env:
+                  - MYSQL_ADMIN_USER=MyUser
+                  - MYSQL_ADMIN_DB=MyDB
+            examples:
+            - env:
+              - MYSQL_ADMIN_USER: MyUser
+              - MYSQL_ADMIN_DB: MyDB
+              - MYSQL_ENABLE_BACKUP: true
+              - MYSQL_BACKUPS_NODES: 3
+              - MYSQL_NODE_REPLICA:
+              - MYSQL_WELCOME_STRING=Is alway a string
+          - title: Env configuration as dict (Compat)
+            description: Configure variables as a dict. This option is only proposed
+              for compatibility reasons. It does not preserve the order of the variables.
+            type: object
+            default: {}
+            propertyNames:
+              pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+            additionalProperties:
+              title: Variable definition as key/value
+              description: 'Simple key value variable declaration, under the form
+                of: {KEY: VALUE}. This does preserve value type.'
+              type: object
+              propertyNames: *id001
+              minProperties: 1
+              maxProperties: 1
+              patternProperties: *id002
+            examples:
+            - env:
+                MYSQL_ADMIN_USER: MyUser
+                MYSQL_ADMIN_DB: MyDB
+                MYSQL_ENABLE_BACKUP: true
+                MYSQL_BACKUPS_NODES: 3
+                MYSQL_NODE_REPLICA:
+          - title: Unset
+            description: Do not define any vars
+            type: 'null'
+            default:
+            examples:
+            - env:
+            - env: []
+            - env: {}
+        tags: &id004
+          title: Paasify Stack Tags configuration
+          description: Determine a list of tags to apply.
+          type: array
+          oneOf:
+          - title: List of tags
+            description: Define a list of tags. You can interact in few ways with
+              tags. Tags can support boths syntaxes at the same time.
+            type: array
+            default: []
+            additionalProperties:
+              title: StackTag configuration
+              description: 'Tag definition. It support two formats at the same time:
+                as string or dict. If the name is prefixed with a `!`, then it is
+                removed from the processing list (both vars, docker-file and jsonnet
+                processing).'
+              oneOf:
+              - title: As string
+                description: Just pass the tag you want to apply as string. This form
+                  does not allow jsonnet ovar override
+                type: string
+                default: ''
+                examples:
+                - tags:
+                  - my_tagg
+                  - ~my_prefix_tag
+                  - my_collection:my_prefix_tag
+                oneOf:
+                - title: 'Disabled Tag: ~$tag_name'
+                  description: 'Disable a tag from processing. Any vars are ignored.
+                    Other chars are also supported: !^'
+                  pattern: '[!^~].*'
+                - title: 'Collection tag: $collection_name:$tag_name'
+                  description: 'Reference a tag from a specific collection.See: Specific
+                    tag documentation for further informations.'
+                  pattern: ^.*:.*$
+                - title: 'Tag name: $tag_name'
+                  description: 'Will find the best matching tag.See: Specific tag
+                    documentation for further informations.'
+                  pattern: .*
+              - title: As object
+                description: Define a tag. The key represent the name of the tag,
+                  while it's value is passed as vars during jsonnet processing. This
+                  form allow jsonnet ovar override
+                type: object
+                default: {}
+                examples:
+                - tags:
+                  - other_tag:
+                      specific_conf: val1
+                  - my_collection:another_tag:
+                  - ~ignore_this_tag:
+                      specific_conf: val1
+                minProperties: 1
+                maxProperties: 1
+                patternProperties:
+                  '[!^~].*':
+                    title: 'Disabled Tag: ~$tag_name'
+                    description: 'Disable a tag from processing. Any vars are ignored.
+                      Other chars are also supported: !^'
+                    oneOf: &id003
+                    - title: With value
+                      description: Pass extra vars for during jsonet tag processing.
+                      type: object
+                    - title: Without value
+                      description: No vars are added for this jsonnet tag processing.
+                      type: 'null'
+                    default: {}
+                  ^.*:.*$:
+                    title: 'Collection tag: $collection_name:$tag_name'
+                    description: 'Reference a tag from a specific collection.See:
+                      Specific tag documentation for further informations.'
+                    oneOf: *id003
+                    default: {}
+                  .*:
+                    title: 'Tag name: $tag_name'
+                    description: 'Will find the best matching tag.See: Specific tag
+                      documentation for further informations.'
+                    oneOf: *id003
+                    default: {}
+            examples:
+            - tags:
+              - my_tagg
+              - ~my_prefix_tag
+              - my_collection:my_prefix_tag
+              - other_tag:
+                  specific_conf: val1
+              - my_collection:another_tag:
+              - ~ignore_this_tag:
+                  specific_conf: val1
+          - title: Unset
+            description: Do not declare any tags
+            type: 'null'
+            default:
+            examples:
+            - tags:
+        tags_suffix: *id004
+        tags_prefix: *id004
+      examples:
+      - config:
+          namespace: my_ns1
+          vars:
+          - my_var1: my_value1
+          tags:
+          - tag1
+          - tag2
+    - type: 'null'
+      title: Empty
+      description: Use automatic conf if not set. You can still override conf values
+        with environment vars.
+      default:
+      examples:
+      - config:
+      - config: {}
+type: object
+title: Paasify
+description: Main paasify project settings. This defines the format of `paasify.yml`.
+additionalProperties: false
+default: {}
+properties:
+  config:
+    $ref: '#/$defs/Config'
+  sources:
+    type: object
+  stacks: {}

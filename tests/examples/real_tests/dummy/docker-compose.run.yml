@@ -1,0 +1,16 @@
+name: real_tests_dummy
+networks:
+  default:
+    name: real_tests_dummy_default
+services:
+  default:
+    hostname: dummy
+    image: dummy
+    labels:
+      paasify.fqdn: dummy.test-example.com
+      paasify.path: /opt/paasify/tests/examples/real_tests/dummy
+      paasify.principal: true
+    networks:
+      default:
+    restart: 'no'
+version: '3.8'

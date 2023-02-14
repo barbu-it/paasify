@@ -1,0 +1,16 @@
+name: var_merge_app1
+networks:
+  default:
+    name: var_merge_app1_default
+services:
+  main:
+    hostname: app1
+    image: app1_local
+    labels:
+      paasify.fqdn: app1.var-merge.localhost
+      paasify.path: tests/examples/var_merge/app1
+      paasify.principal: true
+    networks:
+      default:
+    restart: unless-stopped
+version: '3.8'

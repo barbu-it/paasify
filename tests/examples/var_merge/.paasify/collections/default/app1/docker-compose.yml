@@ -1,0 +1,4 @@
+
+services:
+  main_1:
+    image: app1_from_template

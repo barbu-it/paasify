@@ -1,0 +1,17 @@
+name: real_tests_example
+networks:
+  default:
+    name: real_tests_example_default
+services:
+  default:
+    hostname: example
+    image: alpine
+    labels:
+      paasify.fqdn: example.test-example.com
+      paasify.path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/example
+      paasify.principal: true
+    networks:
+      default:
+    restart: 'no'
+    stop_grace_period: 1s
+version: '3.8'

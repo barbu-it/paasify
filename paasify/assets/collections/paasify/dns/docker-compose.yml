@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  dns:
+    image: phensley/docker-dns
+      #command: --domain $app_domain
+    command: --domain docker
+    volumes:
+      - $app_docker_socket:/docker.sock:ro
+    networks:
+      default:
+        aliases:
+          - dns
+          - dns.dns

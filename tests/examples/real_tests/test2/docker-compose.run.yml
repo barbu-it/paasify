@@ -1,0 +1,23 @@
+name: real_tests_app2
+networks:
+  default:
+    name: real_tests_app2_default
+services:
+  default:
+    image: alpine
+    networks:
+      default:
+    restart: 'no'
+    stop_grace_period: 1s
+x-test-vars:
+  tag_cand: 1
+  tag_index: 0
+  tag_instance: example0
+  tag_suffix: ''
+  test2_pl_var1: glob1
+  test2_pl_var2: glob2 + stack
+  test2_pl_var3: glob3 + stack + tag
+  test2_var_test_global1: true
+  test2_var_test_global2: true
+  test2_var_test_global3: false
+  test2_var_test_stack1: true

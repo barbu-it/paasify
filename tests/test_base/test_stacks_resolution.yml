@@ -1,0 +1,72 @@
+- stack_app:
+    app: custom_source:custom_app1
+    app_name: custom_app1
+    app_path: custom_app1
+    app_source: custom_source
+  stack_config: custom_source:custom_app1
+  stack_dir: custom_app1
+  stack_name: custom_app1
+- stack_app: null
+  stack_config: my_local_app1
+  stack_dir: my_local_app1
+  stack_name: my_local_app1
+- stack_app: null
+  stack_config: my/local/app
+  stack_dir: my/local/app
+  stack_name: my-local-app
+- stack_app: null
+  stack_config:
+    name: my_local_app2
+  stack_dir: my_local_app2
+  stack_name: my_local_app2
+- stack_app: null
+  stack_config:
+    dir: local/app/path
+  stack_dir: local/app/path
+  stack_name: local_app_path
+- stack_app:
+    app: custom_source:custom_app5
+    app_name: custom_app5
+    app_path: custom_app5
+    app_source: custom_source
+  stack_config:
+    app: custom_source:custom_app5
+    name: custom_name
+  stack_dir: custom_name
+  stack_name: custom_name
+- stack_app:
+    app: default:dummy
+    app_name: dummy
+    app_path: dummy
+    app_source: default
+  stack_config:
+    app: dummy
+    name: tutu
+  stack_dir: tutu
+  stack_name: tutu
+- stack_app:
+    app: custom_source:custom_app
+    app_name: custom_app
+    app_path: custom_app
+    app_source: custom_source
+  stack_config:
+    app: custom_source:custom_app
+    dir: nested/path1
+  stack_dir: nested/path1
+  stack_name: custom_app
+- stack_app:
+    app: default:dummy
+    app_name: dummy
+    app_path: dummy
+    app_source: default
+  stack_config:
+    app: dummy
+    dir: nested/path2
+  stack_dir: nested/path2
+  stack_name: dummy
+- stack_app: null
+  stack_config:
+    dir: nested/path3
+    name: my_local_app3
+  stack_dir: nested/path3
+  stack_name: my_local_app3

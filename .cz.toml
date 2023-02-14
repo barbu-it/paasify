@@ -1,0 +1,67 @@
+# Default config
+# ==============
+
+[tool.commitizen]
+
+# name = "cz_conventional_commits"
+name = "cz_customize"
+version = "0.1.0a6"
+update_changelog_on_bump = true
+changelog_start_rev = "0.0.1"
+
+tag_format = "$major.$minor.$patch$prerelease"
+annotated_tag = true
+version_files = [
+    "pyproject.toml:version",
+    "docs/src/refs/raw/cli_usage.txt:version",
+]
+
+
+# Temporary config
+# ==============
+# While the project has not released stable version
+major_version_zero = true
+changelog_file = "CHANGELOG.md"
+
+
+
+
+
+# Customizations
+# ==============
+
+# break|new|fix|hotfix|
+# build|ci|docs|feat|fix|perf|refactor|style|test
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
+example = "feature: this feature enable customize through config file"
+schema = "break|new|fix|hotfix|build|ci|docs|feat|fix|perf|refactor|style|test: <body>"
+
+schema_pattern = "(bump|break|new|fix|hotfix|chore|build|ci|docs|feat|fix|perf|refactor|style|test):(\\s.*)"
+bump_pattern = "^(bump|break|new|fix|hotfix)"
+bump_map = {"break" = "MAJOR", "new" = "MINOR", "fix" = "PATCH", "hotfix" = "PATCH"}
+# change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf"]
+#info_path = "cz_customize_info.txt"
+info = """
+Format:
+  <Prefix>: <Title>
+  <Content>
+  BREAKING CHANGE
+
+Fields:
+  Prefix: break|new|fix|hotfix|build|ci|docs|feat|fix|perf|refactor|style|test:
+  Title: ideally less than 82 chars
+  Breaking Change:  BREAKING CHANGE inside body
+"""
+# commit_parser = "^(?P<change_type>feature|bug fix):\\s(?P<message>.*)?"
+changelog_pattern = "^(feature|bug fix)?(!)?"
+change_type_map = {"feature" = "Feat", "bug fix" = "Fix"}
+
+
+# [tool.commitizen.customize]
+
+commit_parser = "^(?P<change_type>.*):\\s(?P<message>.*)?"
+change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "docs"]
+
+

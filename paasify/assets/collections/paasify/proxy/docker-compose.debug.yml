@@ -1,0 +1,8 @@
+---
+services:
+  traefik:
+    environment:
+      - TRAEFIK_LOG_LEVEL=debug
+      - TRAEFIK_ACCESSLOG=true
+      - TRAEFIK_API_DEBUG=true
+        #- TRAEFIK_ACCESSLOG_FILEPATH=

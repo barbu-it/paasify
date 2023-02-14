@@ -1,0 +1,2 @@
+traefik_svc_port: "3000"
+app_description: A modern, secure, highly customizable application dashboard
