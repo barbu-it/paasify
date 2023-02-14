@@ -1,4 +1,10 @@
 
+## 0.1.1 (2023-02-14)
+
+### chore
+
+- increment patch version as version 1.0.0 has been burn by pypi.org
+
 ## 0.1.0 (2023-02-14)
 
 ### fix
