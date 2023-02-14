@@ -2,7 +2,7 @@
  Usage: paasify [OPTIONS] COMMAND [ARGS]...
 
  Paasify - build your compose-files with ease
- version: 0.1.0a6
+ version: 0.1.0
 
  Paasify is a tool that build and deploy docker-compose.yml files from a central
  configuration file called paasify.yml. In this file, define collections sources
