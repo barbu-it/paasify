@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Overpass:300,400,600,800">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<link rel="stylesheet" type="text/css" href="schema_doc.css">
+    <script src="https://use.fontawesome.com/facf9fa52c.js"></script>
+    <script src="schema_doc.min.js"></script>
+    <meta charset="utf-8"/>
+        
+    
+    <title>Paasify</title>
+</head>
+<body onload="anchorOnLoad();" id="root"><h1>Paasify</h1>
+
+    <div class="breadcrumbs"></div><span class="badge badge-dark value-type">Type: object</span> <span class="badge badge-success default-value">Default: {}</span><br/>
+<span class="description"><p>Main paasify project settings. This defines the format of <code>paasify.yml</code>.</p>
+</span> <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><button class="btn btn-light example-show collapsed" data-toggle="collapse" data-target="#root_ex1" aria-controls="root_ex1"></button><div id="root_ex1" class="collapse jumbotron examples"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;config&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s2">&quot;tags_prefix&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;_paasify&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="s2">&quot;vars&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app_domain&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;devbox.192.168.186.129.nip.io&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;app_expose_ip&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;192.168.186.129&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;app_tz&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Europe/Paris&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;top_var1&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;My value&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;top_var2&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;TOP VAR1=&gt; ${top_var1}&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">&quot;sources&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;default&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="s2">&quot;url&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/user/docker-compose.git&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">&quot;stacks&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;default:traefik&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;traefik&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;tags&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">&quot;ep_http&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;expose_admin&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;debug&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik-svc&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_net_external&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_svc_port&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;8080&quot;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;default:minio&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;env&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;app_admin_passwd&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;MY_PASS&quot;</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;app_image&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;quay.io/minio/minio:latest&quot;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="s2">&quot;tags&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik-svc&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_svc_name&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;minio-api&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_svc_port&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">9000</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik-svc&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_svc_name&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;minio-console&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="s2">&quot;traefik_svc_port&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">9001</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;default:authelia&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;tags&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">&quot;traefik-svc&quot;</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;default:librespeed&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;tags&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">&quot;traefik-svc&quot;</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="accordion" id="accordionconfig">
+    <div class="card">
+        <div class="card-header" id="headingconfig">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#config"
+                        aria-expanded="" aria-controls="config" onclick="setAnchor('#config')"><span class="property-name">config</span></button>
+            </h2>
+        </div>
+
+        <div id="config"
+             class="collapse property-definition-div" aria-labelledby="headingconfig"
+             data-parent="#accordionconfig">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#config" onclick="anchorLink('config')">config</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>See: schema prj_config</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionsources">
+    <div class="card">
+        <div class="card-header" id="headingsources">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#sources"
+                        aria-expanded="" aria-controls="sources" onclick="setAnchor('#sources')"><span class="property-name">sources</span></button>
+            </h2>
+        </div>
+
+        <div id="sources"
+             class="collapse property-definition-div" aria-labelledby="headingsources"
+             data-parent="#accordionsources">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#sources" onclick="anchorLink('sources')">sources</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>See: schema prj_sources</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionstacks">
+    <div class="card">
+        <div class="card-header" id="headingstacks">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#stacks"
+                        aria-expanded="" aria-controls="stacks" onclick="setAnchor('#stacks')"><span class="property-name">stacks</span></button>
+            </h2>
+        </div>
+
+        <div id="stacks"
+             class="collapse property-definition-div" aria-labelledby="headingstacks"
+             data-parent="#accordionstacks">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#stacks" onclick="anchorLink('stacks')">stacks</a></div><span class="badge badge-dark value-type">Type: array</span><br/>
+<span class="description"><p>See: schema prj_stacks</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionruntime">
+    <div class="card">
+        <div class="card-header" id="headingruntime">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#runtime"
+                        aria-expanded="" aria-controls="runtime" onclick="setAnchor('#runtime')"><span class="property-name">_runtime</span></button>
+            </h2>
+        </div>
+
+        <div id="runtime"
+             class="collapse property-definition-div" aria-labelledby="headingruntime"
+             data-parent="#accordionruntime">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#runtime" onclick="anchorLink('runtime')">_runtime</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>Internal object to pass context variables, internal use only or for troubleshooting purpose</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+
+    <footer>
+        <p class="generated-by-footer">Generated using <a href="https://github.com/coveooss/json-schema-for-humans">json-schema-for-humans</a> on 2023-02-14 at 15:58:59 -0500</p>
+    </footer></body>
+</html>

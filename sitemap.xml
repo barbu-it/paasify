@@ -86,6 +86,46 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_debug/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_dns/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_dummy/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_example/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_home/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_network/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_proxy/</loc>
+         <lastmod>2023-02-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/_paasify/markdown/</loc>
          <lastmod>2023-02-14</lastmod>
          <changefreq>daily</changefreq>
