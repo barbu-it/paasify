@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Provide default common variables",
+  "properties": {
+    "transform": {
+      "description": "Do nothing",
+      "type": "null"
+    },
+    "transform_variables": {
+      "type": "null"
+    },
+    "variables": {
+      "properties": {
+        "app_domain": {
+          "description": "Domain of the application",
+          "type": "string"
+        },
+        "app_fqdn": {
+          "description": "Fully Qualified Domain Name of the application",
+          "type": "string"
+        },
+        "app_name": {
+          "description": "Name of the application",
+          "type": "string"
+        },
+        "app_namespace": {
+          "description": "Namespace of the application",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Paasify std lib",
+  "type": "object"
+}
