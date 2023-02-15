@@ -217,7 +217,7 @@ class Stack(NodeMap, PaasifyObj):
         self.prj_path = self.prj.runtime.root_path
         self.stack_path = os.path.join(self.prj.runtime.root_path, stack_dir)
         self.stack_dump_path = os.path.join(
-            self.runtime.project_private_dir, "dumps", stack_dir
+            self.runtime.project_private_dir, "_dumps", stack_dir
         )
         self.ident = self.stack_name
         self.stack_path_abs = os.path.abspath(self.stack_path)
@@ -349,7 +349,6 @@ class Stack(NodeMap, PaasifyObj):
             assert src
             dirs_docker.append(src)
         dirs_jsonnet = [
-            self.prj.runtime.paasify_plugins_dir,
             stack_dir,
             project_jsonnet_dir,
         ]
@@ -368,6 +367,9 @@ class Stack(NodeMap, PaasifyObj):
                 f"docker-compose.{tag.name}.yaml",
             ]
             lookup = FileLookup()
+            self.log.trace(
+                f"Looking up docker-compose files in: {', '.join(dirs_docker)}"
+            )
             for dir_ in dirs_docker:
                 lookup.append(dir_, pattern)
             docker_cand = lookup.match()
@@ -380,6 +382,7 @@ class Stack(NodeMap, PaasifyObj):
             pattern = [f"{tag.name}.jsonnet"]
             lookup = FileLookup()
             jsonnet_file = None
+            self.log.trace(f"Looking up jsonnet files in: {', '.join(dirs_jsonnet)}")
             for dir_ in dirs_jsonnet:
                 lookup.append(dir_, pattern)
                 jsonnet_cand = lookup.match()
@@ -395,7 +398,7 @@ class Stack(NodeMap, PaasifyObj):
 
             # Report error to user on missing tags
             if not docker_file and not jsonnet_file:
-                msg = f"Can't find '{tag.name}' for '{self.stack_name}' stack"
+                msg = f"Can't find '{tag.name}' tag for '{self.stack_name}' stack"
                 raise error.MissingTag(msg)
 
         # 3. Return result list
@@ -493,7 +496,7 @@ class Stack(NodeMap, PaasifyObj):
         extra_vars = prj_config.extra_vars.get_value()
         extra_vars = extra_vars if isinstance(extra_vars, list) else [extra_vars]
 
-        extra_vars_lookups = FileLookup()
+        ret = FileLookup()
         for ref in extra_vars:
             ref = FileReference(ref, root=runtime.root_path)
             dir_, file_ = os.path.split(ref.path())
@@ -501,8 +504,8 @@ class Stack(NodeMap, PaasifyObj):
                 "kind": "extra_vars",
                 "owner": "user",
             }
-            extra_vars_lookups.append(dir_, [file_], **xtra)
-        return extra_vars_lookups
+            ret.append(dir_, [file_], **xtra)
+        return ret
 
     def render_vars(
         self,
