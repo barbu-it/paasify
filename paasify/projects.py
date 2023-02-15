@@ -94,6 +94,8 @@ class PaasifyConfigExtraVars(NodeList, PaasifyObj):
 
         if not payload:
             payload = []
+        elif isinstance(payload, str):
+            payload = [payload]
         return payload
 
 
