@@ -1,5 +1,10 @@
+# Paasify ignores
 .paasify/_*
 */data/*
 */share/*
 */tmp/*
 */db_data/*
+
+# Other common tools
+.direnv/*
+.venv/*
