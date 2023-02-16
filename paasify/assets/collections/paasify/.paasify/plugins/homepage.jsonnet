@@ -79,9 +79,7 @@ local plugin = {
       homepage_name: vars.app_name,
       homepage_group: 'Docker',
       // See: https://github.com/walkxcode/dashboard-icons
-      homepage_icon: vars.app_service,
-      //homepage_icon: vars.app_name,
-      //homepage_desc: vars.app_name + ' app',
+      homepage_icon: vars.app_product,
       homepage_desc: vars.app_description,
 
     },
