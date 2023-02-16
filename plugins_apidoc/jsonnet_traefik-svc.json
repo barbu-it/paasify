@@ -1,0 +1,139 @@
+{
+  "description": "Create a traefik service for a given service",
+  "examples": [
+    {
+      "stacks": [
+        {
+          "app": "my_app_name",
+          "tags": [
+            "traefik-svc"
+          ],
+          "vars": [
+            {
+              "traefik_svc_entrypoints": "web,websecure"
+            },
+            {
+              "traefik_svc_port": 8080
+            },
+            {
+              "traefik_svc_group": "trafik_prod"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "transform": {
+      "description": "Add correct traefik labels for a given service. Also append traefik network if not already present.",
+      "type": "object"
+    },
+    "variables": {
+      "properties": {
+        "traefik_ident": {
+          "default": "${app_ns}_${app_name}",
+          "description": "Traefik key name of the service, must NOT contains dot (dynamic)",
+          "type": "string"
+        },
+        "traefik_net_external": {
+          "default": true,
+          "description": "Determine if network is external or not",
+          "type": "string"
+        },
+        "traefik_net_key": {
+          "default": "$app_network",
+          "description": "Name of the key in networks:{} as in docker-compose",
+          "type": "string"
+        },
+        "traefik_net_name": {
+          "default": "$app_namespace-traefik",
+          "description": "Network to use to reach this app, no need to configure except you kwno what to do, you can\"t use it if you want to expose this app to multiple traefik with dedicated interfaces. CAnnot be used multi time.",
+          "type": "string"
+        },
+        "traefik_net_priority": {
+          "default": 0,
+          "description": "Determine traefik network priority",
+          "type": "number"
+        },
+        "traefik_sep": {
+          "default": "_",
+          "description": "String to separe names",
+          "type": "string"
+        },
+        "traefik_svc_auth": {
+          "default": null,
+          "description": "Service Authentication to use",
+          "type": "string"
+        },
+        "traefik_svc_certresolver": {
+          "default": null,
+          "description": "Certresolver of the application",
+          "type": "string"
+        },
+        "traefik_svc_entrypoints": {
+          "default": "web",
+          "description": "Traefik entrypoints of the application",
+          "type": "string"
+        },
+        "traefik_svc_fqdn": {
+          "default": "$traefik_svc_name.$vars.app_domain",
+          "description": "Fully Qualified Domain Name of the application (dynamic)",
+          "type": "string"
+        },
+        "traefik_svc_group": {
+          "default": "$app_namespace-traefik",
+          "description": "Traefik group name to assign this container, add more separated with comma",
+          "type": "string"
+        },
+        "traefik_svc_key": {
+          "default": "$app_service",
+          "description": "Name of the key in services:{} as in docker-compose",
+          "type": "string"
+        },
+        "traefik_svc_name": {
+          "default": "$app_service",
+          "description": "First part of the FQDN (dynamic)",
+          "type": "string"
+        },
+        "traefik_svc_port": {
+          "default": "80",
+          "description": "Listening port of the application",
+          "type": "string"
+        },
+        "traefik_svc_priority": {
+          "default": null,
+          "description": "The application rule priority, higher means processed first",
+          "type": "integer"
+        },
+        "traefik_svc_rule": {
+          "default": null,
+          "description": "Rule to match this app",
+          "type": "string"
+        },
+        "traefik_svc_rule_extra": {
+          "default": null,
+          "description": "Rule to append to the default rule",
+          "type": "string"
+        },
+        "traefik_svc_tls": {
+          "default": false,
+          "description": "The application is availalble on TLS",
+          "type": "boolean"
+        },
+        "traefik_svc_tls_domains": {
+          "default": [],
+          "description": "The domains to support",
+          "type": "array"
+        },
+        "traefik_svc_type": {
+          "default": "http",
+          "description": "Protocol type: http, tcp, udp",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Traefik Service",
+  "type": "object"
+}

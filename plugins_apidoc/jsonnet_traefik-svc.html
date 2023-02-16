@@ -1,0 +1,944 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Overpass:300,400,600,800">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<link rel="stylesheet" type="text/css" href="schema_doc.css">
+    <script src="https://use.fontawesome.com/facf9fa52c.js"></script>
+    <script src="schema_doc.min.js"></script>
+    <meta charset="utf-8"/>
+        
+    
+    <title>Traefik Service</title>
+</head>
+<body onload="anchorOnLoad();" id="root"><h1>Traefik Service</h1>
+
+    <div class="breadcrumbs"></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>Create a traefik service for a given service</p>
+</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><button class="btn btn-light example-show collapsed" data-toggle="collapse" data-target="#root_ex1" aria-controls="root_ex1"></button><div id="root_ex1" class="collapse jumbotron examples"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;stacks&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="s2">&quot;app&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;my_app_name&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;tags&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">&quot;traefik-svc&quot;</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="s2">&quot;vars&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik_svc_entrypoints&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;web,websecure&quot;</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik_svc_port&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">8080</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="s2">&quot;traefik_svc_group&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;trafik_prod&quot;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="accordion" id="accordiontransform">
+    <div class="card">
+        <div class="card-header" id="headingtransform">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#transform"
+                        aria-expanded="" aria-controls="transform" onclick="setAnchor('#transform')"><span class="property-name">transform</span></button>
+            </h2>
+        </div>
+
+        <div id="transform"
+             class="collapse property-definition-div" aria-labelledby="headingtransform"
+             data-parent="#accordiontransform">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#transform" onclick="anchorLink('transform')">transform</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>Add correct traefik labels for a given service. Also append traefik network if not already present.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables">
+    <div class="card">
+        <div class="card-header" id="headingvariables">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables"
+                        aria-expanded="" aria-controls="variables" onclick="setAnchor('#variables')"><span class="property-name">variables</span></button>
+            </h2>
+        </div>
+
+        <div id="variables"
+             class="collapse property-definition-div" aria-labelledby="headingvariables"
+             data-parent="#accordionvariables">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordionvariables_traefik_ident">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_ident">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_ident"
+                        aria-expanded="" aria-controls="variables_traefik_ident" onclick="setAnchor('#variables_traefik_ident')"><span class="property-name">traefik_ident</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_ident"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_ident"
+             data-parent="#accordionvariables_traefik_ident">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_ident" onclick="anchorLink('variables_traefik_ident')">traefik_ident</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "${app_ns}_${app_name}"</span><br/>
+<span class="description"><p>Traefik key name of the service, must NOT contains dot (dynamic)</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_net_external">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_net_external">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_net_external"
+                        aria-expanded="" aria-controls="variables_traefik_net_external" onclick="setAnchor('#variables_traefik_net_external')"><span class="property-name">traefik_net_external</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_net_external"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_net_external"
+             data-parent="#accordionvariables_traefik_net_external">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_net_external" onclick="anchorLink('variables_traefik_net_external')">traefik_net_external</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: true</span><br/>
+<span class="description"><p>Determine if network is external or not</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_net_key">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_net_key">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_net_key"
+                        aria-expanded="" aria-controls="variables_traefik_net_key" onclick="setAnchor('#variables_traefik_net_key')"><span class="property-name">traefik_net_key</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_net_key"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_net_key"
+             data-parent="#accordionvariables_traefik_net_key">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_net_key" onclick="anchorLink('variables_traefik_net_key')">traefik_net_key</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$app_network"</span><br/>
+<span class="description"><p>Name of the key in networks:{} as in docker-compose</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_net_name">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_net_name">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_net_name"
+                        aria-expanded="" aria-controls="variables_traefik_net_name" onclick="setAnchor('#variables_traefik_net_name')"><span class="property-name">traefik_net_name</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_net_name"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_net_name"
+             data-parent="#accordionvariables_traefik_net_name">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_net_name" onclick="anchorLink('variables_traefik_net_name')">traefik_net_name</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$app_namespace-traefik"</span><br/>
+<span class="description"><p>Network to use to reach this app, no need to configure except you kwno what to do, you can"t use it if you want to expose this app to multiple traefik with dedicated interfaces. CAnnot be used multi time.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_net_priority">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_net_priority">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_net_priority"
+                        aria-expanded="" aria-controls="variables_traefik_net_priority" onclick="setAnchor('#variables_traefik_net_priority')"><span class="property-name">traefik_net_priority</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_net_priority"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_net_priority"
+             data-parent="#accordionvariables_traefik_net_priority">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_net_priority" onclick="anchorLink('variables_traefik_net_priority')">traefik_net_priority</a></div><span class="badge badge-dark value-type">Type: number</span> <span class="badge badge-success default-value">Default: 0</span><br/>
+<span class="description"><p>Determine traefik network priority</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_sep">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_sep">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_sep"
+                        aria-expanded="" aria-controls="variables_traefik_sep" onclick="setAnchor('#variables_traefik_sep')"><span class="property-name">traefik_sep</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_sep"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_sep"
+             data-parent="#accordionvariables_traefik_sep">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_sep" onclick="anchorLink('variables_traefik_sep')">traefik_sep</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "_"</span><br/>
+<span class="description"><p>String to separe names</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_auth">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_auth">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_auth"
+                        aria-expanded="" aria-controls="variables_traefik_svc_auth" onclick="setAnchor('#variables_traefik_svc_auth')"><span class="property-name">traefik_svc_auth</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_auth"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_auth"
+             data-parent="#accordionvariables_traefik_svc_auth">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_auth" onclick="anchorLink('variables_traefik_svc_auth')">traefik_svc_auth</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: null</span><br/>
+<span class="description"><p>Service Authentication to use</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_certresolver">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_certresolver">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_certresolver"
+                        aria-expanded="" aria-controls="variables_traefik_svc_certresolver" onclick="setAnchor('#variables_traefik_svc_certresolver')"><span class="property-name">traefik_svc_certresolver</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_certresolver"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_certresolver"
+             data-parent="#accordionvariables_traefik_svc_certresolver">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_certresolver" onclick="anchorLink('variables_traefik_svc_certresolver')">traefik_svc_certresolver</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: null</span><br/>
+<span class="description"><p>Certresolver of the application</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_entrypoints">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_entrypoints">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_entrypoints"
+                        aria-expanded="" aria-controls="variables_traefik_svc_entrypoints" onclick="setAnchor('#variables_traefik_svc_entrypoints')"><span class="property-name">traefik_svc_entrypoints</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_entrypoints"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_entrypoints"
+             data-parent="#accordionvariables_traefik_svc_entrypoints">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_entrypoints" onclick="anchorLink('variables_traefik_svc_entrypoints')">traefik_svc_entrypoints</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "web"</span><br/>
+<span class="description"><p>Traefik entrypoints of the application</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_fqdn">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_fqdn">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_fqdn"
+                        aria-expanded="" aria-controls="variables_traefik_svc_fqdn" onclick="setAnchor('#variables_traefik_svc_fqdn')"><span class="property-name">traefik_svc_fqdn</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_fqdn"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_fqdn"
+             data-parent="#accordionvariables_traefik_svc_fqdn">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_fqdn" onclick="anchorLink('variables_traefik_svc_fqdn')">traefik_svc_fqdn</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$traefik_svc_name.$vars.app_domain"</span><br/>
+<span class="description"><p>Fully Qualified Domain Name of the application (dynamic)</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_group">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_group">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_group"
+                        aria-expanded="" aria-controls="variables_traefik_svc_group" onclick="setAnchor('#variables_traefik_svc_group')"><span class="property-name">traefik_svc_group</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_group"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_group"
+             data-parent="#accordionvariables_traefik_svc_group">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_group" onclick="anchorLink('variables_traefik_svc_group')">traefik_svc_group</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$app_namespace-traefik"</span><br/>
+<span class="description"><p>Traefik group name to assign this container, add more separated with comma</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_key">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_key">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_key"
+                        aria-expanded="" aria-controls="variables_traefik_svc_key" onclick="setAnchor('#variables_traefik_svc_key')"><span class="property-name">traefik_svc_key</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_key"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_key"
+             data-parent="#accordionvariables_traefik_svc_key">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_key" onclick="anchorLink('variables_traefik_svc_key')">traefik_svc_key</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$app_service"</span><br/>
+<span class="description"><p>Name of the key in services:{} as in docker-compose</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_name">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_name">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_name"
+                        aria-expanded="" aria-controls="variables_traefik_svc_name" onclick="setAnchor('#variables_traefik_svc_name')"><span class="property-name">traefik_svc_name</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_name"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_name"
+             data-parent="#accordionvariables_traefik_svc_name">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_name" onclick="anchorLink('variables_traefik_svc_name')">traefik_svc_name</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "$app_service"</span><br/>
+<span class="description"><p>First part of the FQDN (dynamic)</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_port">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_port">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_port"
+                        aria-expanded="" aria-controls="variables_traefik_svc_port" onclick="setAnchor('#variables_traefik_svc_port')"><span class="property-name">traefik_svc_port</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_port"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_port"
+             data-parent="#accordionvariables_traefik_svc_port">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_port" onclick="anchorLink('variables_traefik_svc_port')">traefik_svc_port</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "80"</span><br/>
+<span class="description"><p>Listening port of the application</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_priority">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_priority">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_priority"
+                        aria-expanded="" aria-controls="variables_traefik_svc_priority" onclick="setAnchor('#variables_traefik_svc_priority')"><span class="property-name">traefik_svc_priority</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_priority"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_priority"
+             data-parent="#accordionvariables_traefik_svc_priority">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_priority" onclick="anchorLink('variables_traefik_svc_priority')">traefik_svc_priority</a></div><span class="badge badge-dark value-type">Type: integer</span> <span class="badge badge-success default-value">Default: null</span><br/>
+<span class="description"><p>The application rule priority, higher means processed first</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_rule">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_rule">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_rule"
+                        aria-expanded="" aria-controls="variables_traefik_svc_rule" onclick="setAnchor('#variables_traefik_svc_rule')"><span class="property-name">traefik_svc_rule</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_rule"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_rule"
+             data-parent="#accordionvariables_traefik_svc_rule">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_rule" onclick="anchorLink('variables_traefik_svc_rule')">traefik_svc_rule</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: null</span><br/>
+<span class="description"><p>Rule to match this app</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_rule_extra">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_rule_extra">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_rule_extra"
+                        aria-expanded="" aria-controls="variables_traefik_svc_rule_extra" onclick="setAnchor('#variables_traefik_svc_rule_extra')"><span class="property-name">traefik_svc_rule_extra</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_rule_extra"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_rule_extra"
+             data-parent="#accordionvariables_traefik_svc_rule_extra">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_rule_extra" onclick="anchorLink('variables_traefik_svc_rule_extra')">traefik_svc_rule_extra</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: null</span><br/>
+<span class="description"><p>Rule to append to the default rule</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_tls">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_tls">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_tls"
+                        aria-expanded="" aria-controls="variables_traefik_svc_tls" onclick="setAnchor('#variables_traefik_svc_tls')"><span class="property-name">traefik_svc_tls</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_tls"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_tls"
+             data-parent="#accordionvariables_traefik_svc_tls">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_tls" onclick="anchorLink('variables_traefik_svc_tls')">traefik_svc_tls</a></div><span class="badge badge-dark value-type">Type: boolean</span> <span class="badge badge-success default-value">Default: false</span><br/>
+<span class="description"><p>The application is availalble on TLS</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_tls_domains">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_tls_domains">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_tls_domains"
+                        aria-expanded="" aria-controls="variables_traefik_svc_tls_domains" onclick="setAnchor('#variables_traefik_svc_tls_domains')"><span class="property-name">traefik_svc_tls_domains</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_tls_domains"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_tls_domains"
+             data-parent="#accordionvariables_traefik_svc_tls_domains">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_tls_domains" onclick="anchorLink('variables_traefik_svc_tls_domains')">traefik_svc_tls_domains</a></div><span class="badge badge-dark value-type">Type: array</span> <span class="badge badge-success default-value">Default: []</span><br/>
+<span class="description"><p>The domains to support</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionvariables_traefik_svc_type">
+    <div class="card">
+        <div class="card-header" id="headingvariables_traefik_svc_type">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#variables_traefik_svc_type"
+                        aria-expanded="" aria-controls="variables_traefik_svc_type" onclick="setAnchor('#variables_traefik_svc_type')"><span class="property-name">traefik_svc_type</span></button>
+            </h2>
+        </div>
+
+        <div id="variables_traefik_svc_type"
+             class="collapse property-definition-div" aria-labelledby="headingvariables_traefik_svc_type"
+             data-parent="#accordionvariables_traefik_svc_type">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables" onclick="anchorLink('variables')">variables</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#variables_traefik_svc_type" onclick="anchorLink('variables_traefik_svc_type')">traefik_svc_type</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "http"</span><br/>
+<span class="description"><p>Protocol type: http, tcp, udp</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <footer>
+        <p class="generated-by-footer">Generated using <a href="https://github.com/coveooss/json-schema-for-humans">json-schema-for-humans</a> on 2023-02-16 at 18:45:06 -0500</p>
+    </footer></body>
+</html>

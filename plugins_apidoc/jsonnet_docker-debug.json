@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Provide default common variables",
+  "properties": {
+    "transform": {
+      "description": "Do nothing",
+      "type": "null"
+    },
+    "transform_variables": {
+      "type": "null"
+    },
+    "variables": {
+      "properties": {
+        "docker_debug_image": {
+          "default": "nicolaka/netshoot",
+          "description": "Docker image to use for debugging purpose",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Docker debug Container",
+  "type": "object"
+}

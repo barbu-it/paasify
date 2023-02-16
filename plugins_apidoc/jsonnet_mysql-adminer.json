@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Provide default common variables",
+  "properties": {
+    "transform": {
+      "description": "Do nothing",
+      "type": "null"
+    },
+    "transform_variables": {
+      "type": "null"
+    },
+    "variables": {
+      "properties": {
+        "homepage_desc": {
+          "description": "Application description",
+          "type": "string"
+        },
+        "homepage_group": {
+          "default": "application",
+          "description": "Group of the application",
+          "type": "string"
+        },
+        "homepage_href": {
+          "description": "URL of the app",
+          "type": "string"
+        },
+        "homepage_icon": {
+          "description": "Icon file, see: https://github.com/walkxcode/dashboard-icons",
+          "type": "string"
+        },
+        "homepage_name": {
+          "description": "Name of the application",
+          "type": "string"
+        },
+        "homepage_svc": {
+          "description": "Name of the service to apply labels",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Provide amdiner web UI to manage MySQL",
+  "type": "object"
+}
