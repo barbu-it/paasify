@@ -274,7 +274,13 @@ class PaasifyApp(NodeMap, PaasifyObj):
         git_dir = os.path.join(path, ".git")
         if not os.path.exists(git_dir):
             self.log.notice(f"Create git repo in '{path}'")
+            files = [
+                file
+                for file in os.listdir(path)
+                if os.path.isfile(os.path.join(path, file))
+            ]
             _exec("git", ["init", path])
+            _exec("git", ["-C", path, "add"] + files)
             changed = True
         else:
             self.log.info(f"Directory is alrayd a git repository:{path}")
