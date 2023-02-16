@@ -31,6 +31,7 @@ from cafram.utils import (
 from cafram.nodes import NodeMap
 
 import paasify.errors as error
+from paasify import __version__ as paasify_version
 from paasify.common import ensure_dir_exists, get_paasify_pkg_dir
 from paasify.framework import PaasifyObj, FileLookup
 from paasify.projects import PaasifyProject, PaasifyProjectConfig
@@ -41,6 +42,69 @@ from paasify.collections import CollectionDocumator, gen_schema_doc
 
 # Main Application class
 # =====================================================================
+
+README_TEMPLATE = """<p align='center'>
+<img src="https://github.com/barbu-it/paasify/raw/main/logo/paasify_project.svg" alt="Paasify Project">
+</p>
+
+# Paasify Project: {name}
+
+This project deploys:
+
+    * APP1
+    * APP2
+
+APP_DESC
+
+## Quickstart
+
+To deploy this project, your must first checkout the project with git and go into the directory:
+```
+git clone GIT_REPO
+cd REPO
+```
+
+Download project sources:
+```
+paasify src install
+```
+
+Deploy stack:
+```
+paasify apply
+```
+
+## Project
+
+### Requirements
+
+The following requirements must be installed for this project:
+
+    * docker
+
+To modify this project:
+
+    * paasify v{version}
+    * git
+
+### Paasify documentation
+
+Quicklinks:
+
+    * [Paasify Documentation](https://barbu-it.github.io/paasify/)
+    * [Paasify Sources](https://github.com/barbu-it/paasify)
+    * [Paasify Gitter](https://gitter.im/barbu-it/paasify)
+
+
+## Project Informations
+
+Paasify project maintened by:
+
+    * Author: AUTHOR, EMAIL
+    * License: GPLv3
+    * Repository: GIT_REPO
+
+"""
 
 
 class PaasifyApp(NodeMap, PaasifyObj):
@@ -128,7 +192,10 @@ class PaasifyApp(NodeMap, PaasifyObj):
         """Create a new project"""
 
         assets_dir = get_paasify_pkg_dir()
-        changed = ensure_dir_exists(path)
+        changed = False
+        created = ensure_dir_exists(path)
+        prj_name = os.path.basename(os.path.abspath(path))
+        print("NAME", prj_name)
 
         # Prepare configs
         build_conf = {
@@ -149,6 +216,16 @@ class PaasifyApp(NodeMap, PaasifyObj):
                 "pattern": "gitignore",
             },
         }
+        templates = {
+            "requirements": {
+                "content": "paasify=={version}\n",
+                "dest": os.path.join(path, "requirements.txt"),
+            },
+            "readme": {
+                "content": README_TEMPLATE,
+                "dest": os.path.join(path, "README.md"),
+            },
+        }
 
         # Add source if requested
         if source:
@@ -159,6 +236,19 @@ class PaasifyApp(NodeMap, PaasifyObj):
                     "pattern": ".gitignore",
                 },
             }
+
+        # Generate files
+        for name, template in templates.items():
+            dest = template["dest"]
+            if not os.path.exists(dest):
+                self.log.notice(f"Create: '{dest}'")
+                content = template["content"].format(
+                    name=prj_name, version=paasify_version
+                )
+                write_file(dest, content)
+                changed = True
+            else:
+                self.log.info(f"Skip: '{dest}' as it already exists")
 
         # Build each assets
         for name, conf in lookups.items():
@@ -174,14 +264,35 @@ class PaasifyApp(NodeMap, PaasifyObj):
             src = match["match"]
             dest = build_conf[name]["dest"]
             if not os.path.exists(dest):
-                self.log.notice(f"Creating: '{dest}' from '{src}'")
+                self.log.notice(f"Create: '{dest}' from '{src}'")
                 _exec("cp", cli_args=[src, dest])
                 changed = True
             else:
                 self.log.info(f"Skip: '{dest}' as it already exists")
 
+        # Init git directory
+        git_dir = os.path.join(path, ".git")
+        if not os.path.exists(git_dir):
+            self.log.notice(f"Create git repo in '{path}'")
+            files = [
+                file
+                for file in os.listdir(path)
+                if os.path.isfile(os.path.join(path, file))
+            ]
+            _exec("git", ["init", path])
+            _exec("git", ["-C", path, "add"] + files)
+            changed = True
+        else:
+            self.log.info(f"Directory is alrayd a git repository:{path}")
+
+        # Report actions
         msg = "No changes in existing project"
-        if changed:
+        if created:
+            if source:
+                msg = f"New project created in: {path} from {source}"
+            else:
+                msg = f"New project created in: {path}"
+        elif changed:
             if source:
                 msg = f"New project updated in: {path} from {source}"
             else:
@@ -258,7 +369,7 @@ class PaasifyApp(NodeMap, PaasifyObj):
         if dest_dir:
             self.log.notice(f"Documentation directory: {dest_dir}")
             if not os.path.isdir(dest_dir):
-                self.log.notice(f"Creating parent directories: {dest_dir}")
+                self.log.notice(f"Create parent directories: {dest_dir}")
                 os.makedirs(dest_dir)
 
         targets = ["app", "prj", "prj_config", "prj_sources", "prj_stacks"]

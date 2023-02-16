@@ -1,18 +1,18 @@
-tests/examples/var_merge/.paasify/collections/default/app1/docker-compose.yml:
+tests/examples/var_merge/.paasify/_collections/default/app1/docker-compose.yml:
   services:
     main_1:
       image: app1_from_template
-tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.debug.yml:
+tests/examples/var_merge/.paasify/_collections/default/app2/docker-compose.debug.yml:
   services:
     main_app2:
       environment:
         DEBUG1: ENABLED_FROM_APP_TAG
-tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.override.yml:
+tests/examples/var_merge/.paasify/_collections/default/app2/docker-compose.override.yml:
   services:
     main_app2:
       environment:
         OVERRIDE1: KO_should have been overriden
-tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.yml:
+tests/examples/var_merge/.paasify/_collections/default/app2/docker-compose.yml:
   services:
     main_app2:
       environment:
@@ -21,12 +21,12 @@ tests/examples/var_merge/.paasify/collections/default/app2/docker-compose.yml:
         user1: ${var_user_unexisting_var:-OK_FALLBACK_compose_user}
         user2: ${var_user:-default_compose_user}
       image: $var_image
-tests/examples/var_merge/.paasify/collections/default/app2/vars.yml:
+tests/examples/var_merge/.paasify/_collections/default/app2/vars.yml:
   var_escaped: $$OK_my_value
   var_image: OK_from_app_vars:latest
   var_user: OK_from_app_vars
-tests/examples/var_merge/.paasify/collections/paasify/default/app2/debug.jsonnet: ''
-tests/examples/var_merge/.paasify/collections/paasify/default/app2/docker-compose.yml:
+tests/examples/var_merge/.paasify/_collections/paasify/default/app2/debug.jsonnet: ''
+tests/examples/var_merge/.paasify/_collections/paasify/default/app2/docker-compose.yml:
   services:
     main_app2:
       image: dummy

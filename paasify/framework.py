@@ -422,10 +422,9 @@ class FileLookup(PaasifyObj):
         result = []
         for lookup in self._lookups:
             path = lookup["path"]
-            if path:
-                cand = filter_existing_files(path, lookup["pattern"])
-                lookup["matches"] = cand
-                result.append(lookup)
+            cand = filter_existing_files(path, lookup["pattern"])
+            lookup["matches"] = cand
+            result.append(lookup)
         return result
 
     def paths(self, first=False):
@@ -460,7 +459,7 @@ class FileLookup(PaasifyObj):
         # Report errors if missing
         if fail_on_missing and len(missing) > 0:
             missing_paths = [
-                os.path.join(lookup["path"], first(lookup["pattern"]))
+                os.path.join(lookup["path"], _first(lookup["pattern"]))
                 for lookup in missing
             ]
             for missed in missing_paths:

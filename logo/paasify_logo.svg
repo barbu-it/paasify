@@ -32,14 +32,14 @@
      showguides="false"
      inkscape:guide-bbox="true"
      inkscape:zoom="0.5"
-     inkscape:cx="130"
-     inkscape:cy="234"
+     inkscape:cx="-52"
+     inkscape:cy="500"
      inkscape:window-width="1920"
      inkscape:window-height="1025"
      inkscape:window-x="1535"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer7"
+     inkscape:current-layer="g15580"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1">
     <sodipodi:guide
@@ -122,7 +122,7 @@
      style="display:none"
      transform="scale(0.999999)">
     <rect
-       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:57600;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       style="display:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:57600;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
        id="rect18980-3-6"
        width="405629.19"
        height="390637.69"
@@ -144,7 +144,7 @@
        inkscape:export-ydpi="96"
        inkscape:label="Black" />
     <rect
-       style="display:inline;fill:#7e36f4;fill-opacity:1;stroke:none;stroke-width:57600;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       style="display:none;fill:#7e36f4;fill-opacity:1;stroke:none;stroke-width:57600;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
        id="rect18980"
        width="405629.19"
        height="390637.69"
@@ -158,11 +158,11 @@
   <g
      inkscape:groupmode="layer"
      id="layer13"
-     inkscape:label="Bas du P 2"
+     inkscape:label="Bas du P"
      style="display:inline">
     <path
        style="display:inline;fill:#77ff36;fill-opacity:1;stroke:#fffffe;stroke-width:71910;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 106420.53,229449.42 V 39452.066 267943.84"
+       d="M 106420.53,229449.42 V 4896.2516 267943.84"
        id="path7728"
        sodipodi:nodetypes="ccc"
        inkscape:label="Left blanc" />
@@ -176,27 +176,9 @@
   <g
      inkscape:groupmode="layer"
      id="g15580"
-     inkscape:label="Blue Sun"
+     inkscape:label="Haut du P"
      style="display:inline"
      transform="matrix(0,0.999999,-0.999999,0,202550.26,-48733.437)">
-    <rect
-       style="display:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:145717;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect18696-6"
-       width="98273.141"
-       height="87024.414"
-       x="96736.57"
-       y="52357.148"
-       inkscape:label="inside sun"
-       transform="rotate(-90,125641.97,76908.488)" />
-    <rect
-       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:66005.3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect18696-6-6"
-       width="49421.844"
-       height="35505.316"
-       x="-132092.03"
-       y="53629.742"
-       inkscape:label="inside sun"
-       transform="rotate(-90)" />
     <path
        style="display:inline;fill:none;stroke:#ffffff;stroke-width:57599.9;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
        id="path18087"
@@ -210,27 +192,42 @@
        sodipodi:arc-type="arc"
        d="m 82430.248,55359.816 a 62173.246,62173.246 0 0 1 42871.042,-59364.4241 62173.246,62173.246 0 0 1 69645.4,22618.1251 62173.246,62173.246 0 0 1 -189.14,73225.852"
        sodipodi:open="true"
-       inkscape:label="Back" />
+       inkscape:label="White Back" />
+    <g
+       inkscape:groupmode="layer"
+       id="layer3"
+       inkscape:label="Blue Piquant Sources"
+       transform="rotate(-90,125641.97,76908.488)"
+       style="display:none">
+      <path
+         style="display:none;fill:none;stroke:#4640e2;stroke-width:38400;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path1387"
+         sodipodi:type="arc"
+         sodipodi:cx="144603.09"
+         sodipodi:cy="55096.793"
+         sodipodi:rx="62173.309"
+         sodipodi:ry="62173.309"
+         sodipodi:start="3.7825616"
+         sodipodi:end="0.63226461"
+         sodipodi:arc-type="arc"
+         d="M 94770.147,17918.874 A 62173.309,62173.309 0 0 1 181563.78,5102.5138 62173.309,62173.309 0 0 1 194757.76,91839.547"
+         sodipodi:open="true"
+         inkscape:label="Blue Front"
+         transform="rotate(90,125641.97,76908.487)" />
+      <path
+         style="display:none;fill:#4640e2;fill-opacity:1;stroke:none;stroke-width:300;stroke-linecap:round;stroke-miterlimit:6.8;stroke-dasharray:none;stroke-opacity:0.847381;paint-order:stroke markers fill"
+         d="m 150905.49,118567.18 48002.34,102.04 966.13,-4519.42 -28100.28,-20939.544 -3729.69,2527.327 c -5155.81,6797.337 -11866.47,15618.667 -17138.5,22829.597 z"
+         id="path10086"
+         sodipodi:nodetypes="cccccc"
+         inkscape:label="Blue Piquant gauche"
+         transform="rotate(90,125641.97,76908.487)" />
+    </g>
     <path
-       style="display:inline;fill:none;stroke:#4640e2;stroke-width:38400;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       id="path1387"
-       sodipodi:type="arc"
-       sodipodi:cx="144603.09"
-       sodipodi:cy="55096.793"
-       sodipodi:rx="62173.309"
-       sodipodi:ry="62173.309"
-       sodipodi:start="3.7825616"
-       sodipodi:end="0.63226461"
-       sodipodi:arc-type="arc"
-       d="M 94770.147,17918.874 A 62173.309,62173.309 0 0 1 181563.78,5102.5138 62173.309,62173.309 0 0 1 194757.76,91839.547"
-       sodipodi:open="true"
-       inkscape:label="Front" />
-    <path
-       style="display:none;fill:#4640e2;fill-opacity:1;stroke:none;stroke-width:300;stroke-linecap:round;stroke-miterlimit:6.8;stroke-dasharray:none;stroke-opacity:0.847381;paint-order:stroke markers fill"
-       d="m 150905.49,118567.18 48002.34,102.04 966.13,-4519.42 -28100.28,-20939.544 -3729.69,2527.327 c -5155.81,6797.337 -11866.47,15618.667 -17138.5,22829.597 z"
-       id="path10086"
-       sodipodi:nodetypes="cccccc"
-       inkscape:label="Piquant gauche" />
+       id="path4598"
+       style="color:#000000;display:inline;fill:#4640e2;stroke-linecap:square;stroke-linejoin:round;-inkscape-stroke:none;paint-order:stroke fill markers"
+       d="M 67900.106,21826.649 98678.262,44788.977 110159.13,29399.899 c 3365.28,-4510.79 7583.26,-8315.944 12415.45,-11200.793 4832.17,-2884.849 10183.74,-4792.343 15751.18,-5614.458 5567.45,-822.117 11241.25,-543.023 16701,822.071 5459.74,1365.093 10597.67,3789.352 15123.06,7134.968 4525.39,3345.615 8348.85,7546.644 11254.7,12366.223 2905.85,4819.58 4836.67,10162.763 5683.01,15726.578 846.34,5563.815 591.9,11238.873 -749.41,16704.509 -1341.32,5465.638 -3742.87,10614.206 -7068.76,15154.117 l -11111.73,15167.007 -113.67,77.344 c -5155.81,6797.335 -11866.67,15618.985 -17138.69,22829.905 l 47987.15,101.95 7.04,5.28 4.1,-5.28 h 4.1 l 1.76,-8.2 11336.73,-15474.62 c 6297.44,-8596.143 10845.44,-18346.185 13385.17,-28695.15 2539.73,-10348.966 3022.23,-21097.006 1419.72,-31631.867 -1602.5,-10534.861 -5258.63,-20652.865 -10760.75,-29778.546 -5502.11,-9125.6812 -12743.67,-17082.8123 -21312.32,-23417.601 -8568.66,-6334.789 -18298.75,-10925.224 -28636.56,-13509.975 -6461.13,-1615.469 -13081.75,-2427.737 -19712.13,-2429.885 -3978.21,-1.289 -7960.13,289.307 -11913.29,873.048 -10541.73,1556.643 -20675.88,5168.915 -29825.42,10631.26 -9149.537,5462.3466 -17137.571,12668.7879 -23509.593,21209.7871 z"
+       inkscape:label="Blue piquant"
+       transform="translate(0,0.001)" />
   </g>
   <g
      inkscape:groupmode="layer"

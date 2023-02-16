@@ -94,6 +94,8 @@ class PaasifyConfigExtraVars(NodeList, PaasifyObj):
 
         if not payload:
             payload = []
+        elif isinstance(payload, str):
+            payload = [payload]
         return payload
 
 
@@ -305,7 +307,7 @@ class PaasifyProjectRuntime(NodeMap, PaasifyObj):
         paasify_source_dir = get_paasify_pkg_dir()
         paasify_plugins_dir = os.path.join(paasify_source_dir, "assets", "plugins")
         private_dir = os.path.join(root_path, ".paasify")
-        collection_dir = os.path.join(private_dir, "collections")
+        collection_dir = os.path.join(private_dir, "_collections")
         jsonnet_dir = os.path.join(private_dir, "plugins")
 
         _payload2 = {

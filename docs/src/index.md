@@ -1,6 +1,6 @@
 
 
---8<-- "../README.md::46"
+--8<-- "../README.md::48"
 
 
 <p align='center'>
@@ -8,42 +8,53 @@
 </p>
 
 
---8<-- "../README.md:85:111"
+--8<-- "../README.md:88:138"
 
 
+### Configuration
 
-
-Below a ten thousand foot overview, this will deploy a wordpress with its database and a front proxy.
-
-## Simple example project
-
-There is a simple config file that illustrate all componants:
+There is a simple config file that illustrate all componants, taken from the previous [wordpress example project](https://github.com/barbu-it/paasify-example-wordpress):
 ``` yaml title="paasify.yml"
-source:
-    default:
-        url: http://gthub.com/mrjk/...git
-    internal:
-        url: http://internal.org/mrjk/...git
+sources:
+  - name: community
+    remote: https://github.com/barbu-it/paasify-collection-community
+
 config:
-    vars:
-        app_domain: domain.com
+  namespace: demo-wp
+  extra_vars:
+    - secrets.yml
+  vars:
+    # We expose to 127.0.0.1, under the *.locahost domain
+    app_expose_ip: 127.0.0.1
+    app_domain: localhost
+
+    # Other domain examples
+    #app_domain: mydomain.org
+    #app_domain: localtest.me
+    #app_domain: ${app_expose_ip}.nip.io
+
+    # Default traefik network
+    traefik_net_name: ${_prj_ns}_proxy_default
+  tags_prefix:
+    - homepage
+    - traefik-svc
+
 stacks:
-  - name: traefik
+  - app: proxy
     vars:
-        app_fqdn: front.domain-admin.com
-  - name: wordpress
+      traefik_net_external: False
     tags:
-        mysql-sidecar
-  - name: hello
-    source: internal
-    tags:
-        mysql-sidecar
+      - expose_http
+      - expose_admin
+  - app: home
+  - app: community:wordpress
 ```
 
-A `source` is a list of git repo collections. The config contains all settings that will
-apply to the project and its stacks. The `stacks` key is a list of sequential stack to be applied.
+The first config element is `sources`, which is a list of git repo collections. The config contains 
+all settings that will apply to the project and its stacks. The `stacks` key is a list of sequential stack to be applied.
 Each stack is configurable and allow a fine grained configuration override dependings the user needs.
-To each stack can be applied vars and/or a list of tags.
+To each stack can be applied vars and/or a list of tags. Finally the `config` key allow to put project
+and default stack configuration.
 
 Then, you just have to run the following to set all up and running:
 
@@ -51,16 +62,17 @@ Then, you just have to run the following to set all up and running:
 paasify apply
 ```
 
-You should be able to access to a fresh Wordpress example on localhost.
+You should be able to access to a fresh Wordpress instance on [http://wordpress.localhost]() url while your
+project dashboard should be accessible on [http://home.localhost]().
 
 
-## Where to start
-
+## What next?
 
 Please start with one of:
 
-* [Tutorial](jupyter/learn_101)
-* [Concepts](docs/concepts)
-* [Usage](docs/usage)
-* [Plugins](plugins_apidoc/)
-* [Reference](refs/)
+* [Tutorial](jupyter/learn_101): More examples with some uses cases
+* [Concepts](docs/concepts): To understand Paasify core concepts
+* [Usage](docs/usage): To see how to use Paasify
+* [Plugins](plugins_apidoc/): Get collection reference
+* [Reference](refs/): Get reference and config schemas
+

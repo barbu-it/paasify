@@ -34,7 +34,7 @@ Please :star: this project if like it of if you want to support it!
 </p>
 
 <p align='center'>
-Official documentation is available on [https://barbu-it.github.io/paasify/]
+Official documentation is available on <a href="https://barbu-it.github.io/paasify/">https://barbu-it.github.io/paasify/</a>.
 </p>
 
 -------
@@ -70,7 +70,7 @@ This project try to overstep the missing gap between the docker-compose deployme
   * [Quickstart](#quickstart)
     + [Installation with pip](#installation-with-pip)
     + [Installation with docker](#installation-with-docker)
-    + [Usage/Examples](#usage-examples)
+    + [Example project: Wordpress](#example-project:-wordpress)
     + [Demo](#demo)
   * [Overview](#overview)
     + [Features](#features)
@@ -91,67 +91,49 @@ This project try to overstep the missing gap between the docker-compose deployme
 There are different ways to install Paasify:
 
 * [Installation with pip](#installation-with-pip): This is the recommended installation method for people who wants to try and/or develop infrastructure.
-* [Installation with docker](#installation-with-docker): Docker installation is more recommended for production environment.
+* [Installation with docker](#installation-with-docker): Docker installation is more recommended for production environment. (WIP)
 * [Installation with git](https://barbu-it.github.io/paasify/develop/install/): If you want to improve or contribute to Paasify itself.
 
 
 ### Installation with pip
 
-Install Paasify with pip:
+Install Paasify with pip. You may eventually install paasify in its own
+Python VirtualEnv, please adapt your commands, but for most people:
 
 ```bash
 pip install paasify
-paasify --help
 ```
 
-### Installation with docker
-
-The idea is to create a simple alias that will call the paasify image:
-
-```bash
-alias paasify='docker run --rm -w /work -v $PWD:/work -ti ghcr.io/barbu-it/paasify:latest paasify '
-
+You can check paasify is correctly installed by running the command:
+```
 paasify --help
 ```
 
 
-### Usage/Examples
+### Example project: Wordpress
 
-You need to have docker daemon running. See requirements section for further details. Let's try to deploy a Hello World project with paasify. It consists in deploying a proxy, for managing incoming traffic (we uses Traefik here) and a simple page that will list all the services you deployed with paasify.
+You need to have git and a running docker daemon. See requirements section for further
+details.
+
+Let's try to deploy a simple Wordpress instance with Paasify. It consists in deploying
+a proxy, for managing incoming traffic (we uses Traefik here), a dashboard and
+the Worpress instance. To deploy a such project:
 
 ```bash
-paasify new devbox
-cat <<EOF
-# My new project
-
-sources:
-  - name: community
-    remote: https://github.com/barbu-it/paasify-collection-community
-
-config:
-  vars:
-    app_expose_ip: 127.0.0.1
-    app_domain: ${app_expose_ip}.nip.io
-
-  tag_prefix:
-    - homepage
-    - traefik-svc
-
-stack:
-  - app: traefik
-  - app: homepage
-  - app: community:wordpress
-    tags:
-      - phpmyadmin
-EOF
-
+git clone https://github.com/barbu-it/paasify-example-wordpress.git wordpress
+cd wordpress
+paasify src install
 paasify apply
 ```
 
-Then you can visit: [http://homepage.127.0.0.1.nip.io](http://homepage.127.0.0.1.nip.io). Of course you can manage your own domains and manage SSL with let's encrypt. To have an idea of what app you can install, please checkout official collections:
+Then you can visit: [http://home.localhost](). Of course you can manage your own domains and manage SSL
+with let's encrypt. You can virtually add and tweak other applications. To have an idea of what app
+you can install, please checkout official collections:
 
 * [barbu-it/paasify-collection-community](https://github.com/barbu-it/paasify-collection-community): Apps provided for and by the community
 * [barbu-it/paasify-collection-infra](https://github.com/barbu-it/paasify-collection-infra): Dev et devops oriented Apps
+
+You can also find community collections in github, with the [#paasify-collection](https://github.com/barbu-it/paasify-example-wordpress/search?q=%23paasify-collection) tag.
 
 
 ## :sparkles: Overview
