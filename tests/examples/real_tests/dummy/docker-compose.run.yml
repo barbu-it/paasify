@@ -8,7 +8,7 @@ services:
     image: dummy
     labels:
       paasify.fqdn: dummy.test-example.com
-      paasify.path: /opt/paasify/tests/examples/real_tests/dummy
+      paasify.path: tests/examples/real_tests/dummy
       paasify.principal: true
     networks:
       default:

@@ -1,0 +1,393 @@
+tests/examples/real_tests/.gitignore: .paasify
+tests/examples/real_tests/RUN_TEST.sh: 'paasify build  && git diff --no-prefix
+
+
+  echo "It must not have changed, otherwise API has been broken"'
+tests/examples/real_tests/dummy/docker-compose.run.yml:
+  name: real_tests_dummy
+  networks:
+    default:
+      name: real_tests_dummy_default
+  services:
+    default:
+      hostname: dummy
+      image: dummy
+      labels:
+        paasify.fqdn: dummy.test-example.com
+        paasify.path: tests/examples/real_tests/dummy
+        paasify.principal: true
+      networks:
+        default: null
+      restart: 'no'
+  version: '3.8'
+tests/examples/real_tests/example/docker-compose.run.yml:
+  name: real_tests_example
+  networks:
+    default:
+      name: real_tests_example_default
+  services:
+    default:
+      hostname: example
+      image: alpine
+      labels:
+        paasify.fqdn: example.test-example.com
+        paasify.path: tests/examples/real_tests/example
+        paasify.principal: true
+      networks:
+        default: null
+      restart: 'no'
+      stop_grace_period: 1s
+  version: '3.8'
+tests/examples/real_tests/paasify.yml:
+  config:
+    extra_vars:
+    - vars.test.yml
+    vars:
+      app_admin_email: admin@test-example.com
+      app_domain: test-example.com
+      app_tz: America/Toronto
+      test2_pl_var1: glob1
+      test2_pl_var2: glob2
+      test2_pl_var3: glob3
+      test2_var_test_global1: true
+      test2_var_test_global2: false
+      test2_var_test_global3: false
+      test2_var_test_stack1: false
+  sources:
+  - https://github.com/dabealu/docker
+  stacks:
+  - default:example
+  - app: example
+    dir: test2
+    name: app2
+    tags:
+    - example:
+        example_desc: Like seen in docker-compose.yml, without values.
+        test2_pl_var3: $test2_pl_var3 + tag
+    vars:
+      _example_dump_vars_prefixes:
+      - tag
+      - test2
+      app_desc: This tests a variable parsing
+      docker_debug_vars: false
+      example_dump_vars: true
+      paasify_extra_vars: false
+      test2_pl_var2: $test2_pl_var2 + stack
+      test2_pl_var3: $test2_pl_var3 + stack
+      test2_var_test_global2: true
+      test2_var_test_stack1: true
+  - app: dummy
+    dir: test3
+    name: app3
+    tags:
+    - example: null
+    vars:
+      _example_dump_vars_prefixes: ''
+      app_desc: A dump of all variables of the context
+      example_dump_vars: true
+  - app: dummy
+    dir: test1
+    name: app1
+    tags:
+    - example:
+        example_desc: Like seen in docker-compose.yml, without values.
+    - example:
+        example_desc: We change the name, and fqdn is reprocessed as well (test1)
+        example_name: OVERRIDE2
+    - example:
+        example_desc: We change the domain, and fqdn is reprocessed as well (test2)
+        example_domain: OVERRIDE3
+    - example:
+        example_desc: We change the name/domain, and fqdn is reprocessed as well (test3)
+        example_domain: OVERRIDE42
+        example_name: OVERRIDE41
+    - example:
+        example_desc: The hardcoded fqdn always win
+        example_fqdn: OVERRIDE5
+    - example:
+        example_desc: Even if you change name or domain
+        example_domain: OVERRIDE62
+        example_fqdn: OVERRIDE6
+        example_name: OVERRIDE61
+    vars:
+      _example_dump_vars_prefixes:
+      - tag
+      - example
+      app_desc: This tests a variable inheritance and composition acrosse scopes (global/stack/tag)
+      example_domain: my-domain.com
+      example_dump_vars: true
+      example_name: my-name
+tests/examples/real_tests/test1/docker-compose.run.yml:
+  name: real_tests_app1
+  networks:
+    default:
+      name: real_tests_app1_default
+  services:
+    default:
+      hostname: app1
+      image: alpine
+      labels:
+        paasify.fqdn: app1.test-example.com
+        paasify.path: tests/examples/real_tests/test1
+        paasify.principal: true
+      networks:
+        default: null
+      restart: 'no'
+  version: '3.8'
+  x-test-vars:
+    example_desc: Like seen in docker-compose.yml, without values.
+    example_domain: my-domain.com
+    example_dump_vars: true
+    example_fqdn: my-name.my-domain.com
+    example_name: my-name
+    tag_cand: 1
+    tag_index: 0
+    tag_instance: example0
+    tag_suffix: ''
+  x-test1-vars:
+    example_desc: We change the name, and fqdn is reprocessed as well (test1)
+    example_domain: my-domain.com
+    example_dump_vars: true
+    example_fqdn: OVERRIDE2.my-domain.com
+    example_name: OVERRIDE2
+    tag_cand: 2
+    tag_index: 1
+    tag_instance: example1
+    tag_suffix: '1'
+  x-test2-vars:
+    example_desc: We change the domain, and fqdn is reprocessed as well (test2)
+    example_domain: OVERRIDE3
+    example_dump_vars: true
+    example_fqdn: my-name.OVERRIDE3
+    example_name: my-name
+    tag_cand: 3
+    tag_index: 2
+    tag_instance: example2
+    tag_suffix: '2'
+  x-test3-vars:
+    example_desc: We change the name/domain, and fqdn is reprocessed as well (test3)
+    example_domain: OVERRIDE42
+    example_dump_vars: true
+    example_fqdn: OVERRIDE41.OVERRIDE42
+    example_name: OVERRIDE41
+    tag_cand: 4
+    tag_index: 3
+    tag_instance: example3
+    tag_suffix: '3'
+  x-test4-vars:
+    example_desc: The hardcoded fqdn always win
+    example_domain: my-domain.com
+    example_dump_vars: true
+    example_fqdn: OVERRIDE5
+    example_name: my-name
+    tag_cand: 5
+    tag_index: 4
+    tag_instance: example4
+    tag_suffix: '4'
+  x-test5-vars:
+    example_desc: Even if you change name or domain
+    example_domain: OVERRIDE62
+    example_dump_vars: true
+    example_fqdn: OVERRIDE6
+    example_name: OVERRIDE61
+    tag_cand: 6
+    tag_index: 5
+    tag_instance: example5
+    tag_suffix: '5'
+tests/examples/real_tests/test1/vars.yml:
+  var_from_stack: true
+tests/examples/real_tests/test2/docker-compose.run.yml:
+  name: real_tests_app2
+  networks:
+    default:
+      name: real_tests_app2_default
+  services:
+    default:
+      image: alpine
+      networks:
+        default: null
+      restart: 'no'
+      stop_grace_period: 1s
+  x-test-vars:
+    tag_cand: 1
+    tag_index: 0
+    tag_instance: example0
+    tag_suffix: ''
+    test2_pl_var1: glob1
+    test2_pl_var2: glob2 + stack
+    test2_pl_var3: glob3 + stack + tag
+    test2_var_test_global1: true
+    test2_var_test_global2: true
+    test2_var_test_global3: false
+    test2_var_test_stack1: true
+tests/examples/real_tests/test3/docker-compose.run.yml:
+  name: real_tests_app3
+  networks:
+    default:
+      name: real_tests_app3_default
+  services:
+    default:
+      hostname: app3
+      image: alpine
+      labels:
+        paasify.fqdn: app3.test-example.com
+        paasify.path: tests/examples/real_tests/test3
+        paasify.principal: true
+      networks:
+        default: null
+      restart: 'no'
+  version: '3.8'
+  x-test-vars:
+    _example_dump_vars_prefixes: ''
+    _prj_domain: real-tests
+    _prj_namespace: real_tests
+    _prj_ns: real_tests
+    _prj_path: tests/examples/real_tests
+    _prj_stack_path: tests/examples/real_tests/test3
+    _prj_stack_tags: ':_paasify:example:'
+    _stack_app_dir: dummy
+    _stack_app_name: dummy
+    _stack_app_path: /opt/paasify/paasify/assets/collections/paasify/dummy
+    _stack_collection_app_path: null
+    _stack_name: app3
+    _stack_network: default
+    _stack_path_abs: tests/examples/real_tests/test3
+    _stack_service: default
+    app_adm_fqdn: app3-adm.test-example.com
+    app_adm_name: app3-adm
+    app_admin_email: admin@test-example.com
+    app_admin_pass: null
+    app_admin_user: admin
+    app_alias: app3
+    app_db_admin_pass: null
+    app_db_admin_user: root
+    app_db_host: db
+    app_db_name: dummy
+    app_db_pass: null
+    app_db_port: '3306'
+    app_db_type: null
+    app_db_user: dummy
+    app_debug: 'false'
+    app_default_pass: null
+    app_default_user: user
+    app_desc: A dump of all variables of the context
+    app_description: Dummy app for docker compose with networks only
+    app_dir_backup: tests/examples/real_tests/test3/backup
+    app_dir_build: /opt/paasify/paasify/assets/collections/paasify/dummy/build
+    app_dir_cache: tests/examples/real_tests/test3/cache
+    app_dir_conf: tests/examples/real_tests/test3/conf
+    app_dir_data: tests/examples/real_tests/test3/data
+    app_dir_db_conf: tests/examples/real_tests/test3/db_conf
+    app_dir_db_data: tests/examples/real_tests/test3/db_data
+    app_dir_debug: tests/examples/real_tests/test3/debug
+    app_dir_helpers: /opt/paasify/paasify/assets/collections/paasify/dummy/helpers
+    app_dir_internal: tests/examples/real_tests/test3/internal
+    app_dir_lib: tests/examples/real_tests/test3/lib
+    app_dir_license: tests/examples/real_tests/test3/license
+    app_dir_logs: tests/examples/real_tests/test3/logs
+    app_dir_media: tests/examples/real_tests/test3/media
+    app_dir_plugins: tests/examples/real_tests/test3/plugins
+    app_dir_random: /dev/urandom
+    app_dir_root: tests/examples/real_tests/test3
+    app_dir_script: tests/examples/real_tests/test3/scripts
+    app_dir_secrets: tests/examples/real_tests/test3/secrets
+    app_dir_share: tests/examples/real_tests/test3/share
+    app_dir_state: tests/examples/real_tests/test3/state
+    app_dir_template: /opt/paasify/paasify/assets/collections/paasify/dummy
+    app_dir_tmp: tests/examples/real_tests/test3/tmp
+    app_dir_urandom: /dev/urandom
+    app_docker_sock: /var/run/docker.sock
+    app_docker_socket: /var/run/docker.sock
+    app_domain: test-example.com
+    app_expose: false
+    app_expose_ip: 0.0.0.0
+    app_expose_port: null
+    app_expose_prot: null
+    app_fqdn: app3.test-example.com
+    app_image: alpine
+    app_instance: dummy-app3
+    app_lang: en_US
+    app_locale: en-US
+    app_log_access: false
+    app_log_level: INFO
+    app_name: app3
+    app_namespace: real_tests
+    app_network: default
+    app_network_external: null
+    app_network_key: default
+    app_network_name: real_tests_app3_default
+    app_network_name_default: real_tests_app3_default
+    app_network_name_prefix: real_tests
+    app_network_name_sufix: app3_default
+    app_ns: real_tests
+    app_org_name: MyOrg
+    app_pgid: '1000'
+    app_port: '80'
+    app_product: dummy
+    app_product_dir: dummy
+    app_product_path: /opt/paasify/paasify/assets/collections/paasify/dummy
+    app_prot: http
+    app_puid: '1000'
+    app_readonly_pass: null
+    app_readonly_user: readonly
+    app_restart_policy: unless-stopped
+    app_service: default
+    app_setup: false
+    app_slug: real_tests_app3
+    app_tags: ':_paasify:example:'
+    app_tz: America/Toronto
+    app_tz_mount: false
+    app_tz_mounts: /etc/timezone:/etc/timezone:ro,/etc/localtime:/etc/localtime:ro
+    app_tz_var: TZ
+    app_user_email: user@test-example.com
+    example_domain: test-example.com
+    example_dump_vars: true
+    example_fqdn: NO-NAME.test-example.com
+    example_name: NO-NAME
+    global_var: I'm global !
+    is_swarm: false
+    ldap_admin_bind_dn: cn=admin,dc=test-example,dc=com
+    ldap_base_dn: dc=test-example,dc=com
+    ldap_domain: test-example.com
+    ldap_group_base_dn: ou=groups,dc=test-example,dc=com
+    ldap_host: ldap
+    ldap_org: test-example.com
+    ldap_port: 386
+    ldap_prot: ldap
+    ldap_tls: false
+    ldap_uri: ldap://ldap:386
+    ldap_user_base_dn: ou=people,dc=test-example,dc=com
+    net_backup: real_tests_backup
+    net_bstorage: real_tests_bstorage
+    net_docker: real_tests_docker
+    net_fstorage: real_tests_fstorage
+    net_ldap: real_tests_ldap
+    net_mail: real_tests_mail
+    net_nosql: real_tests_nosql
+    net_ostorage: real_tests_ostorage
+    net_proxy: real_tests_proxy
+    net_proxy_ip: real_tests_proxy
+    net_proxy_web: real_tests_proxy
+    net_queue: real_tests_queue
+    net_sql: real_tests_sql
+    net_vpn: real_tests_vpn
+    paasify_extra_vars: true
+    paasify_sep: '-'
+    paasify_sep_dir: /
+    paasify_sep_net: _
+    swarm_nodes: 1
+    tag_cand: 1
+    tag_index: 0
+    tag_instance: example0
+    tag_suffix: ''
+    test2_pl_var1: glob1
+    test2_pl_var2: glob2
+    test2_pl_var3: glob3
+    test2_var_test_global1: true
+    test2_var_test_global2: false
+    test2_var_test_global3: false
+    test2_var_test_stack1: false
+tests/examples/real_tests/vars.test.yml:
+  app_image: alpine
+  app_tz: America/Mexico
+  global_var: I'm global !

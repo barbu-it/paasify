@@ -8,7 +8,7 @@ services:
     image: alpine
     labels:
       paasify.fqdn: app3.test-example.com
-      paasify.path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3
+      paasify.path: tests/examples/real_tests/test3
       paasify.principal: true
     networks:
       default:
@@ -19,16 +19,16 @@ x-test-vars:
   _prj_domain: real-tests
   _prj_namespace: real_tests
   _prj_ns: real_tests
-  _prj_path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests
-  _prj_stack_path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3
+  _prj_path: tests/examples/real_tests
+  _prj_stack_path: tests/examples/real_tests/test3
   _prj_stack_tags: ':_paasify:example:'
   _stack_app_dir: dummy
   _stack_app_name: dummy
-  _stack_app_path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/paasify/assets/collections/paasify/dummy
+  _stack_app_path: /opt/paasify/paasify/assets/collections/paasify/dummy
   _stack_collection_app_path:
   _stack_name: app3
   _stack_network: default
-  _stack_path_abs: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3
+  _stack_path_abs: tests/examples/real_tests/test3
   _stack_service: default
   app_adm_fqdn: app3-adm.test-example.com
   app_adm_name: app3-adm
@@ -49,29 +49,29 @@ x-test-vars:
   app_default_user: user
   app_desc: A dump of all variables of the context
   app_description: Dummy app for docker compose with networks only
-  app_dir_backup: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/backup
-  app_dir_build: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/paasify/assets/collections/paasify/dummy/build
-  app_dir_cache: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/cache
-  app_dir_conf: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/conf
-  app_dir_data: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/data
-  app_dir_db_conf: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/db_conf
-  app_dir_db_data: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/db_data
-  app_dir_debug: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/debug
-  app_dir_helpers: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/paasify/assets/collections/paasify/dummy/helpers
-  app_dir_internal: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/internal
-  app_dir_lib: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/lib
-  app_dir_license: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/license
-  app_dir_logs: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/logs
-  app_dir_media: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/media
-  app_dir_plugins: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/plugins
+  app_dir_backup: tests/examples/real_tests/test3/backup
+  app_dir_build: /opt/paasify/paasify/assets/collections/paasify/dummy/build
+  app_dir_cache: tests/examples/real_tests/test3/cache
+  app_dir_conf: tests/examples/real_tests/test3/conf
+  app_dir_data: tests/examples/real_tests/test3/data
+  app_dir_db_conf: tests/examples/real_tests/test3/db_conf
+  app_dir_db_data: tests/examples/real_tests/test3/db_data
+  app_dir_debug: tests/examples/real_tests/test3/debug
+  app_dir_helpers: /opt/paasify/paasify/assets/collections/paasify/dummy/helpers
+  app_dir_internal: tests/examples/real_tests/test3/internal
+  app_dir_lib: tests/examples/real_tests/test3/lib
+  app_dir_license: tests/examples/real_tests/test3/license
+  app_dir_logs: tests/examples/real_tests/test3/logs
+  app_dir_media: tests/examples/real_tests/test3/media
+  app_dir_plugins: tests/examples/real_tests/test3/plugins
   app_dir_random: /dev/urandom
-  app_dir_root: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3
-  app_dir_script: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/scripts
-  app_dir_secrets: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/secrets
-  app_dir_share: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/share
-  app_dir_state: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/state
-  app_dir_template: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/paasify/assets/collections/paasify/dummy
-  app_dir_tmp: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/tests/examples/real_tests/test3/tmp
+  app_dir_root: tests/examples/real_tests/test3
+  app_dir_script: tests/examples/real_tests/test3/scripts
+  app_dir_secrets: tests/examples/real_tests/test3/secrets
+  app_dir_share: tests/examples/real_tests/test3/share
+  app_dir_state: tests/examples/real_tests/test3/state
+  app_dir_template: /opt/paasify/paasify/assets/collections/paasify/dummy
+  app_dir_tmp: tests/examples/real_tests/test3/tmp
   app_dir_urandom: /dev/urandom
   app_docker_sock: /var/run/docker.sock
   app_docker_socket: /var/run/docker.sock
@@ -102,7 +102,7 @@ x-test-vars:
   app_port: '80'
   app_product: dummy
   app_product_dir: dummy
-  app_product_path: /home/jez/volumes/data/prj/mrjk/POC/paasify_transiant/paasify/assets/collections/paasify/dummy
+  app_product_path: /opt/paasify/paasify/assets/collections/paasify/dummy
   app_prot: http
   app_puid: '1000'
   app_readonly_pass:
