@@ -580,34 +580,34 @@ class Stack(NodeMap, PaasifyObj):
         #   - Add stack conf vars from paasify.yml
         varmgr.add_vars(
             vars_default,
+            10000,
             scope="global",
             kind="default_conf",
             source="core",
             file="paasify.py",
             owner="paasify",
-            parse_order=1000,
         )
         varmgr.add_vars_from_lookup(
-            self.extra_vars_lookups, 4000, fail_on_missing=True, scope="global"
+            self.extra_vars_lookups, 50000, fail_on_missing=True, scope="global"
         )
-        varmgr.add_vars_from_lookup(self.docker_vars_lookup, 5000, scope="stack")
+        varmgr.add_vars_from_lookup(self.docker_vars_lookup, 20000, scope="stack")
         varmgr.add_vars(
             vars_global,
+            70000,
             scope="global",
             kind="global_conf",
             source="core",
             file="paasify.yml:config.vars",
             owner="user",
-            parse_order=7000,
         )
         varmgr.add_vars(
             vars_user,
+            80000,
             scope="stack",
             kind="stack_conf",
             source="core",
             file=f"paasify.yml:stacks[{stack_name}]vars",
             owner="user",
-            parse_order=8000,
         )
 
         # 4. Add config for tags as well
@@ -616,7 +616,7 @@ class Stack(NodeMap, PaasifyObj):
         prio_index = 0
         for cand in all_tags:
             cand_index += 1
-            prio_index += 1
+            prio_index += 100
 
             # Fetch the tag
             # --------------------
@@ -650,13 +650,13 @@ class Stack(NodeMap, PaasifyObj):
 
             varmgr.add_vars(
                 loop_vars,
+                90000 + prio_index,
                 # scope="tag",
                 scope=f"tag_{tag_inst}",
                 kind="tag_conf",
                 source=tag_inst,
                 file=f"paasify.yml:stacks[{stack_name}]tags[{tag_inst}]",
                 owner="user",
-                parse_order=9000 + prio_index,
             )
 
             # 3.2 Execute jsonnet plugin var calls
@@ -690,21 +690,21 @@ class Stack(NodeMap, PaasifyObj):
 
             varmgr.add_vars(
                 var_def,
+                30000 + prio_index,
                 scope="stack",
                 owner=tag_name,
                 kind="tag_def",
                 source=tag_name,
                 file=jsonnet_file,
-                parse_order=2000 + prio_index,
             )
             varmgr.add_vars(
                 var_dyn,
+                40000 + prio_index,
                 scope="stack",
                 owner=tag_name,
                 kind="tag_dyn",
                 source=tag_name,
                 file=jsonnet_file,
-                parse_order=3000 + prio_index,
             )
 
         return varmgr

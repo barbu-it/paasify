@@ -74,7 +74,10 @@ class VarMgr(PaasifyObj):
         # self.set_logger("paasify.cli.vars")
         self.index = 0
 
-    def add_vars(self, payload, **kwargs):
+        self.list_index = []
+        self.list_parse_order = []
+
+    def add_vars(self, payload, range_parse, **kwargs):
         "Add any kind of variables to the stack"
 
         # TODO: Sanity avoid duplicate piorities, should not be done this way, if still required
@@ -85,17 +88,22 @@ class VarMgr(PaasifyObj):
                 pprint([var for var in self._vars if var.parse_order == prio])
                 assert False, f"Got duplicate priority: {prio}, found: {known_prios}"
 
+        index = range_parse
         if isinstance(payload, dict):
             for name, var in payload.items():
-                self.add_var(name, var, **kwargs)
+                index += 1
+                self.add_var(name, var, parse_order=index, **kwargs)
 
         elif isinstance(payload, list):
             for var in payload:
-                self.add_var(var, **kwargs)
+                index += 1
+                self.add_var(var, parse_order=index, **kwargs)
         else:
             assert (
                 False
             ), f"Object is not supported, expected dict or list, got: {payload}"
+
+        return index
 
     def add_var(self, key, value=None, **kwargs):
         """Add a list/dict of vars into varmanager. You can override source/file/owner/kind.
@@ -104,14 +112,15 @@ class VarMgr(PaasifyObj):
         object can be: key value
         """
 
+        # Fetch object
         obj = None
         if isinstance(key, Variable):
             obj = key
         elif isinstance(value, Variable):
             obj = value
 
+        # Assign overrides from parameters
         if obj:
-            # Assign overrides
             for name, val in kwargs.items():
                 try:
                     getattr(obj, name)
@@ -129,6 +138,16 @@ class VarMgr(PaasifyObj):
                 }
             )
             obj = Variable(parent=self, ident="StackVar", payload=payload)
+
+        # Sanity checks
+        assert (
+            obj.index not in self.list_index
+        ), f"Duplicate index: {obj.index} for {obj}"
+        assert (
+            obj.parse_order not in self.list_parse_order
+        ), f"Duplicate parse_order: {obj.parse_order} for {obj}"
+        self.list_index.append(obj.index)
+        self.list_parse_order.append(obj.parse_order)
 
         self._vars.append(obj)
 
@@ -156,13 +175,12 @@ class VarMgr(PaasifyObj):
                 "source": "core",
                 "file": cand_file,
                 "owner": cand["owner"],
-                "parse_order": parse_order,
             }
             config.update(override)
 
             # Append to config
-            self.add_vars(conf, **config)
-            parse_order += 1
+            parse_order = self.add_vars(conf, range_parse=parse_order, **config)
+            # parse_order += 100
 
     # Vars selector
     # ===========================
