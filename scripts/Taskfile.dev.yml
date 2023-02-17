@@ -7,7 +7,7 @@ vars:
   DIRENV_VERSION: 'latest'
   TASK_VERSION: 'v3.18.0'
   COMP_DIR:
-    sh: echo "${VIRTUAL_ENV:-$PWD}/comp"
+    sh: echo "${VIRTUAL_ENV:-.venv}/comp"
 
 anchors:
   sources_module: &PAASIFY_MODULE

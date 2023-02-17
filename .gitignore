@@ -16,6 +16,7 @@ scripts/Taskfile.extra.yml
 .direnv/
 .task/
 .vscode/*
+*.swp
 
 # Temp
 #docs/code_config/*

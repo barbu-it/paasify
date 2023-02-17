@@ -46,7 +46,8 @@ tasks:
     sources:
       - poetry.lock
       - pyproject.toml
-      - "{{ .venv }}}/bin"
+    generates:
+      - "{{ .venv }}}/bin/poetry"
     cmds:
       - eval "$(./scripts/platform.sh env)" && ./scripts/bootstrap_deps.sh
 
@@ -61,6 +62,8 @@ tasks:
       - bootstrap
     sources:
       - "{{.PRJ_DIR}}/*"
+    generates:
+      - "${VIRTUAL_ENV:-.venv}/bin/paasify"
     cmds:
       - poetry install -vv --no-interaction --only-root
 
