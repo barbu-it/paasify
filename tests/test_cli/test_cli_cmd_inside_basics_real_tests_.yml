@@ -1,5 +1,5 @@
 tests/examples/real_tests/.gitignore: .paasify
-tests/examples/real_tests/RUN_TEST.sh: 'paasify build  && git diff --no-prefix
+tests/examples/real_tests/RUN_TEST.sh: 'paasify build  && git diff --no-prefix .
 
 
   echo "It must not have changed, otherwise API has been broken"'

@@ -34,7 +34,7 @@ def write_file(file, content):
 
 
 def exclude_file_pattern(path):
-    excludes = [".swp", "/dumps/"]
+    excludes = [".swp", "/_dumps/"]
     skip = False
     for exclude in excludes:
         if exclude in path:

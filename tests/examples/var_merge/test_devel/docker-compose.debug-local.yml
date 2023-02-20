@@ -1,3 +1,4 @@
+# This file override the default docker-compose tag
 
 services:
   main_app2:
