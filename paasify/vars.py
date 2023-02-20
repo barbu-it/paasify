@@ -5,6 +5,7 @@
 
 import os
 import logging
+import graphlib
 
 
 from pprint import pprint  # noqa: F401
@@ -213,28 +214,73 @@ class VarMgr(PaasifyObj):
         else:
             selection = list(self._vars)
 
-        # Prepare result
-        env = {
+        # Prepare unparsed result
+        out = {
             var.name: var.value
             for var in sorted(selection, key=self._render_env_sorter)
         }
         if not parse:
             self.log.debug(f"Fetch vars: {hint}")
-            return env
+            return out
 
         # Parse results
-        self.log.debug(f"Parse vars, {hint}")
-        result = {}
-        result2 = dict(env)
-        result2.update(parse_vars)
-        for var in sorted(selection, key=self._render_env_sorter):
-            value = self.template_value(
-                var.value, result2, hint=var.name, skip_undefined=skip_undefined
-            )
-            result[var.name] = value
-            result2[var.name] = value
+        parsing_env = dict(out)
+        parsing_env.update(parse_vars)
 
-        return result
+        # Generate variables dependency tree
+        deptree = {}
+        for var in sorted(selection, key=self._render_env_sorter):
+            deps = []
+            tpl = self.get_value_templater(var.value)
+            if tpl:
+                deps = tpl.get_identifiers()
+            if len(deps) > 0:
+
+                # Missing vars checkup
+                delkeys = []
+                for dep in deps:
+                    if dep == var.name:
+                        delkeys.append(dep)
+                    if dep not in parsing_env:
+                        if skip_undefined:
+                            continue
+                        else:
+                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={var.value}' in {hint}"
+                            raise error.UndeclaredVariable(msg) from KeyError
+
+                # CLean uneeded keys
+                for name in delkeys:
+                    deps.remove(name)
+                    self.log.trace(f"Delete recursive resolution for var: {name}")
+
+                deptree[var.name] = deps
+
+        # Generate var topological sorting
+        self.log.debug(f"Parse {len(deptree)} var(s), {hint}")
+        self.log.trace(f"Vars: {','.join(deptree.keys())}")
+        if len(deptree) > 0:
+
+            # Get var dependency parsing order
+            ts = graphlib.TopologicalSorter(deptree)
+            try:
+                ret = tuple(ts.static_order())
+            except graphlib.CycleError as err:
+                msg2, var = err.args
+                msg = f"Variable dependency cycle error for: {','.join(var)} ({msg2})"
+                raise error.UndeclaredVariable(msg) from KeyError
+
+            # Parse each vars
+            dyn_vars = {}
+            for var_name in ret:
+                value = parsing_env[var_name]
+                value = self.template_value(
+                    value, parsing_env, hint=var_name, skip_undefined=skip_undefined
+                )
+                parsing_env[var_name] = value
+                dyn_vars[var_name] = value
+            out.update(dyn_vars)
+
+        return out
 
     def resolve_dyn_vars(self, tpl, env, hint=None):
         "Resolver environment and secret vars"
@@ -258,17 +304,24 @@ class VarMgr(PaasifyObj):
 
         return env
 
+    def get_value_templater(self, value):
+        """Return the stringTemplater for a given value"""
+
+        if not isinstance(value, str):
+            return None
+
+        return StringTemplate(value)
+
     def template_value(self, value, env, hint=None, skip_undefined=False):
         "Render a string with template engine"
 
-        if not isinstance(value, str):
-            return value
+        tpl = self.get_value_templater(value)
+        if not tpl:
+            return value, "string_simple"
 
         # Resolve dynamic vars
-        tpl = StringTemplate(value)
         # env = self.resolve_dyn_vars(tpl, env, hint=hint)
 
-        # pylint: disable=broad-except
         try:
             old_value = value
             value = tpl.substitute(**env)
@@ -279,8 +332,9 @@ class VarMgr(PaasifyObj):
 
         except KeyError as err:
             if not skip_undefined:
+                pprint(env)
+                raise Exception("You found a bug!")
                 msg = f"Variable {err} is not defined in variable '{hint}': '{value}'"
-                # self.log.warning(msg)
                 raise error.UndeclaredVariable(msg) from KeyError
 
         except ValueError:
