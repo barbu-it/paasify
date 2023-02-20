@@ -214,7 +214,7 @@ tests/examples/real_tests/test2/docker-compose.run.yml:
     tag_instance: example0
     tag_suffix: ''
     test2_pl_var1: glob1
-    test2_pl_var2: glob2 + stack
+    test2_pl_var2: glob2 + stack + stack
     test2_pl_var3: glob3 + stack + tag
     test2_var_test_global1: true
     test2_var_test_global2: true

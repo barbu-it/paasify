@@ -240,9 +240,7 @@ class VarMgr(PaasifyObj):
         deptree = {}
         for var in sorted(selection, key=self._render_env_sorter):
             deps = []
-
             value = var.value
-
             tpl = self.get_value_templater(value)
             if tpl:
                 deps = tpl.get_identifiers()
@@ -257,10 +255,10 @@ class VarMgr(PaasifyObj):
                         if skip_undefined:
                             continue
                         else:
-                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={var.value}' in {hint} ({var.file})"
+                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={value}' in {hint} ({var.file})"
                             raise error.UndeclaredVariable(msg) from KeyError
 
-                # CLean uneeded keys
+                # Clean uneeded keys
                 for name in delkeys:
                     deps.remove(name)
                     self.log.trace(f"Delete recursive resolution for var: {name}")
@@ -284,13 +282,16 @@ class VarMgr(PaasifyObj):
             # Parse each vars
             dyn_vars = {}
             for var_name in ret:
-                value = parsing_env[var_name]
-
-                value = self.template_value(
+                # Fetch variable from out, then fallback on parsing_env
+                value = out.get(var_name, parsing_env[var_name])
+                value_new = self.template_value(
                     value, parsing_env, hint=var_name, skip_undefined=skip_undefined
                 )
-                parsing_env[var_name] = value
-                dyn_vars[var_name] = value
+                self.log.trace(
+                    f"Parse transform var '{var_name}': {value} -> {value_new}"
+                )
+                parsing_env[var_name] = value_new
+                dyn_vars[var_name] = value_new
             out.update(dyn_vars)
 
         return out
@@ -330,7 +331,7 @@ class VarMgr(PaasifyObj):
 
         tpl = self.get_value_templater(value)
         if not tpl:
-            return value, "string_simple"
+            return value
 
         # Resolve dynamic vars
         # env = self.resolve_dyn_vars(tpl, env, hint=hint)
