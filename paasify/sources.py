@@ -193,7 +193,7 @@ class Source(NodeMap, PaasifyObj):
         # The actual thing we all want !
         if not self.path:
             self.path = FileReference(
-                self.dir, self.runtime.project_collection_dir, keep=True
+                self.dir, self.runtime.project_collection_dir, keep=False
             ).path()
 
         assert self.name
