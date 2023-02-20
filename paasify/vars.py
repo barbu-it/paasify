@@ -4,6 +4,7 @@
 # pylint: disable=logging-fstring-interpolation
 
 import os
+import re
 import logging
 import graphlib
 
@@ -45,10 +46,18 @@ class Variable(PaasifyObj):
         )
         PaasifyObj.__init__(self, parent, ident)
 
-    # def get_value(self):
-    #    return {
-    #            "name": None,
-    #            }
+        # Check if value ends with short form variable, that can lead to issues because
+        # concatenation happens after parsing, so you may endud with undefined or weirdly named
+        # variables.
+        if isinstance(self.value, str):
+            value = self.value
+            # pattern = re.compile(r'([^\$]\$)([\w]+)$')
+            pattern = re.compile(r"(\$)([\w]+)$")
+            new_val = pattern.sub(r"\g<1>{\g<2>}", value)
+            if new_val != value:
+                msg = f"Ambiguous value for variable '{self.name}={value}': using '{new_val}' instead of '{value}' in file {self.file}"
+                self.log.trace(msg)
+                self.value = new_val
 
 
 class VarMgr(PaasifyObj):
@@ -231,7 +240,10 @@ class VarMgr(PaasifyObj):
         deptree = {}
         for var in sorted(selection, key=self._render_env_sorter):
             deps = []
-            tpl = self.get_value_templater(var.value)
+
+            value = var.value
+
+            tpl = self.get_value_templater(value)
             if tpl:
                 deps = tpl.get_identifiers()
             if len(deps) > 0:
@@ -245,7 +257,7 @@ class VarMgr(PaasifyObj):
                         if skip_undefined:
                             continue
                         else:
-                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={var.value}' in {hint}"
+                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={var.value}' in {hint} ({var.file})"
                             raise error.UndeclaredVariable(msg) from KeyError
 
                 # CLean uneeded keys
@@ -273,6 +285,7 @@ class VarMgr(PaasifyObj):
             dyn_vars = {}
             for var_name in ret:
                 value = parsing_env[var_name]
+
                 value = self.template_value(
                     value, parsing_env, hint=var_name, skip_undefined=skip_undefined
                 )
