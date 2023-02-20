@@ -343,22 +343,27 @@ class Stack(NodeMap, PaasifyObj):
 
         # 2. Forward to StackTagManager: Generate directory lookup for tags
 
-        # Get jsonnet search paths
+        # Prepare paths
+        app_jsonnet_dir = None
         dirs_docker = [stack_dir]
+        dirs_jsonnet = []
+
+        # Get jsonnet search paths
         if app:
             src = app.get_app_path()
             assert src
             dirs_docker.append(src)
-        dirs_jsonnet = [
-            stack_dir,
-            project_jsonnet_dir,
-        ]
+            app_jsonnet_dir = src
+
+        # Get jsonnet search paths
+        for path in [stack_dir, project_jsonnet_dir, app_jsonnet_dir]:
+            if path:
+                dirs_jsonnet.append(path)
         for src in self.prj.sources.get_all():
             dirs_jsonnet.append(os.path.join(src.path, ".paasify", "plugins"))
 
         # Build tag list
         tags = self.tag_manager.get_children()
-
         tag_list = []
         for tag in tags:
 
@@ -369,7 +374,7 @@ class Stack(NodeMap, PaasifyObj):
             ]
             lookup = FileLookup()
             self.log.trace(
-                f"Looking up docker-compose files in: {', '.join(dirs_docker)}"
+                f"Looking up {', '.join(pattern)} docker-compose files in: {', '.join(dirs_docker)}"
             )
             for dir_ in dirs_docker:
                 lookup.append(dir_, pattern)
@@ -383,13 +388,16 @@ class Stack(NodeMap, PaasifyObj):
             pattern = [f"{tag.name}.jsonnet"]
             lookup = FileLookup()
             jsonnet_file = None
-            self.log.trace(f"Looking up jsonnet files in: {', '.join(dirs_jsonnet)}")
+            self.log.trace(
+                f"Looking up {', '.join(pattern)} jsonnet files in: {', '.join(dirs_jsonnet)}"
+            )
             for dir_ in dirs_jsonnet:
                 lookup.append(dir_, pattern)
                 jsonnet_cand = lookup.match()
                 if len(jsonnet_cand) > 0:
                     jsonnet_file = first(jsonnet_cand)["match"]
 
+            self.log.info(f"Tag '{tag.name}' matches: {docker_file}, {jsonnet_file}")
             ret = {
                 "tag": tag,
                 "jsonnet_file": jsonnet_file,
@@ -406,7 +414,7 @@ class Stack(NodeMap, PaasifyObj):
         results = []
         results.append(tag_base)
         results.extend(tag_list)
-        return results, dirs_jsonnet
+        return results, dirs_docker, dirs_jsonnet
 
     def _gen_conveniant_vars(self, docker_file, tag_names=None) -> dict:
         "Generate default core variables"
@@ -784,7 +792,7 @@ class Stack(NodeMap, PaasifyObj):
         # -------------------
         self.explain = explain if isinstance(explain, bool) else self.explain
         sta = StackAssembler(parent=self, ident=f"{self.stack_name}")
-        all_tags, jsonnet_lookup_dirs = self.get_tag_plan()
+        all_tags, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
         self.var_manager = self.get_stack_vars(sta, all_tags, jsonnet_lookup_dirs)
 
         # 2. Prepare debugging tools
@@ -796,7 +804,11 @@ class Stack(NodeMap, PaasifyObj):
 
         # 3. Prepare scopes
         # -------------------
-        glob_vars = self.render_vars(scope="global", hint="global scoped variables")
+        glob_vars = self.render_vars(
+            scope="global",
+            hint="global scoped variables",
+            parse=True,
+        )
         stack_vars = self.render_vars(
             scope="global,stack",
             parse=True,
@@ -972,79 +984,49 @@ class Stack(NodeMap, PaasifyObj):
     def explain_tags(self):
         "Explain hos tags are processed on stack"
 
-        print(f"  Scanning stack plugins: {self.ident}")
-        matches, jsonnet_lookup_dirs = self.get_tag_plan()
+        print(f"  Plugins for stack: {self.ident}")
+        tag_config, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
 
-        # 0. Internal functions
-        def list_items(items):
-            "List items"
-            _first = "*"
-            # list_items(items)
-            for cand in items:
-                print(f"          {_first} {cand}")
-                _first = "-"
+        # Display lookup paths
+        print("")
+        print(2 * "  " + "Stack lookups:")
+        print(3 * "  " + "Docker-compose paths:")
+        for path in docker_lookup_dirs:
+            print(4 * "  " + f"- {path}")
+        print(3 * "  " + "Jsonnet paths:")
+        for path in jsonnet_lookup_dirs:
+            print(3 * "  " + f"- {path}")
 
-        def list_jsonnet_files(items):
-            "List jsonnet files"
-            for match in items:
-
-                tag = match.get("tag")
+        # Display found files
+        print("")
+        print(2 * "  " + "Stack components:")
+        print(3 * "  " + "Docker-compose files:")
+        matches = first([match for match in tag_config if match["tag"] is None])
+        if matches:
+            src = matches["docker_file"]
+            basename = os.path.basename(src)
+            print(4 * "  " + f"* {basename:<20} {src}")
+        matches = [match for match in tag_config if match["docker_file"] is not None]
+        if matches:
+            for match in matches:
+                tag = match["tag"]
                 if tag:
-                    cand = match.get("jsonnet_file")
-                    if cand:
-                        print(f"        - {tag.name}")
+                    src = match["docker_file"]
+                    print(4 * "  " + f"- {tag.name:<20} {src}")
 
-        # 1. Show all match combinations
-        for match in matches:
-
-            tag = match.get("tag")
-
-            if not tag:
-                print("    Default config:")
-                list_items(self.docker_candidates())
-                print("    Tag config:")
-                continue
-
-            print(f"      tag: {tag.name}")
-
-            if tag.docker_candidates:
-                print("        Docker tags:")
-                list_items(tag.docker_candidates)
-
-            if tag.jsonnet_candidates:
-                print("        Jsonnet tags:")
-                list_items(tag.jsonnet_candidates)
-
-        # 2. Show actual loading
-        print("\n    Tag Loading Order:")
-
-        # 2.1 Var loading
-        print("      Loading vars:")
-        list_jsonnet_files(matches)
-
-        # 2.2 Tag loading
-        print("      Loading Tags:")
-        for match in matches:
-
-            tag = match.get("tag")
-
-            if not tag:
-                cand = match.get("docker_file")
-                print(f"        * base: {cand}")
-                continue
-
-            cand = match.get("docker_file")
-            if cand:
-                print(f"        - {tag.name}")
-
-        # 2.3 Jsonnet loading
-        print("      Loading jsonnet:")
-        list_jsonnet_files(matches)
+        print(3 * "  " + "Jsonnet tags files:")
+        matches = [match for match in tag_config if match["jsonnet_file"] is not None]
+        if matches:
+            for match in matches:
+                tag = match["tag"]
+                if tag:
+                    src = match["jsonnet_file"]
+                    print(4 * "  " + f"- {tag.name:<20} {src}")
 
     def gen_doc(self, output_dir=None):
         "Generate documentation"
 
-        matches, jsonnet_lookup_dirs = self.get_tag_plan()
+        matches, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
 
         # 3. Show jsonschema
         print("\n    Plugins jsonschema:")
