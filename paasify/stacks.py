@@ -211,6 +211,7 @@ class Stack(NodeMap, PaasifyObj):
             stack_name = stack_name.replace("/", "-")
 
         # Register required vars
+        self.explain = False
         self.stack_name = stack_name
         self.stack_dir = stack_dir
         self.prj_ns = self.prj.config.namespace or self.prj.runtime.namespace
@@ -515,6 +516,7 @@ class Stack(NodeMap, PaasifyObj):
         scope=None,
         parse_vars=None,
         varmgr=None,
+        explain=None,
     ):
         "Return parsed vars for a given scope"
 
@@ -522,6 +524,7 @@ class Stack(NodeMap, PaasifyObj):
 
         # Detect selector
         parse_vars = parse_vars or {}
+        explain = explain if isinstance(explain, bool) else self.explain
         func = None
         scopes = None
         varmgr = varmgr or self.var_manager
@@ -540,13 +543,22 @@ class Stack(NodeMap, PaasifyObj):
         # Parse the result
         msg = f"Environment rendering asked for scope: parse={parse}, hint={hint}"
         self.log.trace(msg)
-        result = varmgr.render_env(
-            parse=parse,
-            parse_vars=parse_vars,
-            skip_undefined=skip_undefined,
-            select=func,
-            hint=hint,
-        )
+        try:
+            result = varmgr.render_env(
+                parse=parse,
+                parse_vars=parse_vars,
+                skip_undefined=skip_undefined,
+                select=func,
+                hint=hint,
+            )
+        except error.UndeclaredVariable as err:
+            if explain is True:
+                self.log.notice("Explain current vars")
+                self.var_manager.explain()
+            else:
+                self.log.notice("Use --explain flag to get current vars")
+            raise err
+
         return result
 
     def get_stack_vars(self, sta, all_tags, jsonnet_lookup_dirs, extra_user_vars=None):
@@ -760,7 +772,7 @@ class Stack(NodeMap, PaasifyObj):
 
         dumper.dump(f"2-{cand_index:02d}-{tag_inst}-env.txt", txt)
 
-    def assemble(self, vars_only=False, dump_payloads=False, explain=False):
+    def assemble(self, vars_only=False, dump_payloads=False, explain=None):
         """Generate docker-compose.run.yml and parse it with jsonnet
 
         vars_only: If False, do nothing, if True or non empty list, just dump the variables
@@ -770,6 +782,7 @@ class Stack(NodeMap, PaasifyObj):
 
         # 1. Prepare assemble context
         # -------------------
+        self.explain = explain if isinstance(explain, bool) else self.explain
         sta = StackAssembler(parent=self, ident=f"{self.stack_name}")
         all_tags, jsonnet_lookup_dirs = self.get_tag_plan()
         self.var_manager = self.get_stack_vars(sta, all_tags, jsonnet_lookup_dirs)
