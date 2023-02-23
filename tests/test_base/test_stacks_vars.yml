@@ -2,7 +2,8 @@ tests/examples/var_merge/.paasify/_collections/default/app1/docker-compose.yml:
   services:
     main_1:
       image: app1_from_template
-tests/examples/var_merge/.paasify/_collections/default/app2/docker-compose.debug.yml:
+tests/examples/var_merge/.paasify/_collections/default/app2/debug.jsonnet: ''
+tests/examples/var_merge/.paasify/_collections/default/app2/docker-compose.debug-local.yml:
   services:
     main_app2:
       environment:
@@ -25,8 +26,7 @@ tests/examples/var_merge/.paasify/_collections/default/app2/vars.yml:
   var_escaped: $$OK_my_value
   var_image: OK_from_app_vars:latest
   var_user: OK_from_app_vars
-tests/examples/var_merge/.paasify/_collections/paasify/default/app2/debug.jsonnet: ''
-tests/examples/var_merge/.paasify/_collections/paasify/default/app2/docker-compose.yml:
+tests/examples/var_merge/.paasify/_collections/default/app4/docker-compose.yml:
   services:
     main_app2:
       image: dummy
@@ -164,10 +164,13 @@ tests/examples/var_merge/paasify.yml:
     dir: test_devel
     name: app2_copy3
     tags:
-    - debug: null
-    - debug-local:
+    - debug:
         base_var1: ${base_var1}_my_prefix1
         base_var2: ${base_var2}_my_suffix2
+        custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
+        debug_base_var1_override: ${base_var1}_my_prefix1
+        debug_base_var2_override: ${base_var2}_my_suffix2
+    - debug-local:
         custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
     - override
     - docker-net-attach:
@@ -197,7 +200,9 @@ tests/examples/var_merge/test_devel/docker-compose.override.yml:
       environment:
         OVERRIDE1: OK_override
         base_var1: $base_var1
+        base_var1_override: $base_var1_override
         base_var2: $base_var2
+        base_var2_override: $base_var2_override
 tests/examples/var_merge/test_devel/docker-compose.run.yml:
   name: var_merge_app2_copy3
   networks:
@@ -207,11 +212,12 @@ tests/examples/var_merge/test_devel/docker-compose.run.yml:
   services:
     main_app2:
       environment:
-        DEBUG1: ENABLED_FROM_APP_TAG
         DEBUG2: ENABLED_FROM_LOCAL_APP
         OVERRIDE1: OK_override
         base_var1: my_prefix1_my_middle1
+        base_var1_override: ''
         base_var2: my_prefix2
+        base_var2_override: ''
         custom_from_var1: OK_from_config_global
         custom_from_var2: OK_from_config_stack
         custom_from_var3: OK empty because tag override is only allowed for jsonnet
@@ -231,5 +237,12 @@ tests/examples/var_merge/test_devel/docker-compose.run.yml:
           priority: 0
       restart: unless-stopped
   version: '3.8'
+  x-test-vars:
+    debug_base_var1_override: my_prefix1_my_middle1_my_prefix1_my_prefix1
+    debug_base_var2_override: my_prefix2_my_suffix2_my_suffix2
+    debug_domain: var-merge.localhost
+    debug_dump_vars: true
+    debug_fqdn: NO-NAME.var-merge.localhost
+    debug_name: NO-NAME
 tests/examples/var_merge/test_devel/vars.yml:
   xx_stack_var: defined

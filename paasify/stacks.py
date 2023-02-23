@@ -211,6 +211,7 @@ class Stack(NodeMap, PaasifyObj):
             stack_name = stack_name.replace("/", "-")
 
         # Register required vars
+        self.explain = False
         self.stack_name = stack_name
         self.stack_dir = stack_dir
         self.prj_ns = self.prj.config.namespace or self.prj.runtime.namespace
@@ -342,22 +343,27 @@ class Stack(NodeMap, PaasifyObj):
 
         # 2. Forward to StackTagManager: Generate directory lookup for tags
 
-        # Get jsonnet search paths
+        # Prepare paths
+        app_jsonnet_dir = None
         dirs_docker = [stack_dir]
+        dirs_jsonnet = []
+
+        # Get jsonnet search paths
         if app:
             src = app.get_app_path()
             assert src
             dirs_docker.append(src)
-        dirs_jsonnet = [
-            stack_dir,
-            project_jsonnet_dir,
-        ]
+            app_jsonnet_dir = src
+
+        # Get jsonnet search paths
+        for path in [stack_dir, project_jsonnet_dir, app_jsonnet_dir]:
+            if path:
+                dirs_jsonnet.append(path)
         for src in self.prj.sources.get_all():
             dirs_jsonnet.append(os.path.join(src.path, ".paasify", "plugins"))
 
         # Build tag list
         tags = self.tag_manager.get_children()
-
         tag_list = []
         for tag in tags:
 
@@ -368,7 +374,7 @@ class Stack(NodeMap, PaasifyObj):
             ]
             lookup = FileLookup()
             self.log.trace(
-                f"Looking up docker-compose files in: {', '.join(dirs_docker)}"
+                f"Looking up {', '.join(pattern)} docker-compose files in: {', '.join(dirs_docker)}"
             )
             for dir_ in dirs_docker:
                 lookup.append(dir_, pattern)
@@ -382,13 +388,16 @@ class Stack(NodeMap, PaasifyObj):
             pattern = [f"{tag.name}.jsonnet"]
             lookup = FileLookup()
             jsonnet_file = None
-            self.log.trace(f"Looking up jsonnet files in: {', '.join(dirs_jsonnet)}")
+            self.log.trace(
+                f"Looking up {', '.join(pattern)} jsonnet files in: {', '.join(dirs_jsonnet)}"
+            )
             for dir_ in dirs_jsonnet:
                 lookup.append(dir_, pattern)
                 jsonnet_cand = lookup.match()
                 if len(jsonnet_cand) > 0:
                     jsonnet_file = first(jsonnet_cand)["match"]
 
+            self.log.info(f"Tag '{tag.name}' matches: {docker_file}, {jsonnet_file}")
             ret = {
                 "tag": tag,
                 "jsonnet_file": jsonnet_file,
@@ -405,7 +414,7 @@ class Stack(NodeMap, PaasifyObj):
         results = []
         results.append(tag_base)
         results.extend(tag_list)
-        return results, dirs_jsonnet
+        return results, dirs_docker, dirs_jsonnet
 
     def _gen_conveniant_vars(self, docker_file, tag_names=None) -> dict:
         "Generate default core variables"
@@ -457,6 +466,15 @@ class Stack(NodeMap, PaasifyObj):
                 # "_stack_collection_app_path": self.app.collection_dir,
             }
             result.update(extra)
+
+        # Remove or duplicate vars with _
+        for key in list(result.keys()):
+            if key.startswith("_"):
+                new_key = key[1:]
+                result[new_key] = result[key]
+                # DEPRECATED: We want to remove most or all _ vars !
+                # del result[key]
+
         return result
 
     @property
@@ -515,6 +533,7 @@ class Stack(NodeMap, PaasifyObj):
         scope=None,
         parse_vars=None,
         varmgr=None,
+        explain=None,
     ):
         "Return parsed vars for a given scope"
 
@@ -522,6 +541,7 @@ class Stack(NodeMap, PaasifyObj):
 
         # Detect selector
         parse_vars = parse_vars or {}
+        explain = explain if isinstance(explain, bool) else self.explain
         func = None
         scopes = None
         varmgr = varmgr or self.var_manager
@@ -540,13 +560,22 @@ class Stack(NodeMap, PaasifyObj):
         # Parse the result
         msg = f"Environment rendering asked for scope: parse={parse}, hint={hint}"
         self.log.trace(msg)
-        result = varmgr.render_env(
-            parse=parse,
-            parse_vars=parse_vars,
-            skip_undefined=skip_undefined,
-            select=func,
-            hint=hint,
-        )
+        try:
+            result = varmgr.render_env(
+                parse=parse,
+                parse_vars=parse_vars,
+                skip_undefined=skip_undefined,
+                select=func,
+                hint=hint,
+            )
+        except error.UndeclaredVariable as err:
+            if explain is True:
+                self.log.notice("Explain current vars")
+                self.var_manager.explain()
+            else:
+                self.log.notice("Use --explain flag to get current vars")
+            raise err
+
         return result
 
     def get_stack_vars(self, sta, all_tags, jsonnet_lookup_dirs, extra_user_vars=None):
@@ -580,34 +609,34 @@ class Stack(NodeMap, PaasifyObj):
         #   - Add stack conf vars from paasify.yml
         varmgr.add_vars(
             vars_default,
+            10000,
             scope="global",
             kind="default_conf",
             source="core",
             file="paasify.py",
             owner="paasify",
-            parse_order=1000,
         )
         varmgr.add_vars_from_lookup(
-            self.extra_vars_lookups, 4000, fail_on_missing=True, scope="global"
+            self.extra_vars_lookups, 50000, fail_on_missing=True, scope="global"
         )
-        varmgr.add_vars_from_lookup(self.docker_vars_lookup, 5000, scope="stack")
+        varmgr.add_vars_from_lookup(self.docker_vars_lookup, 20000, scope="stack")
         varmgr.add_vars(
             vars_global,
+            70000,
             scope="global",
             kind="global_conf",
             source="core",
             file="paasify.yml:config.vars",
             owner="user",
-            parse_order=7000,
         )
         varmgr.add_vars(
             vars_user,
+            80000,
             scope="stack",
             kind="stack_conf",
             source="core",
             file=f"paasify.yml:stacks[{stack_name}]vars",
             owner="user",
-            parse_order=8000,
         )
 
         # 4. Add config for tags as well
@@ -616,7 +645,7 @@ class Stack(NodeMap, PaasifyObj):
         prio_index = 0
         for cand in all_tags:
             cand_index += 1
-            prio_index += 1
+            prio_index += 100
 
             # Fetch the tag
             # --------------------
@@ -650,13 +679,13 @@ class Stack(NodeMap, PaasifyObj):
 
             varmgr.add_vars(
                 loop_vars,
+                90000 + prio_index,
                 # scope="tag",
                 scope=f"tag_{tag_inst}",
                 kind="tag_conf",
                 source=tag_inst,
                 file=f"paasify.yml:stacks[{stack_name}]tags[{tag_inst}]",
                 owner="user",
-                parse_order=9000 + prio_index,
             )
 
             # 3.2 Execute jsonnet plugin var calls
@@ -690,21 +719,21 @@ class Stack(NodeMap, PaasifyObj):
 
             varmgr.add_vars(
                 var_def,
+                30000 + prio_index,
                 scope="stack",
                 owner=tag_name,
                 kind="tag_def",
                 source=tag_name,
                 file=jsonnet_file,
-                parse_order=2000 + prio_index,
             )
             varmgr.add_vars(
                 var_dyn,
+                40000 + prio_index,
                 scope="stack",
                 owner=tag_name,
                 kind="tag_dyn",
                 source=tag_name,
                 file=jsonnet_file,
-                parse_order=3000 + prio_index,
             )
 
         return varmgr
@@ -760,7 +789,7 @@ class Stack(NodeMap, PaasifyObj):
 
         dumper.dump(f"2-{cand_index:02d}-{tag_inst}-env.txt", txt)
 
-    def assemble(self, vars_only=False, dump_payloads=False, explain=False):
+    def assemble(self, vars_only=False, dump_payloads=False, explain=None):
         """Generate docker-compose.run.yml and parse it with jsonnet
 
         vars_only: If False, do nothing, if True or non empty list, just dump the variables
@@ -770,8 +799,9 @@ class Stack(NodeMap, PaasifyObj):
 
         # 1. Prepare assemble context
         # -------------------
+        self.explain = explain if isinstance(explain, bool) else self.explain
         sta = StackAssembler(parent=self, ident=f"{self.stack_name}")
-        all_tags, jsonnet_lookup_dirs = self.get_tag_plan()
+        all_tags, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
         self.var_manager = self.get_stack_vars(sta, all_tags, jsonnet_lookup_dirs)
 
         # 2. Prepare debugging tools
@@ -783,7 +813,11 @@ class Stack(NodeMap, PaasifyObj):
 
         # 3. Prepare scopes
         # -------------------
-        glob_vars = self.render_vars(scope="global", hint="global scoped variables")
+        glob_vars = self.render_vars(
+            scope="global",
+            hint="global scoped variables",
+            parse=True,
+        )
         stack_vars = self.render_vars(
             scope="global,stack",
             parse=True,
@@ -959,79 +993,49 @@ class Stack(NodeMap, PaasifyObj):
     def explain_tags(self):
         "Explain hos tags are processed on stack"
 
-        print(f"  Scanning stack plugins: {self.ident}")
-        matches, jsonnet_lookup_dirs = self.get_tag_plan()
+        print(f"  Plugins for stack: {self.ident}")
+        tag_config, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
 
-        # 0. Internal functions
-        def list_items(items):
-            "List items"
-            _first = "*"
-            # list_items(items)
-            for cand in items:
-                print(f"          {_first} {cand}")
-                _first = "-"
+        # Display lookup paths
+        print("")
+        print(2 * "  " + "Stack lookups:")
+        print(3 * "  " + "Docker-compose paths:")
+        for path in docker_lookup_dirs:
+            print(4 * "  " + f"- {path}")
+        print(3 * "  " + "Jsonnet paths:")
+        for path in jsonnet_lookup_dirs:
+            print(3 * "  " + f"- {path}")
 
-        def list_jsonnet_files(items):
-            "List jsonnet files"
-            for match in items:
-
-                tag = match.get("tag")
+        # Display found files
+        print("")
+        print(2 * "  " + "Stack components:")
+        print(3 * "  " + "Docker-compose files:")
+        matches = first([match for match in tag_config if match["tag"] is None])
+        if matches:
+            src = matches["docker_file"]
+            basename = os.path.basename(src)
+            print(4 * "  " + f"* {basename:<20} {src}")
+        matches = [match for match in tag_config if match["docker_file"] is not None]
+        if matches:
+            for match in matches:
+                tag = match["tag"]
                 if tag:
-                    cand = match.get("jsonnet_file")
-                    if cand:
-                        print(f"        - {tag.name}")
+                    src = match["docker_file"]
+                    print(4 * "  " + f"- {tag.name:<20} {src}")
 
-        # 1. Show all match combinations
-        for match in matches:
-
-            tag = match.get("tag")
-
-            if not tag:
-                print("    Default config:")
-                list_items(self.docker_candidates())
-                print("    Tag config:")
-                continue
-
-            print(f"      tag: {tag.name}")
-
-            if tag.docker_candidates:
-                print("        Docker tags:")
-                list_items(tag.docker_candidates)
-
-            if tag.jsonnet_candidates:
-                print("        Jsonnet tags:")
-                list_items(tag.jsonnet_candidates)
-
-        # 2. Show actual loading
-        print("\n    Tag Loading Order:")
-
-        # 2.1 Var loading
-        print("      Loading vars:")
-        list_jsonnet_files(matches)
-
-        # 2.2 Tag loading
-        print("      Loading Tags:")
-        for match in matches:
-
-            tag = match.get("tag")
-
-            if not tag:
-                cand = match.get("docker_file")
-                print(f"        * base: {cand}")
-                continue
-
-            cand = match.get("docker_file")
-            if cand:
-                print(f"        - {tag.name}")
-
-        # 2.3 Jsonnet loading
-        print("      Loading jsonnet:")
-        list_jsonnet_files(matches)
+        print(3 * "  " + "Jsonnet tags files:")
+        matches = [match for match in tag_config if match["jsonnet_file"] is not None]
+        if matches:
+            for match in matches:
+                tag = match["tag"]
+                if tag:
+                    src = match["jsonnet_file"]
+                    print(4 * "  " + f"- {tag.name:<20} {src}")
 
     def gen_doc(self, output_dir=None):
         "Generate documentation"
 
-        matches, jsonnet_lookup_dirs = self.get_tag_plan()
+        matches, docker_lookup_dirs, jsonnet_lookup_dirs = self.get_tag_plan()
 
         # 3. Show jsonschema
         print("\n    Plugins jsonschema:")

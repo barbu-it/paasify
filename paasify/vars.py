@@ -4,7 +4,9 @@
 # pylint: disable=logging-fstring-interpolation
 
 import os
+import re
 import logging
+import graphlib
 
 
 from pprint import pprint  # noqa: F401
@@ -44,10 +46,18 @@ class Variable(PaasifyObj):
         )
         PaasifyObj.__init__(self, parent, ident)
 
-    # def get_value(self):
-    #    return {
-    #            "name": None,
-    #            }
+        # Check if value ends with short form variable, that can lead to issues because
+        # concatenation happens after parsing, so you may endud with undefined or weirdly named
+        # variables.
+        if isinstance(self.value, str):
+            value = self.value
+            # pattern = re.compile(r'([^\$]\$)([\w]+)$')
+            pattern = re.compile(r"(\$)([\w]+)$")
+            new_val = pattern.sub(r"\g<1>{\g<2>}", value)
+            if new_val != value:
+                msg = f"Ambiguous value for variable '{self.name}={value}': using '{new_val}' instead of '{value}' in file {self.file}"
+                self.log.trace(msg)
+                self.value = new_val
 
 
 class VarMgr(PaasifyObj):
@@ -74,7 +84,10 @@ class VarMgr(PaasifyObj):
         # self.set_logger("paasify.cli.vars")
         self.index = 0
 
-    def add_vars(self, payload, **kwargs):
+        self.list_index = []
+        self.list_parse_order = []
+
+    def add_vars(self, payload, range_parse, **kwargs):
         "Add any kind of variables to the stack"
 
         # TODO: Sanity avoid duplicate piorities, should not be done this way, if still required
@@ -85,17 +98,22 @@ class VarMgr(PaasifyObj):
                 pprint([var for var in self._vars if var.parse_order == prio])
                 assert False, f"Got duplicate priority: {prio}, found: {known_prios}"
 
+        index = range_parse
         if isinstance(payload, dict):
             for name, var in payload.items():
-                self.add_var(name, var, **kwargs)
+                index += 1
+                self.add_var(name, var, parse_order=index, **kwargs)
 
         elif isinstance(payload, list):
             for var in payload:
-                self.add_var(var, **kwargs)
+                index += 1
+                self.add_var(var, parse_order=index, **kwargs)
         else:
             assert (
                 False
             ), f"Object is not supported, expected dict or list, got: {payload}"
+
+        return index
 
     def add_var(self, key, value=None, **kwargs):
         """Add a list/dict of vars into varmanager. You can override source/file/owner/kind.
@@ -104,14 +122,15 @@ class VarMgr(PaasifyObj):
         object can be: key value
         """
 
+        # Fetch object
         obj = None
         if isinstance(key, Variable):
             obj = key
         elif isinstance(value, Variable):
             obj = value
 
+        # Assign overrides from parameters
         if obj:
-            # Assign overrides
             for name, val in kwargs.items():
                 try:
                     getattr(obj, name)
@@ -129,6 +148,16 @@ class VarMgr(PaasifyObj):
                 }
             )
             obj = Variable(parent=self, ident="StackVar", payload=payload)
+
+        # Sanity checks
+        assert (
+            obj.index not in self.list_index
+        ), f"Duplicate index: {obj.index} for {obj}"
+        assert (
+            obj.parse_order not in self.list_parse_order
+        ), f"Duplicate parse_order: {obj.parse_order} for {obj}"
+        self.list_index.append(obj.index)
+        self.list_parse_order.append(obj.parse_order)
 
         self._vars.append(obj)
 
@@ -156,13 +185,12 @@ class VarMgr(PaasifyObj):
                 "source": "core",
                 "file": cand_file,
                 "owner": cand["owner"],
-                "parse_order": parse_order,
             }
             config.update(override)
 
             # Append to config
-            self.add_vars(conf, **config)
-            parse_order += 1
+            parse_order = self.add_vars(conf, range_parse=parse_order, **config)
+            # parse_order += 100
 
     # Vars selector
     # ===========================
@@ -195,28 +223,78 @@ class VarMgr(PaasifyObj):
         else:
             selection = list(self._vars)
 
-        # Prepare result
-        env = {
+        # Prepare unparsed result
+        out = {
             var.name: var.value
             for var in sorted(selection, key=self._render_env_sorter)
         }
         if not parse:
             self.log.debug(f"Fetch vars: {hint}")
-            return env
+            return out
 
         # Parse results
-        self.log.debug(f"Parse vars, {hint}")
-        result = {}
-        result2 = dict(env)
-        result2.update(parse_vars)
-        for var in sorted(selection, key=self._render_env_sorter):
-            value = self.template_value(
-                var.value, result2, hint=var.name, skip_undefined=skip_undefined
-            )
-            result[var.name] = value
-            result2[var.name] = value
+        parsing_env = dict(out)
+        parsing_env.update(parse_vars)
 
-        return result
+        # Generate variables dependency tree
+        deptree = {}
+        for var in sorted(selection, key=self._render_env_sorter):
+            deps = []
+            value = var.value
+            tpl = self.get_value_templater(value)
+            if tpl:
+                deps = tpl.get_identifiers()
+            if len(deps) > 0:
+
+                # Missing vars checkup
+                delkeys = []
+                for dep in deps:
+                    if dep == var.name:
+                        delkeys.append(dep)
+                    if dep not in parsing_env:
+                        if skip_undefined:
+                            continue
+                        else:
+                            msg = f"Variable '{dep}' is not defined in statement '{var.name}={value}' in {hint} ({var.file})"
+                            raise error.UndeclaredVariable(msg) from KeyError
+
+                # Clean uneeded keys
+                for name in delkeys:
+                    deps.remove(name)
+                    self.log.trace(f"Delete recursive resolution for var: {name}")
+
+                deptree[var.name] = deps
+
+        # Generate var topological sorting
+        self.log.debug(f"Parse {len(deptree)} var(s), {hint}")
+        self.log.trace(f"Vars: {','.join(deptree.keys())}")
+        if len(deptree) > 0:
+
+            # Get var dependency parsing order
+            ts = graphlib.TopologicalSorter(deptree)
+            try:
+                ret = tuple(ts.static_order())
+            except graphlib.CycleError as err:
+                msg2, var = err.args
+                msg = f"Variable dependency cycle error for: {','.join(var)} ({msg2})"
+                raise error.UndeclaredVariable(msg) from KeyError
+
+            # Parse each vars
+            dyn_vars = {}
+            for var_name in ret:
+                # Fetch variable from out, then fallback on parsing_env
+                value = out.get(var_name, parsing_env[var_name])
+                value_new = self.template_value(
+                    value, parsing_env, hint=var_name, skip_undefined=skip_undefined
+                )
+                self.log.trace(
+                    f"Parse transform var '{var_name}': {value} -> {value_new}"
+                )
+                parsing_env[var_name] = value_new
+                dyn_vars[var_name] = value_new
+            out.update(dyn_vars)
+
+        return out
 
     def resolve_dyn_vars(self, tpl, env, hint=None):
         "Resolver environment and secret vars"
@@ -240,17 +318,24 @@ class VarMgr(PaasifyObj):
 
         return env
 
+    def get_value_templater(self, value):
+        """Return the stringTemplater for a given value"""
+
+        if not isinstance(value, str):
+            return None
+
+        return StringTemplate(value)
+
     def template_value(self, value, env, hint=None, skip_undefined=False):
         "Render a string with template engine"
 
-        if not isinstance(value, str):
+        tpl = self.get_value_templater(value)
+        if not tpl:
             return value
 
         # Resolve dynamic vars
-        tpl = StringTemplate(value)
         # env = self.resolve_dyn_vars(tpl, env, hint=hint)
 
-        # pylint: disable=broad-except
         try:
             old_value = value
             value = tpl.substitute(**env)
@@ -261,8 +346,9 @@ class VarMgr(PaasifyObj):
 
         except KeyError as err:
             if not skip_undefined:
+                pprint(env)
+                raise Exception("You found a bug!")
                 msg = f"Variable {err} is not defined in variable '{hint}': '{value}'"
-                # self.log.warning(msg)
                 raise error.UndeclaredVariable(msg) from KeyError
 
         except ValueError:

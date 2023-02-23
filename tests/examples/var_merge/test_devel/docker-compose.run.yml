@@ -6,11 +6,12 @@ networks:
 services:
   main_app2:
     environment:
-      DEBUG1: ENABLED_FROM_APP_TAG
       DEBUG2: ENABLED_FROM_LOCAL_APP
       OVERRIDE1: OK_override
       base_var1: my_prefix1_my_middle1
+      base_var1_override: ''
       base_var2: my_prefix2
+      base_var2_override: ''
       custom_from_var1: OK_from_config_global
       custom_from_var2: OK_from_config_stack
       custom_from_var3: OK empty because tag override is only allowed for jsonnet
@@ -30,3 +31,10 @@ services:
         priority: 0
     restart: unless-stopped
 version: '3.8'
+x-test-vars:
+  debug_base_var1_override: my_prefix1_my_middle1_my_prefix1_my_prefix1
+  debug_base_var2_override: my_prefix2_my_suffix2_my_suffix2
+  debug_domain: var-merge.localhost
+  debug_dump_vars: true
+  debug_fqdn: NO-NAME.var-merge.localhost
+  debug_name: NO-NAME

@@ -57,8 +57,8 @@ install_venv ()
   if [[ -d "${_VENV}/bin" ]] ; then
     echo "INFO: Python VirtualEnv already installed in: ${_VENV}"
   else
-    echo "INFO: Installing Python VirtualEnv: ${_VENV}"
-    python3 -m venv ${_VENV}
+    echo "INFO: Installing Python Virtualenv: ${_VENV}"
+    virtualenv ${_VENV}
   fi
 }
 

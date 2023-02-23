@@ -18,6 +18,11 @@ import paasify.errors as error
 
 log = logging.getLogger(__name__)
 
+PAASIFY_INSTALL_PATH = get_paasify_pkg_dir()
+PAASIFY_COLLECTION_PATH = os.path.join(
+    PAASIFY_INSTALL_PATH, "assets", "collections", "paasify"
+)
+PAASIFY_PLUGINS_PATH = os.path.join(PAASIFY_COLLECTION_PATH, ".paasify", "plugins")
 
 # =====================================================================
 # Source management
@@ -193,7 +198,7 @@ class Source(NodeMap, PaasifyObj):
         # The actual thing we all want !
         if not self.path:
             self.path = FileReference(
-                self.dir, self.runtime.project_collection_dir, keep=True
+                self.dir, self.runtime.project_collection_dir, keep=False
             ).path()
 
         assert self.name
@@ -302,20 +307,13 @@ class SourcesManager(NodeList, PaasifyObj):
 
     def node_hook_transform(self, payload):
 
-        module_path = os.path.dirname(error.__file__)
-        module_path2 = get_paasify_pkg_dir()
-        assert module_path == module_path2, "TODO: Validate this"
-        paasify_collection = os.path.join(
-            module_path, "assets", "collections", "paasify"
-        )
-
         # Always inject the paasify core source at first
         payload = payload or []
         payload.insert(
             0,
             {
                 "name": "paasify",
-                "dir": paasify_collection,
+                "dir": PAASIFY_COLLECTION_PATH,
             },
         )
 

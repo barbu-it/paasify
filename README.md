@@ -70,7 +70,7 @@ This project try to overstep the missing gap between the docker-compose deployme
   * [Quickstart](#quickstart)
     + [Installation with pip](#installation-with-pip)
     + [Installation with docker](#installation-with-docker)
-    + [Example project: Wordpress](#example-project:-wordpress)
+    + [Example project: Wordpress](#example-project-wordpress)
     + [Demo](#demo)
   * [Overview](#overview)
     + [Features](#features)

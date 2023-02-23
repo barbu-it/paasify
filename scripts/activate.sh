@@ -1,7 +1,7 @@
 #!/bin/bash
 
 _VENV=${VIRTUAL_ENV:-.venv}
-COMP_DIR=${VIRTUAL_ENV:-$PWD}/comp/
+COMP_DIR=${_VENV}/comp/
 
 >&2 echo "INFO: Load environment vars"
 eval "$(./scripts/platform.sh env)"
@@ -9,11 +9,13 @@ eval "$(./scripts/platform.sh env)"
 if [[ ! -f "$_VENV/bin/poetry" ]]; then
   >&2 echo "INFO: Install project dependencies"
   ./scripts/bootstrap_deps.sh
+  . $_VENV/bin/activate
   task completion
+else
+  >&2 echo "INFO: Load virtualenv"
+  . $_VENV/bin/activate
 fi
 
->&2 echo "INFO: Load virtualenv"
-. $_VENV/bin/activate
 
 if [[ ! -f "$_VENV/bin/paasify" ]]; then
   >&2 echo "INFO: Install paasify"

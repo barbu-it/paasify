@@ -1,10 +1,13 @@
 # Paasify ignores
 .paasify/_*
-*/data/*
-*/share/*
-*/tmp/*
-*/db_data/*
+*/*/*
+!*/*conf*/*
+!*/scripts/*
+!*/patch/*
+!*/*.yml
+!*/*.yaml
 
 # Other common tools
 .direnv/*
 .venv/*
+*.swp

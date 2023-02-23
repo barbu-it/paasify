@@ -5,3 +5,6 @@ services:
 
       base_var1: "$base_var1"
       base_var2: "$base_var2"
+
+      base_var1_override: $base_var1_override
+      base_var2_override: $base_var2_override

@@ -76,14 +76,14 @@ stacks:
       base_var2: my_prefix2
     tags:
       - debug:   # Test loading docker-compose.debug.yml from app
+          custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
+          debug_base_var1_override: ${base_var1}_my_prefix1
+          debug_base_var2_override: ${base_var2}_my_suffix2
+          base_var1: ${base_var1}_my_prefix1
+          base_var2: ${base_var2}_my_suffix2
 
       - debug-local:   # Test loading docker-compose.debug.yml from local
           custom_from_var3: KO_from_config_tag only allowed for jsonnet tags
-
-          # TOFIX:
-          # This can't be tested, we need a plugin that dump the ouput
-          base_var1: ${base_var1}_my_prefix1
-          base_var2: ${base_var2}_my_suffix2
 
       - override      # Test local override over app tag
       - docker-net-attach:

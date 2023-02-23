@@ -41,6 +41,7 @@ from paasify.stacks import StackTagMgr, StackManager
 
 
 ALLOW_CONF_JUNK = False
+PAASIFY_ENV_COLLECTION_DIR = "PAASIFY_COLLECTION_DIR"
 
 
 class PaasifyConfigExtraVars(NodeList, PaasifyObj):
@@ -309,6 +310,13 @@ class PaasifyProjectRuntime(NodeMap, PaasifyObj):
         private_dir = os.path.join(root_path, ".paasify")
         collection_dir = os.path.join(private_dir, "_collections")
         jsonnet_dir = os.path.join(private_dir, "plugins")
+
+        # Env overrides
+        if PAASIFY_ENV_COLLECTION_DIR in os.environ:
+            collection_dir = os.environ[PAASIFY_ENV_COLLECTION_DIR]
+            self.log.info(
+                f"Default collection directory updated from environment: {PAASIFY_ENV_COLLECTION_DIR}={collection_dir}"
+            )
 
         _payload2 = {
             "paasify_source_dir": paasify_source_dir,
