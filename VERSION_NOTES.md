@@ -1,24 +1,40 @@
-## Last changes (2023-02-16)
+## Last changes (2023-02-22)
 
 ### feat
 
-- add new project files into git by default
-- add support for git on project creation
-- add collection/project banners
+- provides internal stack variables to users
+- rework ls explain output for easier comprehension
+- improve error message on variables failures
+- add support for PAASIFY_ENV_COLLECTION_DIR
 
 ### fix
 
-- minor issues in paasify collection
-- gitignore was incomplete
-- messy logo source caused bad rendering
-- unreadable type on b/w themes
-- user material bad rendering
-- file lookup when path is empty
-- extra_vars short form
-- ignored directories in .paasify
-- missing core plugins
+- too verbose environment var usage notice
+- default collection README typos and requirements.txt
+- outdated default project settings
+- variable parser internal behavior
+- weird docker bug handling weirdly symlinks
+- case when short variables are concat with other value
+- variables dependency resolution order
+- parser was not parsing vars in correct order
+- developper deployment scripts
 
 ### docs
 
-- Update onboarding doc
+- fix typo in toc
+
+### chore
+
+- linting
+- refactor default collection path guessing
+
+### ci
+
+- move tests function in a common lib
+- fix debian support for virtualenv
+
+### test
+
+- Update minor changes in tests
+- update cli tests with regression data
 
