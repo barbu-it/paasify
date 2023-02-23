@@ -314,7 +314,7 @@ class PaasifyProjectRuntime(NodeMap, PaasifyObj):
         # Env overrides
         if PAASIFY_ENV_COLLECTION_DIR in os.environ:
             collection_dir = os.environ[PAASIFY_ENV_COLLECTION_DIR]
-            self.log.notice(
+            self.log.info(
                 f"Default collection directory updated from environment: {PAASIFY_ENV_COLLECTION_DIR}={collection_dir}"
             )
 
