@@ -22,8 +22,7 @@ PAASIFY_INSTALL_PATH = get_paasify_pkg_dir()
 PAASIFY_COLLECTION_PATH = os.path.join(
     PAASIFY_INSTALL_PATH, "assets", "collections", "paasify"
 )
-PAASIFY_PLUGINS_PATH = os.path.join(
-    PAASIFY_COLLECTION_PATH, ".paasify", "plugins")
+PAASIFY_PLUGINS_PATH = os.path.join(PAASIFY_COLLECTION_PATH, ".paasify", "plugins")
 
 # =====================================================================
 # Source management
