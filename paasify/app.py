@@ -60,8 +60,8 @@ APP_DESC
 
 To deploy this project, your must first checkout the project with git and go into the directory:
 ```
-git clone GIT_REPO
-cd REPO
+git clone GIT_REPO {name}
+cd {name}
 ```
 
 Download project sources:
@@ -80,29 +80,29 @@ paasify apply
 
 The following requirements must be installed for this project:
 
-    * docker
+* docker
 
 To modify this project:
 
-    * paasify v{version}
-    * git
+* paasify v{version}
+* git
 
 ### Paasify documentation
 
 Quicklinks:
 
-    * [Paasify Documentation](https://barbu-it.github.io/paasify/)
-    * [Paasify Sources](https://github.com/barbu-it/paasify)
-    * [Paasify Gitter](https://gitter.im/barbu-it/paasify)
+* [Paasify Documentation](https://barbu-it.github.io/paasify/)
+* [Paasify Sources](https://github.com/barbu-it/paasify)
+* [Paasify Gitter](https://gitter.im/barbu-it/paasify)
 
 
 ## Project Informations
 
 Paasify project maintened by:
 
-    * Author: AUTHOR, EMAIL
-    * License: GPLv3
-    * Repository: GIT_REPO
+* Author: AUTHOR, EMAIL
+* License: GPLv3
+* Repository: GIT_REPO
 
 """
 
@@ -218,7 +218,7 @@ class PaasifyApp(NodeMap, PaasifyObj):
         }
         templates = {
             "requirements": {
-                "content": "paasify=={version}\n",
+                "content": "paasify>={version}\n",
                 "dest": os.path.join(path, "requirements.txt"),
             },
             "readme": {
