@@ -1,28 +1,37 @@
+# Paasify project
+# ===============
+
+sources:
+  - name: default
+    remote: git@github.com:barbu-it/paasify-collection-infra.git
+  - name: community
+    remote: git@github.com:barbu-it/paasify-collection-community.git
+
+
 config:
 
   # Load extra vars
-  # -----------------
-  # extra_vars:
-  #   - ../vars.extra.yml
+  #extra_vars:
+  #  - ../vars.yml
 
+  # Project vars
   vars:
 
     # Determine your application domain
-    # app_domain: devbox.home
+    app_domain: paasify.localhost
+
+    # Determine how is exposed your stacks
+    app_expose_ip: 127.0.0.1
 
     # Default network name for all stacks
-    # app_network_name: $net_proxy_public
+    app_network_name: $prj_ns
 
-sources:
-
-  # Add you sources below
-  # - name: default
-  #   remote: git@github.com:user/repo.git
-  #   #remote: ../../my_local_collection
 
 stacks:
 
-  # Add you stacks below
-  # - app: httpd
-  #   vars:
-  #     app_name: web
+  - app: default:traefik
+    tags:
+      - expose_http
+      - traefik-svc
+      #- expose_admin
+
