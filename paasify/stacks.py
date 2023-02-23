@@ -466,6 +466,15 @@ class Stack(NodeMap, PaasifyObj):
                 # "_stack_collection_app_path": self.app.collection_dir,
             }
             result.update(extra)
+
+        # Remove or duplicate vars with _
+        for key in list(result.keys()):
+            if key.startswith("_"):
+                new_key = key[1:]
+                result[new_key] = result[key]
+                # DEPRECATED: We want to remove most or all _ vars !
+                # del result[key]
+
         return result
 
     @property
