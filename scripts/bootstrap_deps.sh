@@ -7,6 +7,8 @@
 
 set -eu
 
+eval "$(./scripts/platform.sh env)"
+
 _VENV=${VIRTUAL_ENV:-.venv}
 PLAT=${PROJECT_OS:-linux}
 ARCH=${PROJECT_ARCH:-amd64}
@@ -94,7 +96,28 @@ install_gh ()
   fi
 }
 
+ensure_git_submodule ()
+{
+  git submodule update --init --recursive
+}
+
+install_python_app ()
+{
+  poetry install -vv --no-interaction --only main
+}
+
 install_python_deps ()
+{
+  poetry install -vv --no-interaction
+}
+
+install_python_app_deps ()
+{
+  poetry install -vv --no-interaction --only main --no-root
+}
+
+
+install_python_dev_deps ()
 {
   poetry install -vv --no-interaction --no-root
 }
@@ -141,18 +164,57 @@ is_present ()
 main ()
 {
 
+  local action="${1:-user}"
+
+  local mode="dev"
+  case "$action" in
+    user)
+      mode="app"
+      ;;
+    dev)
+      mode="dev"
+      ;;
+    ci)
+      mode="ci"
+      ;;
+    *)
+      >&2 echo "ERROR: Unsuported action: '${action}'"
+      >&2 echo "INFO: Please choose between one of: user,dev or ci"
+      return 1
+      ;;
+  esac
+
   # Base
   install_venv
   enable_venv
   install_poetry
   install_task
 
-  # Python
-  install_python_deps
-  install_pre_commit
+  # Project deps
+  ensure_git_submodule
 
-  # Extras
-  install_gh
+  case "$mode" in
+    app)
+      echo "INFO: Install app without developper dependencies, run with 'dev' argument to install all tools"
+      # Python
+      install_python_app
+      ;;
+    dev)
+      echo "INFO: Install full developper stack"
+      install_python_deps
+
+      install_pre_commit
+      install_gh
+      ;;
+    ci)
+      echo "INFO: Install CI stack"
+      install_python_dev_deps
+
+      install_pre_commit
+      install_gh
+      ;;
+  esac
+
 
 }
 

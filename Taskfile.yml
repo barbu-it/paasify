@@ -49,7 +49,7 @@ tasks:
     generates:
       - "{{ .venv }}}/bin/poetry"
     cmds:
-      - eval "$(./scripts/platform.sh env)" && ./scripts/bootstrap_deps.sh
+      - ./scripts/bootstrap_deps.sh {{.CLI_ARGS}}
 
   completion:
     desc: Install completion for various tools

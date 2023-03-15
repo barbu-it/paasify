@@ -220,37 +220,51 @@ Here are the basic step to hack into paasify code. A more complete guide is avai
 
 ### Installation with git
 
-Clone the project
-
+Clone the project:
 ```bash
-  git clone https://github.com/barbu-it/paasify
+git clone --recurse-submodules https://github.com/barbu-it/paasify
 ```
 
-Go to the project directory
-
+Go to the project directory:
 ```bash
-  cd paasify
+cd paasify
 ```
 
-Install dependencies
-
-```bash
-  task install
+For a quicksetup usage, you need to source this shell script:
+```
+. scripts/activate.sh
 ```
 
+A local paasify should now be available:
+```
+paasify --help
+```
+
+To install extra developper tools:
+```
+task bootstrap -- dev
+```
+
+Please check documentation for further information on developper environment.
+
+Cleanup environment setup:
+```
+deactivate || true
+rm -rf .venv
+```
 
 ### Running Tests
 
 To run tests, run the following command
 
 ```bash
-  task run_tests
+task run_tests
 ```
 
 Run the quality suite
 
 ```bash
-  task run_qa
+task run_qa
 ```
 
 ### Contributing

@@ -8,7 +8,7 @@ eval "$(./scripts/platform.sh env)"
 
 if [[ ! -f "$_VENV/bin/poetry" ]]; then
   >&2 echo "INFO: Install project dependencies"
-  ./scripts/bootstrap_deps.sh
+  ./scripts/bootstrap_deps.sh user
   . $_VENV/bin/activate
   task completion
 else

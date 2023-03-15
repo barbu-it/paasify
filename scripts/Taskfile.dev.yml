@@ -107,28 +107,35 @@ tasks:
 
   install_comp_poetry:
     desc: Install poetry completion in the project
+    generates:
+      - "{{.COMP_DIR}}/poetry.sh"
     cmds:
       - mkdir -p "{{.COMP_DIR}}"
-      - poetry completions bash >> "{{.COMP_DIR}}/poetry.sh"
+      - command -v poetry && poetry completions bash >> "{{.COMP_DIR}}/poetry.sh" || true
 
   install_comp_task:
     desc: Install task in the project
+    generates:
+      - "{{.COMP_DIR}}/task.sh"
     cmds:
       - mkdir -p "{{.COMP_DIR}}"
-      - curl https://raw.githubusercontent.com/go-task/task/master/completion/bash/task.bash --output "{{.COMP_DIR}}/task.sh"
+      - command -v task && curl https://raw.githubusercontent.com/go-task/task/master/completion/bash/task.bash --output "{{.COMP_DIR}}/task.sh" || true
 
   install_comp_gh:
     desc: Install gh completion in the project
+    generates:
+      - "{{.COMP_DIR}}/gh.sh"
     cmds:
       - mkdir -p "{{.COMP_DIR}}"
-      - gh completion --shell bash > "{{.COMP_DIR}}/gh.sh"
+      - command -v gh && gh completion --shell bash > "{{.COMP_DIR}}/gh.sh" || true
 
   install_comp_paasify:
     desc: Install paasify completion in the project
+    generates:
+      - "{{.COMP_DIR}}/paasify.sh"
     cmds:
       - mkdir -p "{{.COMP_DIR}}"
-      - cmd: command -v paasify && paasify --show-completion > "{{.COMP_DIR}}/paasify.sh"
-        ignore_error: true
+      - command -v paasify && paasify --show-completion > "{{.COMP_DIR}}/paasify.sh" || true
 
   # Other tools
   # ---------------

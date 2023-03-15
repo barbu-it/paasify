@@ -106,7 +106,7 @@ jobs:
       - name: Install dependencies (cached)
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          task -v bootstrap
+          task -v bootstrap -- ci
 
       - name: Install project
         run: |
