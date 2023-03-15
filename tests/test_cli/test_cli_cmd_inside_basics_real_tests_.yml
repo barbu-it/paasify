@@ -375,6 +375,20 @@ tests/examples/real_tests/test3/docker-compose.run.yml:
     paasify_sep: '-'
     paasify_sep_dir: /
     paasify_sep_net: _
+    prj_domain: real-tests
+    prj_namespace: real_tests
+    prj_ns: real_tests
+    prj_path: tests/examples/real_tests
+    prj_stack_path: tests/examples/real_tests/test3
+    prj_stack_tags: ':_paasify:example:'
+    stack_app_dir: dummy
+    stack_app_name: dummy
+    stack_app_path: /opt/paasify/paasify/assets/collections/paasify/dummy
+    stack_collection_app_path: null
+    stack_name: app3
+    stack_network: default
+    stack_path_abs: tests/examples/real_tests/test3
+    stack_service: default
     swarm_nodes: 1
     tag_cand: 1
     tag_index: 0
