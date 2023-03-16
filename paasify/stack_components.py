@@ -320,15 +320,17 @@ class StackApp(NodeMap, PaasifyObj):
     def get_app_source(self):
         "Return app source"
 
-        app_source = self.app_source or None
-        src = self.prj.sources.get_app_source(self.name, source=app_source)
+        app_source = self._node_conf_parsed["app_source"] or None
+        target = self._node_conf_parsed["app_path"] or self._node_conf_parsed["app_name"]
+        src = self.prj.sources.get_app_source(target, source=app_source)
         return src
 
     def get_app_path(self):
         "Return app path"
 
         src = self.get_app_source()
-        ret = os.path.join(src.path, self.name)
+        target = self._node_conf_parsed["app_path"] or self._node_conf_parsed["app_name"]
+        ret = os.path.join(src.path, target)
         return ret
 
 
