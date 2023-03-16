@@ -70,6 +70,17 @@ guess_os ()
   esac
 }
 
+guess_python ()
+{
+  if command -v python3 >/dev/null; then
+    echo "python3"
+  elif command -v python >/dev/null; then
+    echo "python"
+  else
+    >&2 echo "ERROR: Can't find python binary"
+  fi
+}
+
 guess_venv ()
 {
   if command -v virtualenv >/dev/null; then
@@ -125,16 +136,17 @@ show_versions ()
 show_env ()
 {
   cat 2>/dev/null <<EOF
-export PROJECT_REPO=${PROJECT_REPO:-barbu-it/paasify}
-export PROJECT_REMOTE_NAME=${PROJECT_REMOTE_NAME:-origin}
-export PROJECT_OS=${PROJECT_OS:-$(guess_os)}
-export PROJECT_ARCH=${PROJECT_ARCH:-$(guess_plat)}
+export PROJECT_REPO="${PROJECT_REPO:-barbu-it/paasify}"
+export PROJECT_REMOTE_NAME="${PROJECT_REMOTE_NAME:-origin}"
+export PROJECT_OS="${PROJECT_OS:-$(guess_os)}"
+export PROJECT_ARCH="${PROJECT_ARCH:-$(guess_plat)}"
 
-export PROJECT_POETRY_VERSION=${PROJECT_POETRY_VERSION:-$(show_versions poetry)}
-export PROJECT_GH_VERSION=${PROJECT_GH_VERSION:-$(show_versions gh)}
-export PROJECT_TASK_VERSION=${PROJECT_TASK_VERSION:-$(show_versions task)}
+export PROJECT_POETRY_VERSION="${PROJECT_POETRY_VERSION:-$(show_versions poetry)}"
+export PROJECT_GH_VERSION="${PROJECT_GH_VERSION:-$(show_versions gh)}"
+export PROJECT_TASK_VERSION="${PROJECT_TASK_VERSION:-$(show_versions task)}"
 
-export PROJECT_VENV_CMD=${PROJECT_VENV_CMD:-$(guess_venv)}
+export PROJECT_PYTHON_CMD="${PROJECT_PYTHON_CMD:-$(guess_python)}"
+export PROJECT_VENV_CMD="${PROJECT_VENV_CMD:-$(guess_venv)}"
 EOF
 }
 
