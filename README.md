@@ -249,6 +249,7 @@ Please check documentation for further information on developper environment.
 
 Cleanup environment setup:
 ```
+pre-commit uninstall || true
 deactivate || true
 rm -rf .venv
 ```

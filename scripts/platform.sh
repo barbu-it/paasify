@@ -70,6 +70,14 @@ guess_os ()
   esac
 }
 
+guess_venv ()
+{
+  if command -v virtualenv >/dev/null; then
+    echo "virtualenv"
+  else
+    echo "python -m venv"
+  fi
+}
 
 # Show utils versions
 # =================
@@ -119,12 +127,14 @@ show_env ()
   cat 2>/dev/null <<EOF
 export PROJECT_REPO=${PROJECT_REPO:-barbu-it/paasify}
 export PROJECT_REMOTE_NAME=${PROJECT_REMOTE_NAME:-origin}
-export PROJECT_OS=${PROJECT_OS:-$(scripts/platform.sh os)}
-export PROJECT_ARCH=${PROJECT_ARCH:-$(scripts/platform.sh plat)}
+export PROJECT_OS=${PROJECT_OS:-$(guess_os)}
+export PROJECT_ARCH=${PROJECT_ARCH:-$(guess_plat)}
 
-export PROJECT_POETRY_VERSION=${PROJECT_POETRY_VERSION:-$(scripts/platform.sh version poetry)}
-export PROJECT_GH_VERSION=${PROJECT_GH_VERSION:-$(scripts/platform.sh version gh)}
-export PROJECT_TASK_VERSION=${PROJECT_TASK_VERSION:-$(scripts/platform.sh version task)}
+export PROJECT_POETRY_VERSION=${PROJECT_POETRY_VERSION:-$(show_versions poetry)}
+export PROJECT_GH_VERSION=${PROJECT_GH_VERSION:-$(show_versions gh)}
+export PROJECT_TASK_VERSION=${PROJECT_TASK_VERSION:-$(show_versions task)}
+
+export PROJECT_VENV_CMD=${PROJECT_VENV_CMD:-$(guess_venv)}
 EOF
 }
 
@@ -142,6 +152,9 @@ main ()
       ;;
     os)
       guess_os
+      ;;
+    venv)
+      guess_venv
       ;;
     plat|platform)
       guess_plat

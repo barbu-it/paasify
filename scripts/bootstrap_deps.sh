@@ -17,6 +17,8 @@ GH_VERSION=${PROJECT_GH_VERSION:-latest}
 TASK_VERSION=${PROJECT_TASK_VERSION:-latest}
 POETRY_VERSION=${PROJECT_POETRY_VERSION:-latest}
 
+VENV_CMD=${PROJECT_VENV_CMD:-python3 -m venv}
+
 usage ()
 {
   cat <<EOF
@@ -59,8 +61,8 @@ install_venv ()
   if [[ -d "${_VENV}/bin" ]] ; then
     echo "INFO: Python VirtualEnv already installed in: ${_VENV}"
   else
-    echo "INFO: Installing Python Virtualenv: ${_VENV}"
-    virtualenv ${_VENV}
+    echo "INFO: Installing Python Virtualenv: $VENV_CMD ${_VENV}"
+    ${VENV_CMD} ${_VENV}
   fi
 }
 
