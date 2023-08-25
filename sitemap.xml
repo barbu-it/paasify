@@ -2,262 +2,242 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://barbu-it.github.io/paasify/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/conduct_code/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/docs/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/install/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/intro/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/paasify/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/ref/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/develop/release/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/best_practices/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/concepts/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/configuration/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/distribute/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/extend/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/faq/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/install/</loc>
-         <lastmod>2023-02-16</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://barbu-it.github.io/paasify/docs/internals/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/docs/usage/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/jupyter/learn_101/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_debug/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_dns/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_dummy/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_example/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_home/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_network/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/app_proxy/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_docker-debug/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_docker-net-attach/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_example/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_homepage/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_mysql-adminer/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_traefik-mw/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/plugins_apidoc/jsonnet_traefik-svc/</loc>
-         <lastmod>2023-02-16</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/_paasify/markdown/</loc>
-         <lastmod>2023-02-16</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/test-paasify-api/markdown/</loc>
-         <lastmod>2023-02-16</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://barbu-it.github.io/paasify/plugins_apidoc/traefik-svc/markdown/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/changelog/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/cli_usage/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/extend_base/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/extend_tags/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/license/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/python_api_app/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/python_api_other/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/python_api_project/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/schema_app/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/schema_prj/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/schema_prj_config/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/schema_prj_sources/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/refs/schema_prj_stacks/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/schema_doc/paasify_yml_schema/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://barbu-it.github.io/paasify/tutorial/quickstart/</loc>
-         <lastmod>2023-02-16</lastmod>
+         <lastmod>2023-08-25</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

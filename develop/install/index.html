@@ -1181,28 +1181,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#with-bash-script" class="md-nav__link">
+    With Bash script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#with-direnv" class="md-nav__link">
     With direnv
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#manually" class="md-nav__link">
-    Manually
-  </a>
+      </ul>
+    </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#other-actions" class="md-nav__link">
     Other actions
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1430,28 +1430,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#with-bash-script" class="md-nav__link">
+    With Bash script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#with-direnv" class="md-nav__link">
     With direnv
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#manually" class="md-nav__link">
-    Manually
-  </a>
+      </ul>
+    </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#other-actions" class="md-nav__link">
     Other actions
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1507,17 +1507,24 @@
 <h2 id="quickstart">Quickstart</h2>
 <h3 id="install-from-git">Install from git</h3>
 <p>Everything starts with:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ git clone --recurse-submodules git@barbu-it.com:paasify/paasify.git
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ git clone --recurse-submodules https://github.com/barbu-it/paasify/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$ cd paasify
 </code></pre></div></p>
 <p>If you forgot the <code>--recurse-submodules</code>, you can do from inside the git repo:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$ git submodule update --init --recursive
 </code></pre></div></p>
 <p>The you will have to setup a python virtual environment, and install project dependencies</p>
+<h3 id="with-bash-script">With Bash script</h3>
+<p>Each time you get into the project, you will have to source the project:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ . ./scripts/activate.sh
+</code></pre></div>
+<p>This basically source into your shell everything that is required to have a working development 
+environment. Be aware that the first run may take quite a long time. You wil have to source this file 
+each time you enter in the project.</p>
 <h3 id="with-direnv">With direnv</h3>
 <p>If you already have a working <code>direnv</code> setup, then review <code>.envrc</code> and enable it, otherwize skip to the next section:</p>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ cd paasify
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>$ direnv allow
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$ cd paasify
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>$ direnv allow
 </code></pre></div>
 The first run might be long to run as the script will ensure you have all development dependencies.</p>
 <div class="admonition info">
@@ -1525,20 +1532,14 @@ The first run might be long to run as the script will ensure you have all develo
 <p>There is no support for completion within <code>direnv</code>, to enable completion
 simply source arctivate again: <code>. ./scripts/activate.sh</code></p>
 </div>
-<h3 id="manually">Manually</h3>
-<p>Each time you get into the project, you will have to source the project:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$ . ./scripts/activate.sh
-</code></pre></div>
-<p>This basically source into your shell everything that is required to have a working development 
-environment. Be aware that the first run may take quite a long time. You wil have to source this file 
-each time you enter in the project.</p>
-<h3 id="other-actions">Other actions</h3>
-<p>Paasify project follow the <a href="https://github.blog/2015-06-30-scripts-to-rule-them-all/">scripts-to-rule-them-all</a> 
-standard. You can get a list of available commands:</p>
+<h2 id="other-actions">Other actions</h2>
+<p>You can get a list of available commands:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$ task --list
 </code></pre></div>
 <p>For more details, please check out <a href="../paasify/">paasify</a> workflow.</p>
 <h2 id="implementation-details">Implementation details</h2>
+<p>Paasify project follow the <a href="https://github.blog/2015-06-30-scripts-to-rule-them-all/">scripts-to-rule-them-all</a> 
+standard.</p>
 <h3 id="install-project-build-dependencies">Install project build dependencies</h3>
 <p>Once task is installed, it will take care of the rest to do:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$ task bootstrap
@@ -1557,7 +1558,7 @@ standard. You can get a list of available commands:</p>
 <p>Install paasify itself:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>task setup
 </code></pre></div>
-<p>!!!  info: you may
+<p>!!!  info: when to run ?
      You may need to run this command again if you modified paasify script entry-points. Basically this one only run <code>poetry install --only-root</code>.</p>
 
 

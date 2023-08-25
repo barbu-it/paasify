@@ -1320,15 +1320,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-project-wordpress" class="md-nav__link">
-    Example project: Wordpress
+  <a href="#requirements" class="md-nav__link">
+    Requirements
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    Configuration
+  <a href="#example-project-wordpress" class="md-nav__link">
+    Example project: Wordpress
   </a>
   
 </li>
@@ -1417,18 +1417,32 @@ can be committed into version control.</p>
 <h2 id="quickstart"><img alt="🔥" class="twemoji" src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f525.svg" title=":fire:" /> Quickstart</h2>
 <p>There are different ways to install Paasify:</p>
 <ul>
-<li><a href="#installation-with-pip">Installation with pip</a>: This is the recommended installation method for people who wants to try and/or develop infrastructure.</li>
-<li><a href="#installation-with-docker">Installation with docker</a>: Docker installation is more recommended for production environment. (WIP)</li>
-<li><a href="https://barbu-it.github.io/paasify/develop/install/">Installation with git</a>: If you want to improve or contribute to Paasify itself.</li>
+<li><a href="https://barbu-it.github.io/paasify/develop/install/#install-with-pip">Installation with pip</a>: This is the recommended installation method for people who wants to try and/or develop infrastructure.</li>
+<li><a href="https://barbu-it.github.io/paasify/develop/install/#install-with-docker">Installation with docker (WIP)</a>: Docker installation is more recommended for production environment.</li>
+<li><a href="https://barbu-it.github.io/paasify/develop/install/">Installation from git</a>: If you want to improve or contribute to Paasify itself.</li>
 </ul>
 <h3 id="installation-with-pip">Installation with pip</h3>
 <p>Install Paasify with pip. You may eventually install paasify in its own
 Python VirtualEnv, please adapt your commands, but for most people:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>paasify
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>paasify
 </code></pre></div>
 <p>You can check paasify is correctly installed by running the command:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>paasify --help
 </code></pre></div></p>
+<h3 id="requirements">Requirements</h3>
+<p>The following system requirements are:</p>
+<ul>
+<li>Linux x86 based OS (not tested yet on other platforms than Linux so far)</li>
+<li><code>docker</code></li>
+<li><code>docker compose</code> or <code>docker-compose</code></li>
+<li><code>jq</code></li>
+</ul>
+<p>For development only:</p>
+<ul>
+<li><a href="https://taskfile.dev/">task</a></li>
+<li><a href="https://python-poetry.org/">poetry</a></li>
+<li><a href="https://git-scm.com/">git</a></li>
+</ul>
 <h3 id="example-project-wordpress">Example project: Wordpress</h3>
 <p>You need to have git and a running docker daemon. See requirements section for further
 details.</p>
@@ -1436,61 +1450,53 @@ details.</p>
 a proxy, for managing incoming traffic (we uses Traefik here), a dashboard and
 the Worpress instance. To deploy a such project:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/barbu-it/paasify-example-wordpress.git<span class="w"> </span>wordpress
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>wordpress
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>paasify<span class="w"> </span>src<span class="w"> </span>install
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>paasify<span class="w"> </span>apply
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">### Configuration</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>There<span class="w"> </span>is<span class="w"> </span>a<span class="w"> </span>simple<span class="w"> </span>config<span class="w"> </span>file<span class="w"> </span>that<span class="w"> </span>illustrate<span class="w"> </span>all<span class="w"> </span>componants,<span class="w"> </span>taken<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>previous<span class="w"> </span><span class="o">[</span>wordpress<span class="w"> </span>example<span class="w"> </span>project<span class="o">](</span>https://github.com/barbu-it/paasify-example-wordpress<span class="o">)</span>:
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="sb">```</span><span class="w"> </span>yaml<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;paasify.yml&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>sources:
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>community
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span>remote:<span class="w"> </span>https://github.com/barbu-it/paasify-collection-community
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>config:
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span>namespace:<span class="w"> </span>demo-wp
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">  </span>extra_vars:
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span>-<span class="w"> </span>secrets.yml
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span>vars:
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">    </span><span class="c1"># We expose to 127.0.0.1, under the *.locahost domain</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span>app_expose_ip:<span class="w"> </span><span class="m">127</span>.0.0.1
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span>app_domain:<span class="w"> </span>localhost
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="c1"># Other domain examples</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="c1">#app_domain: mydomain.org</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="c1">#app_domain: localtest.me</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">    </span><span class="c1">#app_domain: ${app_expose_ip}.nip.io</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">    </span><span class="c1"># Default traefik network</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">    </span>traefik_net_name:<span class="w"> </span><span class="si">${</span><span class="nv">_prj_ns</span><span class="si">}</span>_proxy_default
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">  </span>tags_prefix:
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="w">    </span>-<span class="w"> </span>homepage
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="w">    </span>-<span class="w"> </span>traefik-svc
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>stacks:
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="w">  </span>-<span class="w"> </span>app:<span class="w"> </span>proxy
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="w">    </span>vars:
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="w">      </span>traefik_net_external:<span class="w"> </span>False
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="w">    </span>tags:
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="w">      </span>-<span class="w"> </span>expose_http
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="w">      </span>-<span class="w"> </span>expose_admin
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a><span class="w">  </span>-<span class="w"> </span>app:<span class="w"> </span>home
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="w">  </span>-<span class="w"> </span>app:<span class="w"> </span>community:wordpress
 </code></pre></div>
-<p>Then you can visit: <a href="">http://home.localhost</a>. Of course you can manage your own domains and manage SSL
-with let's encrypt. You can virtually add and tweak other applications. To have an idea of what app
-you can install, please checkout official collections:</p>
-<ul>
-<li><a href="https://github.com/barbu-it/paasify-collection-community">barbu-it/paasify-collection-community</a>: Apps provided for and by the community</li>
-<li><a href="https://github.com/barbu-it/paasify-collection-infra">barbu-it/paasify-collection-infra</a>: Dev et devops oriented Apps</li>
-</ul>
-<p>You can also find community collections in github, with the <a href="https://github.com/barbu-it/paasify-example-wordpress/search?q=%23paasify-collection">#paasify-collection</a> tag.</p>
-<h3 id="configuration">Configuration</h3>
-<p>There is a simple config file that illustrate all componants, taken from the previous <a href="https://github.com/barbu-it/paasify-example-wordpress">wordpress example project</a>:
-<div class="highlight"><span class="filename">paasify.yml</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">sources</span><span class="p">:</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">community</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">remote</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/barbu-it/paasify-collection-community</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo-wp</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">extra_vars</span><span class="p">:</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">secrets.yml</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nt">vars</span><span class="p">:</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="c1"># We expose to 127.0.0.1, under the *.locahost domain</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">app_expose_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">app_domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="c1"># Other domain examples</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="c1">#app_domain: mydomain.org</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="c1">#app_domain: localtest.me</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="c1">#app_domain: ${app_expose_ip}.nip.io</span>
-<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
-<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="c1"># Default traefik network</span>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="nt">traefik_net_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${_prj_ns}_proxy_default</span>
-<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">  </span><span class="nt">tags_prefix</span><span class="p">:</span>
-<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">homepage</span>
-<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">traefik-svc</span>
-<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
-<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="nt">stacks</span><span class="p">:</span>
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">proxy</span>
-<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="nt">vars</span><span class="p">:</span>
-<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">      </span><span class="nt">traefik_net_external</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">expose_http</span>
-<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">expose_admin</span>
-<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">home</span>
-<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">community:wordpress</span>
-</code></pre></div></p>
 <p>The first config element is <code>sources</code>, which is a list of git repo collections. The config contains 
 all settings that will apply to the project and its stacks. The <code>stacks</code> key is a list of sequential stack to be applied.
 Each stack is configurable and allow a fine grained configuration override dependings the user needs.
 To each stack can be applied vars and/or a list of tags. Finally the <code>config</code> key allow to put project
 and default stack configuration.</p>
 <p>Then, you just have to run the following to set all up and running:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="go">paasify apply</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="go">paasify apply</span>
 </code></pre></div>
 <p>You should be able to access to a fresh Wordpress instance on <a href="">http://wordpress.localhost</a> url while your
 project dashboard should be accessible on <a href="">http://home.localhost</a>.</p>
