@@ -5,6 +5,7 @@
 # Usual way to call this script: ./gen_apidoc.py src/
 
 # from pprint import pprint
+import sys
 import os
 from distutils.dir_util import copy_tree
 import logging
@@ -149,12 +150,17 @@ def gen_schemas(*args, **kwargs):
 # Entrypoints
 # =============================================
 
+def require_restart():
+    "Return true if never executed before"
+    return not os.path.isdir("src/logo")
+
 # Main hook
 def on_files_hook(*args, **kwargs):
     "Pre hook to install everything"
     global FAST
 
-    if FAST:
+    restart = require_restart()
+    if FAST and not restart:
         log.info("Skip generate scripts, only run at startup!")
         return
 
@@ -166,6 +172,11 @@ def on_files_hook(*args, **kwargs):
     FAST = True
 
     log.info("Pre-hooks are all done :)")
+
+    if restart and "serve" in sys.argv:
+        log.error(f"The build command was not run, please run again: {' '.join(sys.argv)}")
+        sys.exit(1)
+
 
 # Cli interface
 @click.command(help=CLI_USAGE)
