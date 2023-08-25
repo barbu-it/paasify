@@ -68,14 +68,13 @@ This project try to overstep the missing gap between the docker-compose deployme
 
 
   * [Quickstart](#quickstart)
+    + [Requirements](#requirements)
     + [Installation with pip](#installation-with-pip)
-    + [Installation with docker](#installation-with-docker)
     + [Example project: Wordpress](#example-project-wordpress)
     + [Demo](#demo)
   * [Overview](#overview)
     + [Features](#features)
     + [Documentation](#documentation)
-    + [Requirements](#requirements)
     + [Environment Variables](#environment-variables)
   * [Getting help](#getting-help)
     + [Known issues](#known-issues)
@@ -90,9 +89,9 @@ This project try to overstep the missing gap between the docker-compose deployme
 
 There are different ways to install Paasify:
 
-* [Installation with pip](#installation-with-pip): This is the recommended installation method for people who wants to try and/or develop infrastructure.
-* [Installation with docker](#installation-with-docker): Docker installation is more recommended for production environment. (WIP)
-* [Installation with git](https://barbu-it.github.io/paasify/develop/install/): If you want to improve or contribute to Paasify itself.
+* [Installation with pip](https://barbu-it.github.io/paasify/develop/install/#install-with-pip): This is the recommended installation method for people who wants to try and/or develop infrastructure.
+* [Installation with docker (WIP)](https://barbu-it.github.io/paasify/develop/install/#install-with-docker): Docker installation is more recommended for production environment.
+* [Installation from git](https://barbu-it.github.io/paasify/develop/install/): If you want to improve or contribute to Paasify itself.
 
 
 ### Installation with pip
@@ -101,13 +100,29 @@ Install Paasify with pip. You may eventually install paasify in its own
 Python VirtualEnv, please adapt your commands, but for most people:
 
 ```bash
-pip install paasify
+pip install --user paasify
 ```
 
 You can check paasify is correctly installed by running the command:
 ```
 paasify --help
 ```
+
+
+### Requirements
+
+The following system requirements are:
+
+* Linux x86 based OS (not tested yet on other platforms than Linux so far)
+* `docker`
+* `docker compose` or `docker-compose`
+* `jq`
+
+For development only:
+
+* [task](https://taskfile.dev/)
+* [poetry](https://python-poetry.org/)
+* [git](https://git-scm.com/)
 
 
 ### Example project: Wordpress
@@ -156,20 +171,6 @@ Please check the documentation to know more and see the Road Map below to see wh
 
 The main documentation website is at [https://barbu-it.github.io/paasify/](https://barbu-it.github.io/paasify/).
 
-### Requirements
-
-The following system requirements are:
-
-* Linux x86 based OS (not tested yet on other platforms than Linux so far)
-* `docker`
-* `docker compose` or `docker-compose`
-* `jq`
-
-For development:
-
-* [git](https://git-scm.com/)
-* [poetry](https://python-poetry.org/)
-* [task](https://taskfile.dev/)
 
 ### Environment Variables
 

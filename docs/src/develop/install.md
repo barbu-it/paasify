@@ -8,7 +8,7 @@ This page explains how to get a full developper environment. It either can be in
 
 Everything starts with:
 ```
-$ git clone --recurse-submodules git@barbu-it.com:paasify/paasify.git
+$ git clone --recurse-submodules https://github.com/barbu-it/paasify/
 $ cd paasify
 ```
 
@@ -18,6 +18,19 @@ $ git submodule update --init --recursive
 ```
 
 The you will have to setup a python virtual environment, and install project dependencies
+
+
+### With Bash script
+
+Each time you get into the project, you will have to source the project:
+
+```
+$ . ./scripts/activate.sh
+```
+
+This basically source into your shell everything that is required to have a working development 
+environment. Be aware that the first run may take quite a long time. You wil have to source this file 
+each time you enter in the project.
 
 
 ### With direnv
@@ -35,22 +48,10 @@ The first run might be long to run as the script will ensure you have all develo
     simply source arctivate again: `. ./scripts/activate.sh`
 
 
-### Manually
 
-Each time you get into the project, you will have to source the project:
+## Other actions
 
-```
-$ . ./scripts/activate.sh
-```
-
-This basically source into your shell everything that is required to have a working development 
-environment. Be aware that the first run may take quite a long time. You wil have to source this file 
-each time you enter in the project.
-
-### Other actions
-
-Paasify project follow the [scripts-to-rule-them-all](https://github.blog/2015-06-30-scripts-to-rule-them-all/) 
-standard. You can get a list of available commands:
+You can get a list of available commands:
 
 ```
 $ task --list
@@ -60,6 +61,9 @@ For more details, please check out [paasify](paasify.md) workflow.
 
 
 ## Implementation details
+
+Paasify project follow the [scripts-to-rule-them-all](https://github.blog/2015-06-30-scripts-to-rule-them-all/) 
+standard.
 
 ### Install project build dependencies
 
@@ -88,5 +92,5 @@ Install paasify itself:
 task setup
 ```
 
-!!!  info: you may
+!!!  info: when to run ?
      You may need to run this command again if you modified paasify script entry-points. Basically this one only run `poetry install --only-root`.

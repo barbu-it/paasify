@@ -135,7 +135,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/barbu-
 
 ### Your First Code Contribution
 
-Please learn [how to configure your development envrionment](https://barbu-it.github.io/paasify/develop/setup) then how to [contribute to Paasify](https://barbu-it.github.io/paasify/develop/paasify).
+Please learn [how to configure your development environment](https://barbu-it.github.io/paasify/develop/install) then how to [contribute to Paasify](https://barbu-it.github.io/paasify/develop/paasify).
 
 ### Improving The Documentation
 
