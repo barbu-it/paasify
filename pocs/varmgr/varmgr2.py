@@ -194,6 +194,7 @@ class Varmgr:
 
         if isinstance(args, list):
             for source in args:
+                assert isinstance(source, Source)   
                 self._sources[source.name] = source
         elif isinstance(args, Source):
             self._sources[args.name] = args
@@ -377,6 +378,23 @@ class Varmgr:
 
     # Vars managements
     # ====================
+
+    def get_var_names(self, scope: Optional[str] = None) -> List[str]:
+        """Get names of all variables, optionally filtered by scope.
+        
+        Args:
+            scope: Optional scope name to filter variables.
+            
+        Returns:
+            List of variable names.
+        """
+        _out = []
+        for layer in self.get_ordered_layers(scope=scope):
+            _out.extend(list(layer.payload.keys()))
+
+        _out = list(set(_out))
+        return _out
+
 
 
     def get_var(self, name: str, scope: Optional[str] = None, debug: bool = False) -> Union[Layer, List[Layer]]:
