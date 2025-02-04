@@ -21,20 +21,76 @@ def sample_datasets():
     dataset1 = {
         "name": "dataset1",
         "path": "/home/user/dataset1",
+        "enabled": True,
+        "disabled": False,
+        "count": 0,
+        "positive": 1,
+        "negative": -1,
+        "empty": None,
+        "tags": ["tag1", "tag2", "tag3"],
+        "nested": {
+            "key1": "value1",
+            "key2": 2,
+            "key3": False,
+            "deep": {
+                "a": 1,
+                "b": None,
+                "c": [1, 2, 3]
+            }
+        }
     }
     dataset2 = {
         "description": "This is a dataset for testing Tollyo",
         "path": "/home/user/dataset2",
         "options": "value",
+        "flags": {
+            "debug": True,
+            "verbose": False,
+            "level": 0
+        },
+        "empty_list": [],
+        "empty_dict": {},
+        "mixed_list": [1, "two", False, None, {"key": "value"}],
+        "status": None,
+        "counts": {
+            "success": 1,
+            "failure": 0,
+            "skipped": -1
+        }
     }
     dataset3 = {
         "description": "This is a dataset for testing ds3",
         "path": "/home/user/dataset3",
+        "active": True,
+        "priority": 0,
+        "retries": -1,
+        "config": None,
+        "matrix": [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ],
+        "settings": {
+            "timeout": 30,
+            "enabled": True,
+            "defaults": None,
+            "limits": {
+                "min": -1,
+                "max": 1,
+                "default": 0
+            }
+        }
     }
-    return dataset1, dataset2, dataset3
+    # Get all unique keys from the datasets
+    all_keys = set()
+    for dataset in [dataset1, dataset2, dataset3]:
+        all_keys.update(dataset.keys())
+    all_keys = sorted(list(all_keys))
+
+    return dataset1, dataset2, dataset3, all_keys
 
 def test_source_import(varmgr, sample_datasets):
-    dataset1, dataset2, dataset3 = sample_datasets
+    dataset1, dataset2, dataset3, all_keys = sample_datasets
     
     varmgr.import_source("cli", dataset1)
     varmgr.import_source("config_files", dataset2, source="main.yml")
@@ -42,10 +98,11 @@ def test_source_import(varmgr, sample_datasets):
     
     # Test that all variables are present
     var_names = varmgr.get_all_var_names()
-    assert sorted(var_names) == sorted(['description', 'name', 'options', 'path'])
+    expected_var_names = all_keys
+    assert sorted(var_names) == sorted(expected_var_names)
 
 def test_variable_precedence(varmgr, sample_datasets):
-    dataset1, dataset2, dataset3 = sample_datasets
+    dataset1, dataset2, dataset3, all_keys = sample_datasets
     
     varmgr.import_source("cli", dataset1)
     varmgr.import_source("config_files", dataset2)
@@ -68,7 +125,7 @@ def test_undefined_variable(varmgr):
         varmgr.get_value("unknown")
 
 def test_source_metadata(varmgr, sample_datasets):
-    dataset1, _, _ = sample_datasets
+    dataset1, _, _, _ = sample_datasets
     
     # Test source metadata is preserved
     varmgr.import_source("cli", dataset1, source="test_source")
@@ -96,7 +153,7 @@ def test_source_order_validation():
         ])
 
 def test_multiple_source_levels(varmgr, sample_datasets):
-    dataset1, dataset2, _ = sample_datasets
+    dataset1, dataset2, _, _ = sample_datasets
     
     # Import same variable in different sources
     varmgr.import_source("cli", {"test_var": "cli_value"})

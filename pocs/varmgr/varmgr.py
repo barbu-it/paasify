@@ -68,9 +68,6 @@ class Varmgr:
         self.order = sorted(out, key=lambda x: x.level)
 
 
-        pprint(self.order)
-
-
     def _get_source_by_name(self, name):
         for item in self.order:
             if item.name == name:

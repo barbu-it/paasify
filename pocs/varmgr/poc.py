@@ -45,12 +45,12 @@ def main():
 
 
     out = varmgr.dump()
-    pprint(out)
+    # pprint(out)
 
 
     # Ensure we get all keys
     out = varmgr.get_all_var_names()
-    pprint(out)
+    # pprint(out)
     assert out == ['description', 'name', 'options', 'path']
 
     # TEst some vars
@@ -77,6 +77,8 @@ def main():
         val = varmgr.get_value("unknown")
     except UndefinedVarError as e:
         print("Exception raised: ", e)
+
+    print ("OK tests1")
 
 
 if __name__ == "__main__":
