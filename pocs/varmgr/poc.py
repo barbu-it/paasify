@@ -1,4 +1,3 @@
-
 from pprint import pprint
 
 from varmgr import Varmgr, Source, UndefinedVarError
@@ -6,7 +5,6 @@ from varmgr import Varmgr, Source, UndefinedVarError
 
 def main():
     varmgr = Varmgr()
-
 
     dataset1 = {
         "name": "dataset1",
@@ -43,15 +41,13 @@ def main():
     varmgr.import_source("config_files", dataset2, source="main.yml")
     varmgr.import_source("other_level1", dataset3, source="options.yml")
 
-
     out = varmgr.dump()
     # pprint(out)
-
 
     # Ensure we get all keys
     out = varmgr.get_all_var_names()
     # pprint(out)
-    assert out == ['description', 'name', 'options', 'path']
+    assert out == ["description", "name", "options", "path"]
 
     # TEst some vars
     val = varmgr.get_value("description")
@@ -62,12 +58,10 @@ def main():
     assert val == "/home/user/dataset1"
 
     val = varmgr.get_value("name")
-    assert val == "dataset1"    
+    assert val == "dataset1"
 
     val = varmgr.get_value("options")
     assert val == "value"
-
-
 
     # print ("RESULT: ", val)
     # val = varmgr.get_value("description")
@@ -78,7 +72,7 @@ def main():
     except UndefinedVarError as e:
         print("Exception raised: ", e)
 
-    print ("OK tests1")
+    print("OK tests1")
 
 
 if __name__ == "__main__":

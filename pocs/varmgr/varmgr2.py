@@ -1,21 +1,23 @@
 from pprint import pprint
+
 # from types import SimpleNamespace
 # from collections import OrderedDict
 from typing import List, Dict, Any, Union, Optional, Iterator, TypeVar
 
 DEFAULT_LEVEL = 500
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def flatten2(array: List[Any]) -> List[Any]:
     """Flatten any nested arrays while preserving inner values but not ordering.
-    
+
     Args:
         array: A list that may contain nested lists at any depth.
-        
+
     Returns:
         List[Any]: A flattened list containing all elements from input arrays.
-        
+
     Example:
         >>> flatten2([[1, 2], [3, 4]])
         [1, 2, 3, 4]
@@ -26,16 +28,17 @@ def flatten2(array: List[Any]) -> List[Any]:
         return flatten(array[0]) + flatten(array[1:])
     return array[:1] + flatten(array[1:])
 
+
 def flatten(nested: Any, depth: int = 0) -> Iterator[Any]:
     """Flatten nested iterables while preserving ordering.
-    
+
     Args:
         nested: Any potentially nested iterable structure.
         depth: Current recursion depth, used internally for debugging.
-        
+
     Returns:
         Iterator[Any]: A generator yielding flattened elements in order.
-        
+
     Example:
         >>> list(flatten([[1, 2], [3, 4]]))
         [1, 2, 3, 4]
@@ -43,7 +46,7 @@ def flatten(nested: Any, depth: int = 0) -> Iterator[Any]:
     try:
         # print("{}Iterate on {}".format('  '*depth, nested))
         for sublist in nested:
-            for element in flatten(sublist, depth+1):
+            for element in flatten(sublist, depth + 1):
                 # print("{}got back {}".format('  '*depth, element))
                 yield element
     except TypeError:
@@ -53,51 +56,49 @@ def flatten(nested: Any, depth: int = 0) -> Iterator[Any]:
 
 class VarMgrError(Exception):
     """Base class for all VarMgr exceptions.
-    
+
     This class serves as the root of the VarMgr exception hierarchy.
     """
 
+
 class VarMgrAppError(VarMgrError):
     """Base class for Application-level VarMgr exceptions.
-    
+
     These exceptions indicate errors in the application's configuration or setup.
     """
 
 
 class AlreadyExistingSourceError(VarMgrAppError):
     """Exception raised when attempting to add a source that already exists.
-    
+
     This error occurs when trying to register a source with a name that is already in use.
     """
 
+
 class ReferenceToMissingSourceError(VarMgrAppError):
     """Exception raised when referencing a non-existent source.
-    
+
     This error occurs when trying to use a source that hasn't been registered.
     """
 
 
-
 class VarMgrUserError(VarMgrError):
     """Base class for User-level VarMgr exceptions.
-    
+
     These exceptions indicate errors in user input or usage.
     """
 
+
 class UndefinedVarError(VarMgrUserError):
     """Exception raised when accessing an undefined variable.
-    
+
     This error occurs when trying to access a variable that doesn't exist in any layer.
     """
 
 
-
-
-
-
 class Source:
     """Represents a named source with optional level and help text.
-    
+
     A Source is a fundamental unit in the variable management system that
     represents where variables come from. Sources can be ordered by level
     for precedence handling.
@@ -109,22 +110,25 @@ class Source:
     """
 
     # pylint: disable=redefined-builtin
-    def __init__(self, name: str, level: Optional[int] = None, help: Optional[str] = None):
+    def __init__(
+        self, name: str, level: Optional[int] = None, help: Optional[str] = None
+    ):
         self.name = name
         self.level = level
         self.help = help
 
     def __repr__(self) -> str:
         return f"Source({self.name}, {self.level})"
-    
+
     def get_help(self) -> str:
         if not self.help:
             return f"Source {self.name}"
         return self.help
 
-class Scope():
+
+class Scope:
     """Represents a named collection of sources.
-    
+
     A Scope groups related sources together and can be used to limit
     variable resolution to a specific set of sources.
 
@@ -141,7 +145,7 @@ class Scope():
 
 class Layer:
     """Represents a data layer containing variables from a specific source.
-    
+
     A Layer combines a source with its actual data (payload) and metadata.
     It serves as a container for variables from a particular source.
 
@@ -160,7 +164,6 @@ class Layer:
         return f"Layer({self.source.name})"
 
 
-
 class Varmgr:
     """
     A class to manage variables and their sources.
@@ -170,23 +173,21 @@ class Varmgr:
 
     def __init__(self):
 
-
         self.layered_store: Dict[str, Layer] = {}
         self.store: Dict[str, Any] = {}
         self.order: List[str] = []
         self._sources: Dict[str, Source] = {}
         self._scopes: Dict[str, List[Source]] = {}
 
-
     # SourcesScopes managements
     # ====================
 
     def add_sources(self, args: Union[List[Source], Source]) -> None:
         """Register one or more sources with the variable manager.
-        
+
         Args:
             args: Either a single Source object or a list of Source objects to register.
-            
+
         Raises:
             ValueError: If the arguments are not of the expected type.
             AlreadyExistingSourceError: If a source with the same name already exists.
@@ -194,21 +195,20 @@ class Varmgr:
 
         if isinstance(args, list):
             for source in args:
-                assert isinstance(source, Source)   
+                assert isinstance(source, Source)
                 self._sources[source.name] = source
         elif isinstance(args, Source):
             self._sources[args.name] = args
         else:
             raise ValueError(f"Invalid number of arguments: {len(args)}")
 
-
     def set_scopes(self, *args: Union[Dict[str, List[str]], str, List[str]]) -> None:
         """Define scopes for variable resolution.
-        
+
         Args:
             *args: Either a dict mapping scope names to source lists,
                   or a scope name and its source list as separate arguments.
-                
+
         Raises:
             ValueError: If the number or type of arguments is invalid.
             VarMgrAppError: If referenced sources don't exist or if there are circular references.
@@ -225,7 +225,7 @@ class Varmgr:
             assert isinstance(scope, list)
             obj_scopes[name] = scope
         else:
-            raise ValueError(f"Invalid number of arguments: {len(args)}")   
+            raise ValueError(f"Invalid number of arguments: {len(args)}")
 
         # recursive scope solver
         def scope_solver(scope_name, scope_items, scopes, sources, _seen=None):
@@ -246,38 +246,44 @@ class Varmgr:
                 elif item_ref in scopes:
                     # Check for recursion loops
                     if item_ref in _seen:
-                        stack = " -> ".join([scope_name] +_seen)
-                        raise VarMgrAppError(f"Scope '{scope_name}' is recursive: {stack}")
+                        stack = " -> ".join([scope_name] + _seen)
+                        raise VarMgrAppError(
+                            f"Scope '{scope_name}' is recursive: {stack}"
+                        )
                     _seen.append(item_ref)
 
                     # Register children
                     # out.append(Scope(item_ref))
-                    out.append(scope_solver(item_ref, scopes[item_ref], scopes, sources, _seen))
+                    out.append(
+                        scope_solver(item_ref, scopes[item_ref], scopes, sources, _seen)
+                    )
 
                 else:
-                    raise VarMgrAppError(f"Item '{item_ref}' not found in sources or scopes")
-                
+                    raise VarMgrAppError(
+                        f"Item '{item_ref}' not found in sources or scopes"
+                    )
+
             return out
 
         # Register scopes
         _out = {}
         for scope_name, items_list in obj_scopes.items():
-            _out[scope_name] = list(flatten(scope_solver(scope_name, items_list, scopes, self._sources)))
+            _out[scope_name] = list(
+                flatten(scope_solver(scope_name, items_list, scopes, self._sources))
+            )
 
         self._scopes = _out
 
-
-
     def get_ordered_sources(self, scope: Optional[str] = None) -> List[Source]:
         """Retrieve sources in priority order, optionally filtered by scope.
-        
+
         Args:
             scope: Optional scope name to filter sources.
-            
+
         Returns:
             List of Source objects ordered by their level (or middle_level if not specified).
             If scope is provided, returns only sources in that scope.
-        
+
         Raises:
             KeyError: If the specified scope doesn't exist.
         """
@@ -295,34 +301,34 @@ class Varmgr:
         # Return names only
         return self._scopes[scope]
 
-
     def get_source_names(self, scope: Optional[str] = None) -> List[str]:
         """Get names of all sources, optionally filtered by scope.
-        
+
         Args:
             scope: Optional scope name to filter sources.
-            
+
         Returns:
             List of source names in priority order.
-            
+
         Raises:
             KeyError: If the specified scope doesn't exist.
         """
         return [x.name for x in self.get_ordered_sources(scope)]
 
-
     # Sources management
     # ====================
 
     # AKA set_layer
-    def set_layer(self, source_name: str, dataset: Dict[str, Any], **kwargs: Any) -> None:
+    def set_layer(
+        self, source_name: str, dataset: Dict[str, Any], **kwargs: Any
+    ) -> None:
         """Import a dataset as a new layer for a specific source.
-        
+
         Args:
             source_name: Name of the source to import data for.
             dataset: Dictionary containing the variables and their values.
             **kwargs: Additional metadata to store with the layer.
-            
+
         Raises:
             VarMgrAppError: If the specified source doesn't exist.
         """
@@ -330,23 +336,23 @@ class Varmgr:
         source = self._sources.get(source_name, None)
         if source is None:
             raise VarMgrAppError(f"Source {source_name} not found")
-        
+
         self.layered_store[source_name] = Layer(
             # "level": source.level,
             source=source,
             payload=dataset,
             meta=kwargs,
-            )
-        
+        )
+
     def get_ordered_layers(self, scope: Optional[str] = None) -> List[Layer]:
         """Retrieve layers in priority order, optionally filtered by scope.
-        
+
         Args:
             scope: Optional scope name to filter layers.
-            
+
         Returns:
             List of Layer objects ordered by their source's priority.
-            
+
         Raises:
             KeyError: If the specified scope doesn't exist.
         """
@@ -362,10 +368,10 @@ class Varmgr:
 
     def show_sources_help(self, scope: Optional[str] = None) -> None:
         """Display help information for all sources, optionally filtered by scope.
-        
+
         Args:
             scope: Optional scope name to filter sources.
-            
+
         Raises:
             KeyError: If the specified scope doesn't exist.
         """
@@ -375,16 +381,15 @@ class Varmgr:
         for idx, source in enumerate(self.get_ordered_sources(scope=scope)):
             print(f"  {idx:3d}. {source.get_help()}")
 
-
     # Vars managements
     # ====================
 
     def get_var_names(self, scope: Optional[str] = None) -> List[str]:
         """Get names of all variables, optionally filtered by scope.
-        
+
         Args:
             scope: Optional scope name to filter variables.
-            
+
         Returns:
             List of variable names.
         """
@@ -395,20 +400,20 @@ class Varmgr:
         _out = list(set(_out))
         return _out
 
-
-
-    def get_var(self, name: str, scope: Optional[str] = None, debug: bool = False) -> Union[Layer, List[Layer]]:
+    def get_var(
+        self, name: str, scope: Optional[str] = None, debug: bool = False
+    ) -> Union[Layer, List[Layer]]:
         """Retrieve variable information from the first (or all) layers containing it.
-        
+
         Args:
             name: Name of the variable to look up.
             scope: Optional scope name to limit the search.
             debug: If True, return all layers containing the variable instead of just the first.
-            
+
         Returns:
             If debug is False, returns the first Layer containing the variable.
             If debug is True, returns a list of all Layers containing the variable.
-            
+
         Raises:
             UndefinedVarError: If the variable is not found in any layer.
             KeyError: If the specified scope doesn't exist.
@@ -425,17 +430,17 @@ class Varmgr:
             raise UndefinedVarError(f"Variable {name} not found")
 
         return _out
-    
+
     def inspect_var(self, name: str, scope: Optional[str] = None) -> List[Layer]:
         """Inspect all layers containing a specific variable.
-        
+
         Args:
             name: Name of the variable to inspect.
             scope: Optional scope name to limit the search.
-            
+
         Returns:
             List of all layers containing the variable, in priority order.
-            
+
         Raises:
             UndefinedVarError: If the variable is not found in any layer.
             KeyError: If the specified scope doesn't exist.
@@ -444,14 +449,14 @@ class Varmgr:
 
     def get_value(self, name: str, scope: Optional[str] = None) -> Any:
         """Get the value of a variable from the highest priority layer.
-        
+
         Args:
             name: Name of the variable to retrieve.
             scope: Optional scope name to limit the search.
-            
+
         Returns:
             The value of the variable from the highest priority layer.
-            
+
         Raises:
             UndefinedVarError: If the variable is not found in any layer.
             KeyError: If the specified scope doesn't exist.
@@ -460,13 +465,13 @@ class Varmgr:
 
     def get_values(self, scope: Optional[str] = None) -> Dict[str, Any]:
         """Get all variables and their values, respecting layer priority.
-        
+
         Args:
             scope: Optional scope name to limit the search.
-            
+
         Returns:
             Dictionary mapping variable names to their values from the highest priority layer.
-            
+
         Raises:
             KeyError: If the specified scope doesn't exist.
         """
