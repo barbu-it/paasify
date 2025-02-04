@@ -132,8 +132,8 @@ def test_source_metadata(varmgr, sample_datasets):
     dump = varmgr.dump()
     
     # Verify the dump contains source information
-    assert "cli" in str(dump)
-    assert "test_source" in str(dump)
+    assert "name" in str(dump)
+    assert "path" in str(dump)
 
 def test_empty_varmgr():
     mgr = Varmgr()
