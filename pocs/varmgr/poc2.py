@@ -261,11 +261,19 @@ def main1():
         varmgr.show_sources_help()
         varmgr.show_sources_help(scope="scope_stack")
 
+    def test_unknown_var():
+        try:
+            varmgr.get_var("unknown")
+            assert False, "Exception should have been raised"
+        except UndefinedVarError as e:
+            print("Exception raised: ", e)
+
     test_get_source_names()
     test_get_values_overrides()
     test_get_values_fallback()
     test_get_values()
     test_show_sources_help()
+    test_unknown_var()
 
     return
 

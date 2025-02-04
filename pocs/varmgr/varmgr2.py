@@ -162,6 +162,9 @@ class Layer:
 
 
 class Varmgr:
+    """
+    A class to manage variables and their sources.
+    """
 
     middle_level = DEFAULT_LEVEL
 
@@ -287,7 +290,7 @@ class Varmgr:
         if scope is None:
             ret = sorted(self._sources.values(), key=lvl_sorter)
             return ret
-        
+
         # Return names only
         return self._scopes[scope]
 
@@ -305,8 +308,6 @@ class Varmgr:
             KeyError: If the specified scope doesn't exist.
         """
         return [x.name for x in self.get_ordered_sources(scope)]
-
-
 
 
     # Sources management
