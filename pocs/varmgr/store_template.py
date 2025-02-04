@@ -1,8 +1,9 @@
-from varmgr2 import Varmgr, Source, UndefinedVarError
 from string import Template
 from typing import List, Dict, Any, Union, Optional, Iterator, TypeVar
 import logging
 from pprint import pprint
+
+from store_base import StoreManager, Source, UndefinedVarError
 
 
 logger = logging.getLogger(__name__)
@@ -228,7 +229,7 @@ class Renderer:
         return value
 
 
-class VarTemplate(Varmgr):
+class RenderableStoreManager(StoreManager):
     """
     A class to manage variables and their sources.
     """

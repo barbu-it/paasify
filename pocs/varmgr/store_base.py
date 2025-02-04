@@ -164,7 +164,7 @@ class Layer:
         return f"Layer({self.source.name})"
 
 
-class Varmgr:
+class StoreManager:
     """
     A class to manage variables and their sources.
     """

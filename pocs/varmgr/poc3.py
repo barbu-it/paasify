@@ -1,12 +1,12 @@
 from pprint import pprint
 
-from varmgr2 import Source, UndefinedVarError
-from vartpl import VarTemplate
+from store_base import Source, UndefinedVarError
+from store_template import RenderableStoreManager
 
 
 def main1():
     "Firs featureset"
-    varmgr = VarTemplate()
+    varmgr = RenderableStoreManager()
 
     vars_1app_cli = {
         "app_name": "dataset1",
@@ -435,7 +435,7 @@ def main1():
 def main2():
     "Second featureset"
 
-    # varmgr = Varmgr()
+    # varmgr = StoreManager()
 
 
 if __name__ == "__main__":

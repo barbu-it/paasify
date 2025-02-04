@@ -1,11 +1,11 @@
 from pprint import pprint
 
-from varmgr2 import Varmgr, Source, UndefinedVarError
+from store import StoreManager, Source, UndefinedVarError
 
 
 def main1():
     "Firs featureset"
-    varmgr = Varmgr()
+    varmgr = StoreManager()
 
     dataset1 = {
         "name": "dataset1",
@@ -394,7 +394,7 @@ def main1():
 def main2():
     "Second featureset"
 
-    # varmgr = Varmgr()
+    # varmgr = StoreManager()
 
 
 if __name__ == "__main__":
