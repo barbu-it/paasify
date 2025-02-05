@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 #             f"Transformed template var {hint}: {old_value} => {value}"
 #         )
 
+
 class StoreTemplateError(VarMgrUserError):
     """Base class for StoreTemplate exceptions."""
 
@@ -27,8 +28,10 @@ class TemplateUndefinedVarError(StoreTemplateError):
 class TemplateValueError(StoreTemplateError):
     """Exception raised when accessing an undefined variable in a template."""
 
+
 class TemplateKeyError(StoreTemplateError):
-    """Exception raised when accessing an undefined variable in a template."""  
+    """Exception raised when accessing an undefined variable in a template."""
+
 
 # =====================================================================
 # Class overrides
@@ -95,18 +98,18 @@ if hasattr(Template, "get_identifiers"):
     StringTemplate = Template  # noqa: F811
 
 
-
-
 # =====================================================================
 # TemplateEngines class
 # =====================================================================
 
 
-class _TemplateEngines():
+class _TemplateEngines:
     """Class for managing template engines."""
 
-class _TemplateInstances():
+
+class _TemplateInstances:
     """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates."""
+
 
 # =====================================================================
 # TemplateEngines StringTemplate class
@@ -128,7 +131,7 @@ class StringTemplateEngine(_TemplateEngines):
         # Check if data is a string, otherwize we can't template it
         if not isinstance(data, str):
             return False
-        
+
         # Check in Python sring.Template config if any opening pattern
         # matches in the text
         for _ in self.engine_cls.pattern.finditer(data):
@@ -138,17 +141,17 @@ class StringTemplateEngine(_TemplateEngines):
     def get_template(self, value):
         "Return a new engine instance"
         return StringTemplateInstance(value, engine_cls=self.engine_cls)
-    
+
 
 class StringTemplateInstance(_TemplateInstances):
     """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates.
-    
+
     This class encapsulates a template engine (like string.Template) and provides a consistent interface for:
     - Getting the variable names/identifiers used in the template
     - Rendering the template by substituting variables with values
     - Handling template rendering errors
     """
-    
+
     def __init__(self, value, engine_cls):
 
         assert isinstance(value, str), "value must be a string"
@@ -157,16 +160,11 @@ class StringTemplateInstance(_TemplateInstances):
         self.engine_cls = engine_cls
         self._engine = engine_cls(value)
 
-
     def get_var_names(self):
         "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
         return self._engine.get_identifiers()
 
-
-    def render(self,
-            dict_vars=None, 
-            settings=None,
-            report=None):
+    def render(self, dict_vars=None, settings=None, report=None):
         """Render a template by substituting variables with their values.
 
         Args:
@@ -188,9 +186,8 @@ class StringTemplateInstance(_TemplateInstances):
         report = report or {}
         value = self._value
 
-        assert isinstance(dict_vars , dict), "dict_vars must be a dict"
+        assert isinstance(dict_vars, dict), "dict_vars must be a dict"
         assert isinstance(value, str), "value must be a string"
-
 
         # Substitute vars
         report["parse_error"] = None
@@ -218,18 +215,12 @@ class StringTemplateInstance(_TemplateInstances):
                 # Unmanaged error, raise general exception
                 raise err
 
-
         # Build report for children
         if settings.debug:
             report["value"] = parsed
             report["raw_value"] = value
 
         return parsed
-
-
-
-
-
 
 
 # =====================================================================
@@ -239,7 +230,7 @@ class StringTemplateInstance(_TemplateInstances):
 
 @dataclass
 class RenderingSettings:
-    """Class for keeping track of an item in inventory."""
+    """Class for keeping track of template settings."""
 
     on_undefined_error: Any = Exception
     on_value_error: Any = Exception
@@ -290,10 +281,13 @@ class Renderer:
         return _out
 
     def render_var(
-        self, var_name: str, _seen: List[str] = None, _lvl=None, 
-        debug=False, 
+        self,
+        var_name: str,
+        _seen: List[str] = None,
+        _lvl=None,
+        debug=False,
         cache=True,
-        settings = None,
+        settings=None,
     ) -> str:
         """Render a variable value, resolving any template references.
 
@@ -318,7 +312,7 @@ class Renderer:
             UndefinedVarError: If the variable or any referenced variables don't exist
                               and settings.on_undefined_error is Exception.
             ValueError: If circular references are detected.
-            TemplateUndefinedVarError: If a variable is undefined and 
+            TemplateUndefinedVarError: If a variable is undefined and
                                       settings.on_undefined_error is Exception.
         """
 
@@ -334,7 +328,9 @@ class Renderer:
             debug=debug,
             cache=cache,
         )
-        assert isinstance(settings, RenderingSettings), "settings must be a RenderingSettings instance"
+        assert isinstance(
+            settings, RenderingSettings
+        ), "settings must be a RenderingSettings instance"
 
         # 2. Init report
         logger.info("Renderer: Rendering var%d: %s", _lvl, var_name)
@@ -376,10 +372,8 @@ class Renderer:
             dict_vars = self._render_var_template1(
                 var_names=var_names,
                 settings=settings,
-
                 seen=_seen,
                 lvl=_lvl,
-
                 report=_report,
             )
 
@@ -400,23 +394,17 @@ class Renderer:
             return value, _report
         return value
 
-
-
-
-
-
-    def _render_var_template1(self,
-                        var_names=None,
-                        settings=None,
-
-                        
-                        # Forwarded args
-                        report=None,
-                        seen=None, 
-                        lvl=None, 
-                        # debug=False, 
-                        # cache=True, 
-                        ):
+    def _render_var_template1(
+        self,
+        var_names=None,
+        settings=None,
+        # Forwarded args
+        report=None,
+        seen=None,
+        lvl=None,
+        # debug=False,
+        # cache=True,
+    ):
         """Render a template by resolving all variable references.
 
         Args:
@@ -426,8 +414,6 @@ class Renderer:
         _lvl = lvl or 0
         seen = seen or []
         debug = settings.debug
-
-
 
         # DATA BUILDER
 
@@ -445,11 +431,14 @@ class Renderer:
             new_seen = seen + [key]
 
             # Recursive resolve vars
-            try:    
+            try:
                 value = self.render_var(
-                    key, _seen=new_seen, _lvl=_lvl + 1, debug=debug,
+                    key,
+                    _seen=new_seen,
+                    _lvl=_lvl + 1,
+                    debug=debug,
                 )
-            except UndefinedVarError as err :
+            except UndefinedVarError as err:
                 # pprint(err.__dict__)
                 if settings.on_undefined_error is Exception:
                     msg = (
@@ -470,7 +459,6 @@ class Renderer:
                     if report:
                         print("Renderer: Variable not found, skipping")
                         pprint(report)
-                    
 
             # Depack arguments in debug mode
             if debug:
@@ -485,9 +473,6 @@ class Renderer:
             report["children"] = _children
 
         return dict_vars
-
-
-  
 
 
 class RenderableStoreManager(StoreManager):

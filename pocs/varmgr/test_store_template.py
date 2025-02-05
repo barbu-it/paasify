@@ -7,43 +7,47 @@ from store_template import RenderableStoreManager
 def varmgr():
     """Create a basic variable manager with predefined sources and scopes"""
     mgr = RenderableStoreManager()
-    
+
     # Add sources with different levels
-    mgr.add_sources([
-        Source("app_cli", level=300, help="Application main CLI"),
-        Source("app_env", level=300, help="Application environment variables"),
-        Source("app_defaults", level=999, help="Application defaults"),
-        Source("project_cli", level=300, help="Project main CLI"),
-        Source("project_env", level=300, help="Project environment variables"),
-        Source("project_defaults", level=999, help="Project defaults"),
-        Source("stack_cli", level=300, help="Stack main CLI"),
-        Source("stack_env", level=300, help="Stack environment variables"),
-        Source("stack_defaults", level=999, help="Stack defaults"),
-    ])
+    mgr.add_sources(
+        [
+            Source("app_cli", level=300, help="Application main CLI"),
+            Source("app_env", level=300, help="Application environment variables"),
+            Source("app_defaults", level=999, help="Application defaults"),
+            Source("project_cli", level=300, help="Project main CLI"),
+            Source("project_env", level=300, help="Project environment variables"),
+            Source("project_defaults", level=999, help="Project defaults"),
+            Source("stack_cli", level=300, help="Stack main CLI"),
+            Source("stack_env", level=300, help="Stack environment variables"),
+            Source("stack_defaults", level=999, help="Stack defaults"),
+        ]
+    )
 
     # Set up scopes with inheritance
-    mgr.set_scopes({
-        "scope_app": [
-            "app_cli",
-            "app_env", 
-            "app_defaults",
-        ],
-        "scope_project": [
-            "project_cli",
-            "project_env",
-            "project_defaults",
-            # Defaults
-            "scope_app",
-        ],
-        "scope_stack": [
-            "stack_cli",
-            "stack_env", 
-            "stack_defaults",
-            # Defaults
-            "scope_project",
-        ],
-    })
-    
+    mgr.set_scopes(
+        {
+            "scope_app": [
+                "app_cli",
+                "app_env",
+                "app_defaults",
+            ],
+            "scope_project": [
+                "project_cli",
+                "project_env",
+                "project_defaults",
+                # Defaults
+                "scope_app",
+            ],
+            "scope_stack": [
+                "stack_cli",
+                "stack_env",
+                "stack_defaults",
+                # Defaults
+                "scope_project",
+            ],
+        }
+    )
+
     return mgr
 
 
@@ -53,7 +57,7 @@ def test_basic_variable_resolution(varmgr):
         "app_name": "dataset1",
     }
     varmgr.set_layer("app_cli", vars_app)
-    
+
     renderer = varmgr.get_renderer("scope_app")
     assert renderer.render_var("app_name") == "dataset1"
 
@@ -66,13 +70,13 @@ def test_template_variable_resolution(varmgr):
         "stack_name": "dataset3",
         "stack_fname": "${project_name}_${stack_name}",
     }
-    
+
     varmgr.set_layer("app_cli", vars_app)
     varmgr.set_layer("project_env", vars_project)
     varmgr.set_layer("stack_env", vars_stack)
-    
+
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     # Test individual variable resolution
     assert renderer.render_var("stack_name") == "dataset3"
     assert renderer.render_var("project_name") == "project1+dataset3"
@@ -87,14 +91,14 @@ def test_render_values(varmgr):
         "stack_name": "dataset3",
         "stack_fname": "${project_name}_${stack_name}",
     }
-    
+
     varmgr.set_layer("app_cli", vars_app)
     varmgr.set_layer("project_env", vars_project)
     varmgr.set_layer("stack_env", vars_stack)
-    
+
     renderer = varmgr.get_renderer("scope_stack")
     rendered_values = renderer.render_values()
-    
+
     expected = {
         "app_name": "dataset1",
         "project_name": "project1+dataset3",
@@ -112,18 +116,18 @@ def test_caching_behavior(varmgr):
         "stack_name": "dataset3",
         "stack_fname": "${project_name}_${stack_name}",
     }
-    
+
     varmgr.set_layer("app_cli", vars_app)
     varmgr.set_layer("project_env", vars_project)
     varmgr.set_layer("stack_env", vars_stack)
-    
+
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     # Test without cache
     result1 = renderer.render_var("stack_fname", cache=False)
     result2 = renderer.render_var("stack_fname", cache=False)
     assert result1 == result2
-    
+
     # Test with cache
     result1 = renderer.render_var("stack_fname", cache=True)
     result2 = renderer.render_var("stack_fname", cache=True)
@@ -138,14 +142,14 @@ def test_debug_output(varmgr):
         "stack_name": "dataset3",
         "stack_fname": "${project_name}_${stack_name}",
     }
-    
+
     varmgr.set_layer("app_cli", vars_app)
     varmgr.set_layer("project_env", vars_project)
     varmgr.set_layer("stack_env", vars_stack)
-    
+
     renderer = varmgr.get_renderer("scope_stack")
     value, debug_info = renderer.render_var("stack_fname", debug=True)
-    
+
     assert value == "project1+dataset3_dataset3"
     assert "key" in debug_info
     assert "level" in debug_info
@@ -157,12 +161,12 @@ def test_circular_reference_detection(varmgr):
     """Test detection of circular references"""
     vars_project = {"project_name": "project1+${stack_fname}"}
     vars_stack = {"stack_fname": "${project_name}_suffix"}
-    
+
     varmgr.set_layer("project_env", vars_project)
     varmgr.set_layer("stack_env", vars_stack)
-    
+
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     with pytest.raises(ValueError, match="Circular reference detected:.*"):
         renderer.render_var("stack_fname")
 
@@ -170,7 +174,7 @@ def test_circular_reference_detection(varmgr):
 def test_undefined_variable(varmgr):
     """Test handling of undefined variables"""
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     with pytest.raises(UndefinedVarError):
         renderer.render_var("nonexistent_var")
 
@@ -179,7 +183,7 @@ def test_multiple_renderers(varmgr):
     """Test that multiple renderers for the same scope share the same instance"""
     renderer1 = varmgr.get_renderer("scope_stack")
     renderer2 = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer1 is renderer2
 
 
@@ -188,12 +192,12 @@ def test_non_template_values(varmgr):
     vars_stack = {
         "string_value": "simple string",
         "number_value": 42,
-        "bool_value": True
+        "bool_value": True,
     }
-    
+
     varmgr.set_layer("stack_env", vars_stack)
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer.render_var("string_value") == "simple string"
     assert renderer.render_var("number_value") == 42
     assert renderer.render_var("bool_value") is True
@@ -204,12 +208,12 @@ def test_empty_template_string(varmgr):
     vars_stack = {
         "empty_string": "",
         "template_with_spaces": "   ${other_var}   ",
-        "other_var": "value"
+        "other_var": "value",
     }
-    
+
     varmgr.set_layer("stack_env", vars_stack)
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer.render_var("empty_string") == ""
     assert renderer.render_var("template_with_spaces") == "   value   "
 
@@ -221,13 +225,14 @@ def test_nested_template_resolution(varmgr):
         "var2": "${var1}_two",
         "var3": "${var2}_three",
         "var4": "${var3}_four",
-        "var5": "${var4}_five"
+        "var5": "${var4}_five",
     }
-    
+
     varmgr.set_layer("stack_env", vars_stack)
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer.render_var("var5") == "one_two_three_four_five"
+
 
 # from pprint import pprint
 
@@ -242,10 +247,10 @@ def test_nested_template_resolution(varmgr):
 #         "path": "/path/to/file",
 #         "template": "${special_chars}_${url}_${path}"
 #     }
-    
+
 #     varmgr.set_layer("stack_env", vars_stack)
 #     renderer = varmgr.get_renderer("scope_stack")
-    
+
 #     out = renderer.render_var("template")
 #     expected = "!@#$%^&*()_https://example.com_/path/to/file"
 #     # print(f"out     : {out}")
@@ -258,14 +263,15 @@ def test_multiple_references_same_var(varmgr):
     vars_stack = {
         "base": "value",
         "double_ref": "${base}_${base}",
-        "triple_ref": "${base}_${base}_${base}"
+        "triple_ref": "${base}_${base}_${base}",
     }
-    
+
     varmgr.set_layer("stack_env", vars_stack)
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer.render_var("double_ref") == "value_value"
     assert renderer.render_var("triple_ref") == "value_value_value"
+
 
 # TOFIX
 # def test_escaped_dollar_signs(varmgr):
@@ -278,7 +284,7 @@ def test_multiple_references_same_var(varmgr):
 #         "escaped4": "$$$$not_a_template",
 #         "mixed": "$$literal_${var}_$$another"
 #     }
-    
+
 #     varmgr.set_layer("stack_env", vars_stack)
 #     renderer = varmgr.get_renderer("scope_stack")
 
@@ -291,7 +297,7 @@ def test_multiple_references_same_var(varmgr):
 #     out = renderer.render_var("unexisting", debug=True, value_on_undefined="")
 #     print("OUT: ")
 #     pprint(out)
-    
+
 #     assert renderer.render_var("escaped") == "$$not_a_template"
 #     assert renderer.render_var("mixed") == "$$literal_value_$$another"
 
@@ -301,16 +307,16 @@ def test_scope_inheritance_with_templates(varmgr):
     vars_app = {"base_var": "app_value"}
     vars_project = {"project_var": "${base_var}_project"}
     vars_stack = {"stack_var": "${project_var}_stack"}
-    
+
     varmgr.set_layer("app_defaults", vars_app)
     varmgr.set_layer("project_defaults", vars_project)
     varmgr.set_layer("stack_defaults", vars_stack)
-    
+
     # Test resolution at different scope levels
     app_renderer = varmgr.get_renderer("scope_app")
     project_renderer = varmgr.get_renderer("scope_project")
     stack_renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert app_renderer.render_var("base_var") == "app_value"
     assert project_renderer.render_var("project_var") == "app_value_project"
     assert stack_renderer.render_var("stack_var") == "app_value_project_stack"
@@ -322,10 +328,10 @@ def test_scope_inheritance_with_templates(varmgr):
 #         "var": "value",
 #         "malformed": "${var_without_closing"
 #     }
-    
+
 #     varmgr.set_layer("stack_env", vars_stack)
 #     renderer = varmgr.get_renderer("scope_stack")
-    
+
 #     # Should return the original string without modification
 #     assert renderer.render_var("malformed") == "${var_without_closing"
 
@@ -336,24 +342,24 @@ def test_scope_inheritance_with_templates(varmgr):
 #         "base": "original",
 #         "dependent": "${base}_suffix"
 #     }
-    
+
 #     # ROUND 1
 #     varmgr.set_layer("stack_env", vars_stack)
 #     pprint(varmgr.__dict__)
 
 #     renderer = varmgr.get_renderer("scope_stack")
 #     pprint(renderer.__dict__)
-    
+
 #     # First render to populate cache
 #     assert renderer.render_var("dependent", cache=True) == "original_suffix"
-    
+
 #     # ROUND 2
 #     # Modify the base variable
 #     varmgr.set_layer("stack_env", {"base": "modified"})
 
 #     out = varmgr.get_var("base", debug=True)
 #     pprint(out)
-    
+
 #     # Test with and without cache
 #     assert renderer.render_var("dependent", cache=True) == "original_suffix"  # Should use cached value
 #     assert renderer.render_var("dependent", cache=False) == "modified_suffix"  # Should reflect new value
@@ -366,12 +372,12 @@ def test_complex_nested_references(varmgr):
         "bool_val": True,
         "str_val": "string",
         "complex": "${str_val}_${num}_${bool_val}",
-        "nested": "${complex}_${complex}"
+        "nested": "${complex}_${complex}",
     }
-    
+
     varmgr.set_layer("stack_env", vars_stack)
     renderer = varmgr.get_renderer("scope_stack")
-    
+
     assert renderer.render_var("complex") == "string_42_True"
     assert renderer.render_var("nested") == "string_42_True_string_42_True"
 
@@ -386,7 +392,7 @@ def test_complex_nested_references(varmgr):
 #         "special4": " \t\n\r",  # whitespace characters
 #         "special5": "™®©",      # unicode symbols
 #         "special6": "🌟🚀🎉",    # emojis
-        
+
 #         # Test dollar sign edge cases
 #         "dollar1": "$",
 #         "dollar2": "$$",
@@ -395,7 +401,7 @@ def test_complex_nested_references(varmgr):
 #         "dollar5": "$}",
 #         "dollar6": "test'$'test",
 #         "dollar7": "$ {var}",   # space after $
-        
+
 #         # Test various template patterns
 #         "var": "base_value",
 #         "template1": "${var}${var}",          # adjacent templates
@@ -408,11 +414,11 @@ def test_complex_nested_references(varmgr):
 #         "template8": "  ${var}  ",            # with whitespace
 #         "template9": "\t${var}\n",            # with special whitespace
 #         "template10": "${special5}${special6}", # with unicode and emojis
-        
+
 #         # Test nested templates with special characters
 #         "nested1": "${template6}${template7}",
 #         "nested2": "${template8}${template9}",
-        
+
 #         # Test potentially problematic patterns
 #         "problem1": "${var${var}}",           # nested braces (invalid)
 #         "problem2": "${var}}}",               # extra closing braces
@@ -420,17 +426,17 @@ def test_complex_nested_references(varmgr):
 #         "problem4": "}{${var}}{",             # reversed braces
 #         "problem5": "${not_existing}",        # undefined variable
 #         "problem6": "${var_without_closing",  # unclosed template
-        
+
 #         # Test long strings and repetitions
 #         "long1": "${var}" * 10,              # repeated templates
 #         "long2": "$" * 50,                   # many dollar signs
 #         "long3": "${" * 10,                  # many opening sequences
 #         "long4": "}" * 10,                   # many closing braces
 #     }
-    
+
 #     varmgr.set_layer("stack_env", vars_stack)
 #     renderer = varmgr.get_renderer("scope_stack")
-    
+
 #     # Test special characters
 #     assert renderer.render_var("special1") == "!@#$%^&*()"
 #     assert renderer.render_var("special2") == "[]{}\\|;:'\",.<>/?"
@@ -438,7 +444,7 @@ def test_complex_nested_references(varmgr):
 #     assert renderer.render_var("special4") == " \t\n\r"
 #     assert renderer.render_var("special5") == "™®©"
 #     assert renderer.render_var("special6") == "🌟🚀🎉"
-    
+
 #     # Test dollar sign edge cases
 #     assert renderer.render_var("dollar1") == "$"
 #     assert renderer.render_var("dollar2") == "$$"
@@ -447,7 +453,7 @@ def test_complex_nested_references(varmgr):
 #     assert renderer.render_var("dollar5") == "$}"
 #     assert renderer.render_var("dollar6") == "test'$'test"
 #     assert renderer.render_var("dollar7") == "$ {var}"
-    
+
 #     # Test template patterns
 #     assert renderer.render_var("template1") == "base_valuebase_value"
 #     assert renderer.render_var("template2") == "base_value base_value"
@@ -459,11 +465,11 @@ def test_complex_nested_references(varmgr):
 #     assert renderer.render_var("template8") == "  base_value  "
 #     assert renderer.render_var("template9") == "\tbase_value\n"
 #     assert renderer.render_var("template10") == "™®©🌟🚀🎉"
-    
+
 #     # Test nested templates
 #     assert renderer.render_var("nested1") == "!@#$%^&*()[]{}\\|;:'\",.<>/?prefixbase_valuesuffix"
 #     assert renderer.render_var("nested2") == "  base_value  \tbase_value\n"
-    
+
 #     # Test problematic patterns (should not raise exceptions)
 #     renderer.render_var("problem1")  # Should handle nested braces gracefully
 #     renderer.render_var("problem2")  # Should handle extra closing braces
@@ -472,7 +478,7 @@ def test_complex_nested_references(varmgr):
 #     with pytest.raises(UndefinedVarError):
 #         renderer.render_var("problem5")  # Should raise UndefinedVarError
 #     renderer.render_var("problem6")  # Should handle unclosed template
-    
+
 #     # Test long strings and repetitions
 #     assert renderer.render_var("long1") == "base_value" * 10
 #     assert renderer.render_var("long2") == "$" * 50
@@ -487,26 +493,26 @@ def test_complex_nested_references(varmgr):
 #         "nested": "${base}_${base}",
 #         "complex": "prefix_${nested}_suffix"
 #     }
-    
+
 #     varmgr.set_layer("stack_env", vars_stack)
 #     renderer = varmgr.get_renderer("scope_stack")
-    
+
 #     # Test debug output for simple variable
 #     value, debug_info = renderer.render_var("base", debug=True)
 #     assert value == "value!@#$"
 #     assert debug_info["key"] == "base"
 #     assert not debug_info["templated"]
-    
+
 #     # Test debug output for nested template
 #     value, debug_info = renderer.render_var("nested", debug=True)
 #     assert value == "value!@#$_value!@#$"
 #     assert debug_info["templated"]
 #     assert "children" in debug_info
 #     assert len(debug_info["children"]) == 1
-    
+
 #     # Test debug output for complex template
 #     value, debug_info = renderer.render_var("complex", debug=True)
 #     assert value == "prefix_value!@#$_value!@#$_suffix"
 #     assert debug_info["templated"]
 #     assert "children" in debug_info
-#     assert "nested" in debug_info["children"] 
+#     assert "nested" in debug_info["children"]

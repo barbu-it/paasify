@@ -194,7 +194,9 @@ class StoreManager:
     # SourcesScopes managements
     # ====================
 
-    def add_sources(self, args: Union[List[Source], Source], force: bool = False) -> None:
+    def add_sources(
+        self, args: Union[List[Source], Source], force: bool = False
+    ) -> None:
         """Register one or more sources with the variable manager.
 
         Args:
@@ -213,9 +215,9 @@ class StoreManager:
             if args.name in self._sources and not force:
                 raise AlreadyExistingSourceError(
                     f"Source {args.name} already exists, use force to override",
-                    name = args.name,
-                    arg = args
-                    )
+                    name=args.name,
+                    arg=args,
+                )
             self._sources[args.name] = args
         else:
             raise ValueError(f"Invalid number of arguments: {len(args)}")
@@ -267,8 +269,8 @@ class StoreManager:
                         stack = " -> ".join([scope_name] + _seen)
                         raise VarMgrAppError(
                             f"Scope '{scope_name}' is recursive: {stack}",
-                            scope_name = scope_name,
-                            stack = list([scope_name] + _seen),
+                            scope_name=scope_name,
+                            stack=list([scope_name] + _seen),
                         )
                     _seen.append(item_ref)
 
@@ -281,8 +283,8 @@ class StoreManager:
                 else:
                     raise VarMgrAppError(
                         f"Item '{item_ref}' not found in sources or scopes",
-                        item_ref = item_ref,
-                        scope_name = scope_name,
+                        item_ref=item_ref,
+                        scope_name=scope_name,
                     )
 
             return out
@@ -357,8 +359,9 @@ class StoreManager:
 
         source = self._sources.get(source_name, None)
         if source is None:
-            raise VarMgrAppError(f"Source {source_name} not found", 
-                                 source_name=source_name)
+            raise VarMgrAppError(
+                f"Source {source_name} not found", source_name=source_name
+            )
 
         self.layered_store[source_name] = Layer(
             # "level": source.level,
