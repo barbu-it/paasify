@@ -97,17 +97,23 @@ if hasattr(Template, "get_identifiers"):
 
 
 
+# =====================================================================
 # TemplateEngines class
 # =====================================================================
 
 
-
-
-class TemplateEngines:
+class _TemplateEngines():
     """Class for managing template engines."""
 
+class _TemplateInstances():
+    """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates."""
 
-class StringTemplateEngine(TemplateEngines):
+# =====================================================================
+# TemplateEngines StringTemplate class
+# =====================================================================
+
+
+class StringTemplateEngine(_TemplateEngines):
     """Python StringTemplate template engine."""
 
     def __init__(self):
@@ -131,10 +137,10 @@ class StringTemplateEngine(TemplateEngines):
 
     def get_template(self, value):
         "Return a new engine instance"
-        return TemplateResult(value, engine_cls=self.engine_cls)
+        return StringTemplateInstance(value, engine_cls=self.engine_cls)
     
 
-class TemplateResult():
+class StringTemplateInstance(_TemplateInstances):
     """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates.
     
     This class encapsulates a template engine (like string.Template) and provides a consistent interface for:
@@ -188,6 +194,7 @@ class TemplateResult():
 
         # Substitute vars
         report["parse_error"] = None
+        report["parsed"] = False
         err = None
         try:
             parsed = engine.substitute(dict_vars)
@@ -195,61 +202,37 @@ class TemplateResult():
         except (ValueError, KeyError) as _err:
             err = _err
 
-        # except ValueError as e:
-        #     parsed = value
+        # Handle error
+        if err is not None:
+            report["parse_error"] = str(err)
+            if isinstance(err, ValueError):
+                if settings.on_value_error is Exception:
+                    raise TemplateValueError(err, value=value, report=report) from err
+                parsed = settings.on_value_error
 
-        #     if settings.on_value_error is Exception:
-        #         msg = (
-        #             f"Renderer: Error parsing template value '{value}'"
-        #             "set on_value_error='<default_value>' to change this behavior"
-        #         )
-        #         raise TemplateValueError(msg, value=value, report=report) from e
+            elif isinstance(err, KeyError):
+                if settings.on_key_error is Exception:
+                    raise TemplateKeyError(err, value=value, report=report) from err
+                parsed = settings.on_key_error
+            else:
+                # Unmanaged error, raise general exception
+                raise err
 
-        #     # Happens with bad template value:
-        #     #  - "test'$'test"
-        #     logger.warning("Error substituting '%s' vars: %s", value, e)
-        #     report["parsed"] = str(e)
-
-        # except KeyError:
-
-        #     if settings.on_key_error is Exception:
-        #         msg = (
-        #             f"Renderer: Error parsing template value '{value}'"
-        #             "set on_key_error='<default_value>' to change this behavior"
-        #         )
-        #         raise TemplateKeyError(msg, value=value, report=report) from e
-
-
-        #     assert False, "Notimplemented"
-
-        if err is None:
-            pass
-        elif isinstance(err, ValueError):
-            if settings.on_value_error is Exception:
-                raise TemplateValueError(err, value=value, report=report) from err
-            parsed = settings.on_value_error
-
-        elif isinstance(err, KeyError):
-            if settings.on_key_error is Exception:
-                raise TemplateKeyError(err, value=value, report=report) from err
-            parsed = settings.on_key_error
-
-
-
-        # if report["parsed"] is not True:
-        #     parsed = settings.on_value_error
 
         # Build report for children
         if settings.debug:
             report["value"] = parsed
             report["raw_value"] = value
-            report["templated"] = True
 
-        return parsed, report
-
+        return parsed
 
 
 
+
+
+
+
+# =====================================================================
 # Renderer class
 # =====================================================================
 
@@ -306,20 +289,10 @@ class Renderer:
 
         return _out
 
-
-
-
-
     def render_var(
         self, var_name: str, _seen: List[str] = None, _lvl=None, 
         debug=False, 
         cache=True,
-        # on_undefined_error: Any = Exception,
-        # on_value_error: Any = Exception,
-        # on_key_error: Any = Exception,
-        # on_undefined_error: Any = Exception, 
-        # on_value_error: Any = Exception, 
-        # on_key_error: Any = Exception,
         settings = None,
     ) -> str:
         """Render a variable value, resolving any template references.
@@ -334,17 +307,22 @@ class Renderer:
             _lvl: Current recursion level for debugging.
             debug: Whether to return additional debug information.
             cache: Whether to cache rendered values for reuse.
+            settings: RenderingSettings instance to control error handling and behavior.
+                     If None, default settings will be used.
 
         Returns:
             str: The rendered variable value with all template references resolved.
             If debug=True, returns a tuple of (value, debug_info).
 
         Raises:
-            UndefinedVarError: If the variable or any referenced variables don't exist.
+            UndefinedVarError: If the variable or any referenced variables don't exist
+                              and settings.on_undefined_error is Exception.
             ValueError: If circular references are detected.
+            TemplateUndefinedVarError: If a variable is undefined and 
+                                      settings.on_undefined_error is Exception.
         """
 
-        # Init vars
+        # 0. Init vars
         _seen = _seen or []
         _lvl = _lvl or 0
 
@@ -359,11 +337,14 @@ class Renderer:
         assert isinstance(settings, RenderingSettings), "settings must be a RenderingSettings instance"
 
         # 2. Init report
-        _report = {}
-        _report["key"] = var_name
-        _report["level"] = _lvl
-        _report["parsed"] = False
         logger.info("Renderer: Rendering var%d: %s", _lvl, var_name)
+        _report = {
+            "key": var_name,
+            "level": _lvl,
+            "parsed": False,
+            "cache": False,
+            "cached": False,
+        }
 
         # 3. Check cache
         if settings.cache and var_name in self._cache:
@@ -372,7 +353,6 @@ class Renderer:
             if debug:
                 return out, _report
             return out
-        _report["cache"] = False
 
         # 4. Fetch and process variable
         value = self.store.get_value(var_name, scope=self.scope)
@@ -393,7 +373,7 @@ class Renderer:
             # Fetch template variable names from string
             # and recursively resolve template variables values
             var_names = template.get_var_names()
-            dict_vars, _report = self._render_var_template1(
+            dict_vars = self._render_var_template1(
                 var_names=var_names,
                 settings=settings,
 
@@ -404,18 +384,16 @@ class Renderer:
             )
 
             # Try to parse value with dict_vars
-            value, _report = template.render(
+            value = template.render(
                 dict_vars=dict_vars,
                 settings=settings,
                 report=_report,
             )
 
         # Save in cache
-        cached = False
         if settings.cache:
             self._cache[var_name] = value
-            cached = True
-        _report["cached"] = cached
+            _report["cached"] = True
 
         # Return value
         if debug:
@@ -506,7 +484,7 @@ class Renderer:
         if debug:
             report["children"] = _children
 
-        return dict_vars, report
+        return dict_vars
 
 
   
