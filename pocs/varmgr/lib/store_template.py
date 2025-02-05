@@ -209,7 +209,7 @@ class StringTemplateInstance(_TemplateInstances):
         Raises:
             TemplateValueError: If template value is invalid and settings.on_value_error is
                 Exception
-            TemplateKeyError: If variable substitution fails and settings.on_key_error is
+            TemplateKeyError: If variable substitution fails and settings.on_undefined_error is
                 Exception
         """
         dict_vars = dict_vars or {}
@@ -236,12 +236,18 @@ class StringTemplateInstance(_TemplateInstances):
             if isinstance(err, ValueError):
                 if settings.on_value_error is Exception:
                     raise TemplateValueError(err, value=value, report=report) from err
-                parsed = settings.on_value_error
+                elif callable(settings.on_value_error):
+                    parsed = settings.on_value_error(value, err=err, report=report)
+                else:
+                    parsed = settings.on_value_error
 
             elif isinstance(err, KeyError):
-                if settings.on_key_error is Exception:
+                if settings.on_undefined_error is Exception:
                     raise TemplateKeyError(err, value=value, report=report) from err
-                parsed = settings.on_key_error
+                elif callable(settings.on_undefined_error):
+                    parsed = settings.on_undefined_error(value, err=err, report=report)
+                else:
+                    parsed = settings.on_undefined_error
             else:
                 # Unmanaged error, raise general exception
                 raise err
@@ -263,9 +269,9 @@ class StringTemplateInstance(_TemplateInstances):
 class RenderingSettings:
     """Class for keeping track of template settings."""
 
-    on_undefined_error: Any = Exception
+    # on_undefined_error: Any = Exception
     on_value_error: Any = Exception
-    on_key_error: Any = Exception
+    on_undefined_error: Any = Exception
     debug: bool = False
     cache: bool = True
 
@@ -319,6 +325,7 @@ class Renderer:
         debug=False,
         cache=True,
         settings=None,
+        **kwargs
     ) -> str:
         """Render a variable value, resolving any template references.
 
@@ -354,9 +361,10 @@ class Renderer:
         # 1. Init config
         pprint(settings)
         settings = settings or RenderingSettings(
-            on_undefined_error=Exception,
-            on_value_error=Exception,
-            on_key_error=Exception,
+            # on_undefined_error=Exception,
+            on_value_error=lambda value, err=None, report=None: "{val}".format(val=value),
+            # on_undefined_error=Exception,
+            on_undefined_error=lambda value, **_: "<MISSING_VALUE:{val}>".format(val=value),
             debug=debug,
             cache=cache,
         )
@@ -484,8 +492,10 @@ class Renderer:
                         "report": report,
                     }
                     raise TemplateUndefinedVarError(msg, **err_kwargs) from err
-
-                value = settings.on_undefined_error
+                elif callable(settings.on_undefined_error):
+                    value = settings.on_undefined_error(key, err=err, report=report)
+                else:
+                    value = settings.on_undefined_error
 
                 if debug:
                     report = err.kwargs.get("report", None)
