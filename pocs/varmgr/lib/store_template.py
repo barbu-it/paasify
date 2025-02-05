@@ -1,10 +1,27 @@
+"""Template-based variable store implementation.
+
+This module provides template-based variable resolution capabilities by extending the base 
+StoreManager. It allows variables to be defined using string templates (e.g. ${var_name}) 
+which are resolved at runtime.
+
+The main components are:
+
+- StringTemplate: Extended Template class with identifier extraction
+- StringTemplateEngine: Engine for parsing and rendering templates 
+- RenderableStoreManager: Store manager with template rendering capabilities
+- RenderingSettings: Configuration for template rendering behavior
+
+The module handles template parsing, variable substitution, error handling and caching of rendered 
+values.
+"""
+
 from string import Template
-from typing import List, Dict, Any, Union, Optional, Iterator, TypeVar
+from typing import List, Any, Optional
 import logging
 from pprint import pprint
 from dataclasses import dataclass
 
-from .store_base import StoreManager, Source, UndefinedVarError, VarMgrUserError
+from .store_base import StoreManager, UndefinedVarError, VarMgrUserError
 
 
 logger = logging.getLogger(__name__)
@@ -16,19 +33,22 @@ logger = logging.getLogger(__name__)
 #             f"Transformed template var {hint}: {old_value} => {value}"
 #         )
 
-
+# pylint: disable=too-few-public-methods
 class StoreTemplateError(VarMgrUserError):
     """Base class for StoreTemplate exceptions."""
 
 
+# pylint: disable=too-few-public-methods
 class TemplateUndefinedVarError(StoreTemplateError):
     """Exception raised when accessing an undefined variable in a template."""
 
 
+# pylint: disable=too-few-public-methods
 class TemplateValueError(StoreTemplateError):
     """Exception raised when accessing an undefined variable in a template."""
 
 
+# pylint: disable=too-few-public-methods
 class TemplateKeyError(StoreTemplateError):
     """Exception raised when accessing an undefined variable in a template."""
 
@@ -42,6 +62,7 @@ class StringTemplate(Template):
     """
     String Template class override to support version of python below 3.11
 
+    # pylint: disable=line-too-long
     Source code: Source: https://github.com/python/cpython/commit/dce642f24418c58e67fa31a686575c980c31dd37
     """
 
@@ -50,6 +71,7 @@ class StringTemplate(Template):
         they first appear, ignoring any invalid identifiers."""
 
         ids = []
+        # pylint: disable=invalid-name
         for mo in self.pattern.finditer(self.template):
             named = mo.group("named") or mo.group("braced")
             if named is not None and named not in ids:
@@ -70,6 +92,7 @@ class StringTemplate(Template):
         :meth:`substitute` to raise :exc:`ValueError`.
         """
 
+        # pylint: disable=invalid-name
         for mo in self.pattern.finditer(self.template):
             if mo.group("invalid") is not None:
                 return False
@@ -108,7 +131,8 @@ class _TemplateEngines:
 
 
 class _TemplateInstances:
-    """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates."""
+    """A class that wraps a template engine instance and provides methods
+    for getting variable names and rendering templates."""
 
 
 # =====================================================================
@@ -144,9 +168,11 @@ class StringTemplateEngine(_TemplateEngines):
 
 
 class StringTemplateInstance(_TemplateInstances):
-    """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates.
+    """A class that wraps a template engine instance and provides methods for
+    getting variable names and rendering templates.
 
-    This class encapsulates a template engine (like string.Template) and provides a consistent interface for:
+    This class encapsulates a template engine (like string.Template) and provides
+    a consistent interface for:
     - Getting the variable names/identifiers used in the template
     - Rendering the template by substituting variables with values
     - Handling template rendering errors
@@ -161,7 +187,9 @@ class StringTemplateInstance(_TemplateInstances):
         self._engine = engine_cls(value)
 
     def get_var_names(self):
-        "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
+        """Return a list of the valid identifiers in the template, in the order they first
+        appear, ignoring any invalid identifiers.
+        """
         return self._engine.get_identifiers()
 
     def render(self, dict_vars=None, settings=None, report=None):
@@ -174,12 +202,15 @@ class StringTemplateInstance(_TemplateInstances):
             report (dict, optional): Dictionary to store rendering metadata. Defaults to None.
 
         Returns:
-            tuple: (rendered_value, report_dict) where rendered_value is the template with variables substituted
-                    and report_dict contains metadata about the rendering process
+            tuple: (rendered_value, report_dict) where rendered_value is the template with
+                variables substituted and report_dict contains metadata about the rendering
+                process
 
         Raises:
-            TemplateValueError: If template value is invalid and settings.on_value_error is Exception
-            TemplateKeyError: If variable substitution fails and settings.on_key_error is Exception
+            TemplateValueError: If template value is invalid and settings.on_value_error is
+                Exception
+            TemplateKeyError: If variable substitution fails and settings.on_key_error is
+                Exception
         """
         dict_vars = dict_vars or {}
         engine = self._engine
@@ -260,7 +291,7 @@ class Renderer:
 
         self.engine = StringTemplateEngine()
 
-    def render_values(self, debug=False, **kwargs):
+    def render_values(self, **kwargs):
         """Get all variables and their rendered values.
 
         This method retrieves all variables in the current scope and renders their values,
@@ -397,6 +428,7 @@ class Renderer:
             return value, _report
         return value
 
+    # pylint: disable=too-many-arguments,too-many-locals
     def _render_var_template1(
         self,
         var_names=None,
@@ -405,8 +437,6 @@ class Renderer:
         report=None,
         seen=None,
         lvl=None,
-        # debug=False,
-        # cache=True,
     ):
         """Render a template by resolving all variable references.
 
@@ -490,6 +520,16 @@ class RenderableStoreManager(StoreManager):
         super().__init__()
 
     def get_renderer(self, scope_name: Optional[str] = None) -> Renderer:
+        """Get or create a Renderer instance for the given scope.
+
+        Args:
+            scope_name (Optional[str], optional): The scope name to get a renderer for.
+                If None, uses the default scope. Defaults to None.
+
+        Returns:
+            Renderer: A Renderer instance configured for the specified scope.
+                The same instance will be returned for subsequent calls with the same scope.
+        """
 
         # scope_name = scope_name or "default"
 

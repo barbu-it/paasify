@@ -1,4 +1,28 @@
-from pprint import pprint
+"""Base variable store implementation.
+
+This module provides the core variable store functionality through the StoreManager class
+and related components. The main classes and functions are:
+
+- StoreManager: Base class for managing variables and their sources
+- Source: Class representing a variable source/scope with metadata
+- UndefinedVarError: Exception raised when accessing undefined variables
+- flatten/flatten2: Helper functions for flattening nested lists
+
+The StoreManager provides:
+- Variable storage and retrieval with source tracking
+- Hierarchical scoping through source inheritance
+- Variable override precedence based on source levels
+- Error handling for undefined variables
+
+This module serves as the foundation for more advanced variable management features
+like template rendering provided by subclasses.
+"""
+
+
+# from pprint import pprint
+
+# pylint: disable=too-few-public-methods
+
 
 # from types import SimpleNamespace
 # from collections import OrderedDict
@@ -133,6 +157,11 @@ class Source:
         return f"Source({self.name}, {self.level})"
 
     def get_help(self) -> str:
+        """Get help text for the source.
+
+        Returns:
+            str: Help text for the source, or a default message if not provided.
+        """
         if not self.help:
             return f"Source {self.name}"
         return self.help
