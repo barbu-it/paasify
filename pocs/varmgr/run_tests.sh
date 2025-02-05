@@ -2,7 +2,21 @@
 
 set -eu -o pipefail
 
-main () {
+main_examples () {
+  names="poc2.py poc3.py"
+
+  for name in $names; do
+    if python "$name" ; then
+      echo "OK"
+    else
+      echo "FAILED: $name"
+      return 2
+    fi
+  done
+
+}
+
+main_tests () {
 
   if pytest  test_store_base.py  test_store_template.py $@ ; then
     echo "OK"
@@ -12,4 +26,5 @@ main () {
   fi
 }
 
-main
+main_examples
+main_tests
