@@ -182,7 +182,7 @@ class StoreManager:
     # SourcesScopes managements
     # ====================
 
-    def add_sources(self, args: Union[List[Source], Source]) -> None:
+    def add_sources(self, args: Union[List[Source], Source], force: bool = False) -> None:
         """Register one or more sources with the variable manager.
 
         Args:
@@ -198,6 +198,8 @@ class StoreManager:
                 assert isinstance(source, Source)
                 self._sources[source.name] = source
         elif isinstance(args, Source):
+            if args.name in self._sources and not force:
+                raise AlreadyExistingSourceError(f"Source {args.name} already exists")
             self._sources[args.name] = args
         else:
             raise ValueError(f"Invalid number of arguments: {len(args)}")
