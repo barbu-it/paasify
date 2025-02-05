@@ -2,6 +2,7 @@ from string import Template
 from typing import List, Dict, Any, Union, Optional, Iterator, TypeVar
 import logging
 from pprint import pprint
+from dataclasses import dataclass
 
 from store_base import StoreManager, Source, UndefinedVarError, VarMgrUserError
 
@@ -22,6 +23,12 @@ class StoreTemplateError(VarMgrUserError):
 class TemplateUndefinedVarError(StoreTemplateError):
     """Exception raised when accessing an undefined variable in a template."""
 
+
+class TemplateValueError(StoreTemplateError):
+    """Exception raised when accessing an undefined variable in a template."""
+
+class TemplateKeyError(StoreTemplateError):
+    """Exception raised when accessing an undefined variable in a template."""  
 
 # =====================================================================
 # Class overrides
@@ -73,19 +80,142 @@ class StringTemplate(Template):
                 raise ValueError("Unrecognized named group in pattern", self.pattern)
         return True
 
-    @classmethod
-    def is_template(cls, data):
-        "Return true if template contains template variables"
-        if not isinstance(data, str):
-            return False
-        for _ in cls.pattern.finditer(data):
-            return True
-        return False
+    # @classmethod
+    # def is_template(cls, data):
+    #     "Return true if template contains template variables"
+    #     if not isinstance(data, str):
+    #         return False
+    #     for _ in cls.pattern.finditer(data):
+    #         return True
+    #     return False
 
 
 # We override this method only if version of python is below 3.11
 if hasattr(Template, "get_identifiers"):
     StringTemplate = Template  # noqa: F811
+
+
+
+
+# TemplateEngines class
+# =====================================================================
+
+class TemplateEngines:
+    """Class for managing template engines."""
+
+    def __init__(self):
+        self.engines = {}
+
+
+class PythonTemplateEngine(TemplateEngines):
+    """Python template engine."""
+
+    def __init__(self):
+        super().__init__()
+        self.engine_cls = StringTemplate
+        self.engine = None
+
+    def is_template(self, data):
+        "Return true if template contains template variables"
+
+        # Check if data is a string, otherwize we can't template it
+        if not isinstance(data, str):
+            return False
+        
+        # Check in Python sring.Template config if any opening pattern
+        # matches in the text
+        for _ in self.engine_cls.pattern.finditer(data):
+            return True
+        return False
+    
+
+    # Inited object only!!!!
+
+
+    def init_engine(self, value):
+        "Return a new engine instance"
+        self.engine = self.engine_cls(value)
+
+        return self.engine
+
+    def get_var_names(self):
+        "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
+        return self.engine.get_identifiers()
+
+
+    def _render_var_template2(self, parent,
+            # var_name=None,
+            value=None,
+            dict_vars=None, 
+            settings=None,
+            engine=None, 
+            report=None,
+        ):  
+
+        #### RESOLVER
+        report = report or {}
+        debug = settings.debug
+        # engine = self.engine
+
+
+        # Substitute vars
+        try:
+            parsed = engine.substitute(dict_vars)
+            report["parsed"] = True
+        except ValueError as e:
+            parsed = value
+
+            if settings.on_value_error is Exception:
+                msg = (
+                    f"Renderer: Error parsing template value '{value}'"
+                    "set on_value_error='<default_value>' to change this behavior"
+                )
+                raise TemplateValueError(msg, value=value, report=report) from e
+
+            parsed = settings.on_value_error
+
+            # Happens with bad template value:
+            #  - "test'$'test"
+            logger.warning("Error substituting '%s' vars: %s", value, e)
+            report["parsed"] = str(e)
+
+        except KeyError:
+
+            if settings.on_parse_error is Exception:
+                msg = (
+                    f"Renderer: Error parsing template value '{value}'"
+                    "set on_parse_error='<default_value>' to change this behavior"
+                )
+                raise TemplateKeyError(msg, value=value, report=report) from e
+
+
+            assert False, "Notimplemented"
+
+
+        # Build report for children
+        if debug:
+            report["value"] = parsed
+            report["raw_value"] = value
+            report["templated"] = True
+
+        return parsed, report
+
+
+
+
+# Renderer class
+# =====================================================================
+
+
+@dataclass
+class RenderingSettings:
+    """Class for keeping track of an item in inventory."""
+
+    on_undefined_error: Any = Exception
+    on_value_error: Any = Exception
+    on_parse_error: Any = Exception
+    debug: bool = False
+    cache: bool = True
 
 
 class Renderer:
@@ -107,6 +237,8 @@ class Renderer:
         self.sources = store.get_ordered_sources(scope=scope)
         self.tpl_engine = StringTemplate
 
+        self.engine = PythonTemplateEngine()
+
     def render_values(self, debug=False, **kwargs):
         """Get all variables and their rendered values.
 
@@ -127,11 +259,21 @@ class Renderer:
 
         return _out
 
+
+
+
+
     def render_var(
         self, var_name: str, _seen: List[str] = None, _lvl=None, 
-        debug=False, cache=True,
-        value_on_undefined: Any = Exception,
-        value_on_parse: Any = Exception,
+        debug=False, 
+        cache=True,
+        # on_undefined_error: Any = Exception,
+        # on_value_error: Any = Exception,
+        # on_parse_error: Any = Exception,
+        # on_undefined_error: Any = Exception, 
+        # on_value_error: Any = Exception, 
+        # on_parse_error: Any = Exception,
+        settings = None,
     ) -> str:
         """Render a variable value, resolving any template references.
 
@@ -159,129 +301,182 @@ class Renderer:
         _seen = _seen or []
         _lvl = _lvl or 0
 
-        # Init report
-        if debug:
-            _report = {}
-            _report["key"] = var_name
-            _report["level"] = _lvl
-            _report["parsed"] = False
+        settings = settings or RenderingSettings(
+            on_undefined_error=Exception,
+            on_value_error=Exception,
+            on_parse_error=Exception,
+            debug=debug,
+            cache=cache,
+        )
+        assert isinstance(settings, RenderingSettings), "settings must be a RenderingSettings instance"
 
+        # Init report
+        _report = {}
+        _report["key"] = var_name
+        _report["level"] = _lvl
+        _report["parsed"] = False
         logger.info("Renderer: Rendering var%d: %s", _lvl, var_name)
 
         # Check cache
-        if cache and var_name in self._cache:
+        if settings.cache and var_name in self._cache:
             out = self._cache[var_name]
+            _report["cache"] = True
             if debug:
-                _report["cache"] = True
                 return out, _report
             return out
-        if debug:
-            _report["cache"] = False
+        _report["cache"] = False
 
         # Fetch and process variable
         value = self.store.get_value(var_name, scope=self.scope)
+        _report["value"] = value
+        _report["parsed"] = False
 
         # Process template variables
-        if not self.tpl_engine.is_template(value):
-            if debug:
-                _report["templated"] = False
-                _report["value"] = value
+        # if not self.tpl_engine.is_template(value):
+        if not self.engine.is_template(value):
+            _report["templated"] = False
 
         else:
+            _report["templated"] = True
 
-            _children = {}
-            engine = self.tpl_engine(value)
+            # Inject text into template engine
+            # engine = self.tpl_engine(value)
+            engine = self.engine.init_engine(value)
 
-            # Recursive value names resolver
-            dict_vars = {}
-            template_keys = engine.get_identifiers()
-            for key in template_keys:
+            # Fetch template variable names from string
+            # var_names = engine.get_identifiers()
+            var_names = self.engine.get_var_names()
 
-                # Check for circular references
-                if key in _seen:
-                    circular_ref = " -> ".join(_seen + [key])
-                    msg = f"Circular reference detected: {circular_ref}"
-                    raise ValueError(msg)
-                new_seen = _seen + [key]
+            # Recursive resolve template variables values
+            dict_vars, _report = self._render_var_template1(
+                var_names=var_names,
+                settings=settings,
 
-                # Recursive resolve vars
-                try:    
-                    value = self.render_var(
-                        key, _seen=new_seen, _lvl=_lvl + 1, debug=debug, cache=cache
-                    )
-                except UndefinedVarError as err :
-                    # pprint(err.__dict__)
-                    if value_on_undefined is Exception:
-                        msg = (
-                            f"Renderer: Variable '{key}' not found, "
-                            "set value_on_undefined=False to change this behavior"
-                        )
-                        err_kwargs = {
-                            "variable": key,
-                            "report": _report if debug else None,
-                        }
-                        raise TemplateUndefinedVarError(msg, **err_kwargs) from err
+                seen=_seen,
+                lvl=_lvl,
 
-                    value = value_on_undefined
+                report=_report,
+            )
 
-                    if debug:
-                        report = err.kwargs.get("report", None)
-                        value = [value, report]
-                        if report:
-                            print("Renderer: Variable not found, skipping")
-                            pprint(report)
-                        
 
-                # Build report for children
-                if debug:
-                    subreport = value[1]
-                    value = value[0]
-                    _children[key] = subreport
-
-                dict_vars[key] = value
-
-            # Substitute vars
+            # Try to parse value with dict_vars
             try:
-                parsed = engine.substitute(dict_vars)
-                if debug:
-                    _report["parsed"] = True
-            except ValueError as e:
-                if value_on_parse is Exception:
-                    msg = (
-                        f"Renderer: Error parsing template '{var_name}' with value '{value}'"
-                    )
-                    raise ValueError(msg) from e
+                # value, _report = self._render_var_template2(
+                value, _report = self.engine._render_var_template2(
+                    self,
+                    value=value,
+                    dict_vars=dict_vars,
+                    settings=settings,
 
-                parsed = value_on_parse
+                    engine=engine, 
+                    report=_report,
+                )
+            except (TemplateValueError,  TemplateKeyError) as err:
+                msg=f"Renderer: Error parsing template '{var_name}' with value '{value}': {err}"
+                raise err(msg=msg, var_name=var_name) from err
 
 
-                # Happens with bad template value:
-                #  - "test'$'test"
-                logger.warning("Error substituting %s='%s' vars: %s", var_name, value, e)
-                if debug:
-                    _report["parsed"] = str(e)
-                parsed = value
-
-            # Build report for children
-            if debug:
-                _report["children"] = _children
-                _report["value"] = parsed
-                _report["raw_value"] = value
-                _report["templated"] = True
-
-            value = parsed
 
         # Save in cache
         cached = False
-        if cache:
+        if settings.cache:
             self._cache[var_name] = value
             cached = True
+        _report["cached"] = cached
 
         # Return value
         if debug:
-            _report["cached"] = cached
             return value, _report
         return value
+
+
+
+
+
+
+    def _render_var_template1(self,
+                        var_names=None,
+                        settings=None,
+
+                        
+                        # Forwarded args
+                        report=None,
+                        seen=None, 
+                        lvl=None, 
+                        # debug=False, 
+                        # cache=True, 
+                        ):
+        """Render a template by resolving all variable references.
+
+        Args:
+        """
+
+        report = report or {}
+        _lvl = lvl or 0
+        seen = seen or []
+        debug = settings.debug
+
+
+
+        # DATA BUILDER
+
+        # Recursive value names resolver
+        _children = {}
+        dict_vars = {}
+        template_keys = var_names
+        for key in template_keys:
+
+            # Check for circular references
+            if key in seen:
+                circular_ref = " -> ".join(seen + [key])
+                msg = f"Circular reference detected: {circular_ref}"
+                raise ValueError(msg)
+            new_seen = seen + [key]
+
+            # Recursive resolve vars
+            try:    
+                value = self.render_var(
+                    key, _seen=new_seen, _lvl=_lvl + 1, debug=debug,
+                )
+            except UndefinedVarError as err :
+                # pprint(err.__dict__)
+                if settings.on_undefined_error is Exception:
+                    msg = (
+                        f"Renderer: Variable '{key}' not found, "
+                        "set on_undefined_error=False to change this behavior"
+                    )
+                    err_kwargs = {
+                        "variable": key,
+                        "report": report,
+                    }
+                    raise TemplateUndefinedVarError(msg, **err_kwargs) from err
+
+                value = settings.on_undefined_error
+
+                if debug:
+                    report = err.kwargs.get("report", None)
+                    value = [value, report]
+                    if report:
+                        print("Renderer: Variable not found, skipping")
+                        pprint(report)
+                    
+
+            # Depack arguments in debug mode
+            if debug:
+                subreport = value[1]
+                value = value[0]
+                _children[key] = subreport
+
+            dict_vars[key] = value
+
+        # Build report for children
+        if debug:
+            report["children"] = _children
+
+        return dict_vars, report
+
+
+  
 
 
 class RenderableStoreManager(StoreManager):
