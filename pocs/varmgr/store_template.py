@@ -100,11 +100,11 @@ if hasattr(Template, "get_identifiers"):
 # TemplateEngines class
 # =====================================================================
 
+
+
+
 class TemplateEngines:
     """Class for managing template engines."""
-
-    def __init__(self):
-        self.engines = {}
 
 
 class PythonTemplateEngine(TemplateEngines):
@@ -113,8 +113,8 @@ class PythonTemplateEngine(TemplateEngines):
     def __init__(self):
         super().__init__()
         self.engine_cls = StringTemplate
-        self.engine = None
-        self.value = None
+        self._engine = None
+        self._value = None
 
     def is_template(self, data):
         "Return true if template contains template variables"
@@ -130,39 +130,63 @@ class PythonTemplateEngine(TemplateEngines):
         return False
     
 
-    # Inited object only!!!!
 
+    # def init_engine(self, value):
+    #     "Return a new engine instance"
+    #     # assert self.engine is None, "Engine is already inited!"
+    #     self._engine = self.engine_cls(value)
+    #     self._value = value
+
+    #     return self._engine
 
     def init_engine(self, value):
         "Return a new engine instance"
-        assert self.engine is not  None, "Engine is not inited yet!"
-        self.engine = self.engine_cls(value)
-        self.value = value
+        # assert self.engine is None, "Engine is already inited!"
+        # self._engine = self.engine_cls(value)
+        # self._value = value
 
-        return self.engine
+        return TemplateResult(value, engine_cls=self.engine_cls)
+    
+
+class TemplateResult():
+    def __init__(self, value, engine_cls):
+        self._value = value
+        self.engine_cls = engine_cls
+        self._engine = engine_cls(value)
+
+
+    # Inited object only!!!!
+
 
     def get_var_names(self):
         "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
-        assert self.engine is not  None, "Engine is not inited yet!"
-        return self.engine.get_identifiers()
+        assert self._engine is not  None, "Engine is not inited yet!"
+        return self._engine.get_identifiers()
 
 
-    def _render_var_template2(self, parent,
-            # var_name=None,
+    def render_var_template2(self, # parent,
             value=None,
             dict_vars=None, 
             settings=None,
-            engine=None, 
             report=None,
         ):  
 
-        assert self.engine is not  None, "Engine is not inited yet!"
+        assert self._engine is not  None, "Engine is not inited yet!"
 
         #### RESOLVER
         report = report or {}
         debug = settings.debug
-        # engine = self.engine
 
+        # print("ENGINES", self._engine, engine)
+        # assert type(self._engine) == type(engine), "Engine types are different!"
+        # assert id(self.engine) == id(engine), "Engine types are different!"
+
+
+        # TOFIX
+
+        # assert self._engine is engine, "Engine types are different!"
+        engine = self._engine
+        # engine = self.engine
 
         # Substitute vars
         try:
@@ -241,7 +265,7 @@ class Renderer:
         self._cache = {}
 
         self.sources = store.get_ordered_sources(scope=scope)
-        self.tpl_engine = StringTemplate
+        # self.tpl_engine = StringTemplate
 
         self.engine = PythonTemplateEngine()
 
@@ -351,7 +375,7 @@ class Renderer:
 
             # Fetch template variable names from string
             # var_names = engine.get_identifiers()
-            var_names = self.engine.get_var_names()
+            var_names = engine.get_var_names()
 
             # Recursive resolve template variables values
             dict_vars, _report = self._render_var_template1(
@@ -367,14 +391,12 @@ class Renderer:
 
             # Try to parse value with dict_vars
             try:
-                # value, _report = self._render_var_template2(
-                value, _report = self.engine._render_var_template2(
-                    self,
+                # value, _report = self.render_var_template2(
+                value, _report = engine.render_var_template2(
                     value=value,
                     dict_vars=dict_vars,
                     settings=settings,
 
-                    engine=engine, 
                     report=_report,
                 )
             except (TemplateValueError,  TemplateKeyError) as err:
