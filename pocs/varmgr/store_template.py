@@ -131,62 +131,60 @@ class PythonTemplateEngine(TemplateEngines):
     
 
 
-    # def init_engine(self, value):
-    #     "Return a new engine instance"
-    #     # assert self.engine is None, "Engine is already inited!"
-    #     self._engine = self.engine_cls(value)
-    #     self._value = value
 
-    #     return self._engine
-
-    def init_engine(self, value):
+    def get_template(self, value):
         "Return a new engine instance"
-        # assert self.engine is None, "Engine is already inited!"
-        # self._engine = self.engine_cls(value)
-        # self._value = value
-
         return TemplateResult(value, engine_cls=self.engine_cls)
     
 
 class TemplateResult():
+    """A class that wraps a template engine instance and provides methods for getting variable names and rendering templates.
+    
+    This class encapsulates a template engine (like string.Template) and provides a consistent interface for:
+    - Getting the variable names/identifiers used in the template
+    - Rendering the template by substituting variables with values
+    - Handling template rendering errors
+    """
+    
     def __init__(self, value, engine_cls):
         self._value = value
         self.engine_cls = engine_cls
         self._engine = engine_cls(value)
 
 
-    # Inited object only!!!!
-
-
     def get_var_names(self):
         "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
-        assert self._engine is not  None, "Engine is not inited yet!"
         return self._engine.get_identifiers()
 
 
-    def render_var_template2(self, # parent,
-            value=None,
+    def render_var_template2(self,
+            # value=None,
             dict_vars=None, 
             settings=None,
-            report=None,
-        ):  
+            report=None):
+        """Render a template by substituting variables with their values.
 
-        assert self._engine is not  None, "Engine is not inited yet!"
+        Args:
+            value (str): The template string to render
+            dict_vars (dict): Dictionary mapping variable names to their values
+            settings (Settings): Settings object containing rendering options
+            report (dict, optional): Dictionary to store rendering metadata. Defaults to None.
+
+        Returns:
+            tuple: (rendered_value, report_dict) where rendered_value is the template with variables substituted
+                    and report_dict contains metadata about the rendering process
+
+        Raises:
+            TemplateValueError: If template value is invalid and settings.on_value_error is Exception
+            TemplateKeyError: If variable substitution fails and settings.on_parse_error is Exception
+        """
+
 
         #### RESOLVER
         report = report or {}
         debug = settings.debug
-
-        # print("ENGINES", self._engine, engine)
-        # assert type(self._engine) == type(engine), "Engine types are different!"
-        # assert id(self.engine) == id(engine), "Engine types are different!"
-
-
-        # TOFIX
-
-        # assert self._engine is engine, "Engine types are different!"
         engine = self._engine
-        # engine = self.engine
+        value = self._value
 
         # Substitute vars
         try:
@@ -331,6 +329,7 @@ class Renderer:
         _seen = _seen or []
         _lvl = _lvl or 0
 
+        # 1. Init config
         settings = settings or RenderingSettings(
             on_undefined_error=Exception,
             on_value_error=Exception,
@@ -340,14 +339,14 @@ class Renderer:
         )
         assert isinstance(settings, RenderingSettings), "settings must be a RenderingSettings instance"
 
-        # Init report
+        # 2. Init report
         _report = {}
         _report["key"] = var_name
         _report["level"] = _lvl
         _report["parsed"] = False
         logger.info("Renderer: Rendering var%d: %s", _lvl, var_name)
 
-        # Check cache
+        # 3. Check cache
         if settings.cache and var_name in self._cache:
             out = self._cache[var_name]
             _report["cache"] = True
@@ -356,13 +355,12 @@ class Renderer:
             return out
         _report["cache"] = False
 
-        # Fetch and process variable
+        # 4. Fetch and process variable
         value = self.store.get_value(var_name, scope=self.scope)
         _report["value"] = value
         _report["parsed"] = False
 
-        # Process template variables
-        # if not self.tpl_engine.is_template(value):
+        # 5. Process template variables, if possible/requested
         if not self.engine.is_template(value):
             _report["templated"] = False
 
@@ -370,14 +368,11 @@ class Renderer:
             _report["templated"] = True
 
             # Inject text into template engine
-            # engine = self.tpl_engine(value)
-            engine = self.engine.init_engine(value)
+            template = self.engine.get_template(value)
 
             # Fetch template variable names from string
-            # var_names = engine.get_identifiers()
-            var_names = engine.get_var_names()
-
-            # Recursive resolve template variables values
+            # and recursively resolve template variables values
+            var_names = template.get_var_names()
             dict_vars, _report = self._render_var_template1(
                 var_names=var_names,
                 settings=settings,
@@ -388,12 +383,10 @@ class Renderer:
                 report=_report,
             )
 
-
             # Try to parse value with dict_vars
             try:
-                # value, _report = self.render_var_template2(
-                value, _report = engine.render_var_template2(
-                    value=value,
+                value, _report = template.render_var_template2(
+                    # value=value,
                     dict_vars=dict_vars,
                     settings=settings,
 
