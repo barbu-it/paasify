@@ -114,6 +114,7 @@ class PythonTemplateEngine(TemplateEngines):
         super().__init__()
         self.engine_cls = StringTemplate
         self.engine = None
+        self.value = None
 
     def is_template(self, data):
         "Return true if template contains template variables"
@@ -134,12 +135,15 @@ class PythonTemplateEngine(TemplateEngines):
 
     def init_engine(self, value):
         "Return a new engine instance"
+        assert self.engine is not  None, "Engine is not inited yet!"
         self.engine = self.engine_cls(value)
+        self.value = value
 
         return self.engine
 
     def get_var_names(self):
         "Return a list of the valid identifiers in the template, in the order they first appear, ignoring any invalid identifiers."
+        assert self.engine is not  None, "Engine is not inited yet!"
         return self.engine.get_identifiers()
 
 
@@ -151,6 +155,8 @@ class PythonTemplateEngine(TemplateEngines):
             engine=None, 
             report=None,
         ):  
+
+        assert self.engine is not  None, "Engine is not inited yet!"
 
         #### RESOLVER
         report = report or {}
