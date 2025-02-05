@@ -60,6 +60,18 @@ class VarMgrError(Exception):
     This class serves as the root of the VarMgr exception hierarchy.
     """
 
+    def __init__(self, msg: str, **kwargs: Any):
+        self.msg = msg
+        self.kwargs = kwargs
+
+    def __str__(self) -> str:
+        prefix = f"{self.msg}"
+        if self.kwargs:
+            # kwargs_str = ", ".join([f"{k}={v}" for k, v in self.kwargs.items()])
+            kwargs_str = ", ".join([f"{k}" for k, _ in self.kwargs.items()])
+            return f"{prefix} ({kwargs_str})"
+        return prefix
+
 
 class VarMgrAppError(VarMgrError):
     """Base class for Application-level VarMgr exceptions.
@@ -199,7 +211,11 @@ class StoreManager:
                 self._sources[source.name] = source
         elif isinstance(args, Source):
             if args.name in self._sources and not force:
-                raise AlreadyExistingSourceError(f"Source {args.name} already exists")
+                raise AlreadyExistingSourceError(
+                    f"Source {args.name} already exists, use force to override",
+                    name = args.name,
+                    arg = args
+                    )
             self._sources[args.name] = args
         else:
             raise ValueError(f"Invalid number of arguments: {len(args)}")
@@ -250,7 +266,9 @@ class StoreManager:
                     if item_ref in _seen:
                         stack = " -> ".join([scope_name] + _seen)
                         raise VarMgrAppError(
-                            f"Scope '{scope_name}' is recursive: {stack}"
+                            f"Scope '{scope_name}' is recursive: {stack}",
+                            scope_name = scope_name,
+                            stack = list([scope_name] + _seen),
                         )
                     _seen.append(item_ref)
 
@@ -262,7 +280,9 @@ class StoreManager:
 
                 else:
                     raise VarMgrAppError(
-                        f"Item '{item_ref}' not found in sources or scopes"
+                        f"Item '{item_ref}' not found in sources or scopes",
+                        item_ref = item_ref,
+                        scope_name = scope_name,
                     )
 
             return out
@@ -337,7 +357,8 @@ class StoreManager:
 
         source = self._sources.get(source_name, None)
         if source is None:
-            raise VarMgrAppError(f"Source {source_name} not found")
+            raise VarMgrAppError(f"Source {source_name} not found", 
+                                 source_name=source_name)
 
         self.layered_store[source_name] = Layer(
             # "level": source.level,
@@ -429,7 +450,7 @@ class StoreManager:
                     return layer
 
         if not _out:
-            raise UndefinedVarError(f"Variable {name} not found")
+            raise UndefinedVarError(f"Variable '{name}' not found", variable=name)
 
         return _out
 
