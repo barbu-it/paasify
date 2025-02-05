@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from store import StoreManager, Source, UndefinedVarError
+from lib.store import StoreManager, Source, UndefinedVarError
 
 
 def main1():

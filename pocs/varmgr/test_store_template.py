@@ -1,6 +1,6 @@
 import pytest
-from store_base import Source, UndefinedVarError
-from store_template import RenderableStoreManager
+from lib.store_base import Source, UndefinedVarError
+from lib.store_template import RenderableStoreManager
 
 
 @pytest.fixture

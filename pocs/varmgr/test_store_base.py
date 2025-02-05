@@ -1,7 +1,7 @@
 import pytest
 from pprint import pprint
 
-from store_base import (
+from lib.store_base import (
     StoreManager,
     Source,
     UndefinedVarError,

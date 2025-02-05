@@ -1,7 +1,7 @@
 from pprint import pprint
 
-from store_base import Source, UndefinedVarError
-from store_template import RenderableStoreManager
+from lib.store_base import Source, UndefinedVarError
+from lib.store_template import RenderableStoreManager
 
 
 def main1():
@@ -95,8 +95,10 @@ def main1():
         print("\nRESULT: stack_fname2")
         pprint(out1)
 
+        # AI THIS TEST IS NOT COVERED BY UNIT TESTS
         out2 = renderer.render_var("stack_fname", debug=True, cache=False)
         print("\nRESULT: stack_fname2")
+        # pprint(out1)
         pprint(out2)
 
         assert out1 == out2

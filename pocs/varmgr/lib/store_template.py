@@ -4,7 +4,7 @@ import logging
 from pprint import pprint
 from dataclasses import dataclass
 
-from store_base import StoreManager, Source, UndefinedVarError, VarMgrUserError
+from .store_base import StoreManager, Source, UndefinedVarError, VarMgrUserError
 
 
 logger = logging.getLogger(__name__)
@@ -321,6 +321,7 @@ class Renderer:
         _lvl = _lvl or 0
 
         # 1. Init config
+        pprint(settings)
         settings = settings or RenderingSettings(
             on_undefined_error=Exception,
             on_value_error=Exception,
@@ -331,6 +332,8 @@ class Renderer:
         assert isinstance(
             settings, RenderingSettings
         ), "settings must be a RenderingSettings instance"
+        debug = settings.debug
+        cache = settings.cache
 
         # 2. Init report
         logger.info("Renderer: Rendering var%d: %s", _lvl, var_name)
@@ -343,7 +346,7 @@ class Renderer:
         }
 
         # 3. Check cache
-        if settings.cache and var_name in self._cache:
+        if cache and var_name in self._cache:
             out = self._cache[var_name]
             _report["cache"] = True
             if debug:
@@ -385,7 +388,7 @@ class Renderer:
             )
 
         # Save in cache
-        if settings.cache:
+        if cache:
             self._cache[var_name] = value
             _report["cached"] = True
 
@@ -436,7 +439,8 @@ class Renderer:
                     key,
                     _seen=new_seen,
                     _lvl=_lvl + 1,
-                    debug=debug,
+                    # debug=debug,
+                    settings=settings,
                 )
             except UndefinedVarError as err:
                 # pprint(err.__dict__)
