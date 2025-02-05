@@ -107,8 +107,8 @@ class TemplateEngines:
     """Class for managing template engines."""
 
 
-class PythonTemplateEngine(TemplateEngines):
-    """Python template engine."""
+class StringTemplateEngine(TemplateEngines):
+    """Python StringTemplate template engine."""
 
     def __init__(self):
         super().__init__()
@@ -128,9 +128,6 @@ class PythonTemplateEngine(TemplateEngines):
         for _ in self.engine_cls.pattern.finditer(data):
             return True
         return False
-    
-
-
 
     def get_template(self, value):
         "Return a new engine instance"
@@ -147,6 +144,9 @@ class TemplateResult():
     """
     
     def __init__(self, value, engine_cls):
+
+        assert isinstance(value, str), "value must be a string"
+        assert callable(engine_cls), "engine_cls must be a callable"
         self._value = value
         self.engine_cls = engine_cls
         self._engine = engine_cls(value)
@@ -157,8 +157,7 @@ class TemplateResult():
         return self._engine.get_identifiers()
 
 
-    def render_var_template2(self,
-            # value=None,
+    def render(self,
             dict_vars=None, 
             settings=None,
             report=None):
@@ -176,52 +175,72 @@ class TemplateResult():
 
         Raises:
             TemplateValueError: If template value is invalid and settings.on_value_error is Exception
-            TemplateKeyError: If variable substitution fails and settings.on_parse_error is Exception
+            TemplateKeyError: If variable substitution fails and settings.on_key_error is Exception
         """
-
-
-        #### RESOLVER
-        report = report or {}
-        debug = settings.debug
+        dict_vars = dict_vars or {}
         engine = self._engine
+        report = report or {}
         value = self._value
 
+        assert isinstance(dict_vars , dict), "dict_vars must be a dict"
+        assert isinstance(value, str), "value must be a string"
+
+
         # Substitute vars
+        report["parse_error"] = None
+        err = None
         try:
             parsed = engine.substitute(dict_vars)
             report["parsed"] = True
-        except ValueError as e:
-            parsed = value
+        except (ValueError, KeyError) as _err:
+            err = _err
 
+        # except ValueError as e:
+        #     parsed = value
+
+        #     if settings.on_value_error is Exception:
+        #         msg = (
+        #             f"Renderer: Error parsing template value '{value}'"
+        #             "set on_value_error='<default_value>' to change this behavior"
+        #         )
+        #         raise TemplateValueError(msg, value=value, report=report) from e
+
+        #     # Happens with bad template value:
+        #     #  - "test'$'test"
+        #     logger.warning("Error substituting '%s' vars: %s", value, e)
+        #     report["parsed"] = str(e)
+
+        # except KeyError:
+
+        #     if settings.on_key_error is Exception:
+        #         msg = (
+        #             f"Renderer: Error parsing template value '{value}'"
+        #             "set on_key_error='<default_value>' to change this behavior"
+        #         )
+        #         raise TemplateKeyError(msg, value=value, report=report) from e
+
+
+        #     assert False, "Notimplemented"
+
+        if err is None:
+            pass
+        elif isinstance(err, ValueError):
             if settings.on_value_error is Exception:
-                msg = (
-                    f"Renderer: Error parsing template value '{value}'"
-                    "set on_value_error='<default_value>' to change this behavior"
-                )
-                raise TemplateValueError(msg, value=value, report=report) from e
-
+                raise TemplateValueError(err, value=value, report=report) from err
             parsed = settings.on_value_error
 
-            # Happens with bad template value:
-            #  - "test'$'test"
-            logger.warning("Error substituting '%s' vars: %s", value, e)
-            report["parsed"] = str(e)
-
-        except KeyError:
-
-            if settings.on_parse_error is Exception:
-                msg = (
-                    f"Renderer: Error parsing template value '{value}'"
-                    "set on_parse_error='<default_value>' to change this behavior"
-                )
-                raise TemplateKeyError(msg, value=value, report=report) from e
+        elif isinstance(err, KeyError):
+            if settings.on_key_error is Exception:
+                raise TemplateKeyError(err, value=value, report=report) from err
+            parsed = settings.on_key_error
 
 
-            assert False, "Notimplemented"
 
+        # if report["parsed"] is not True:
+        #     parsed = settings.on_value_error
 
         # Build report for children
-        if debug:
+        if settings.debug:
             report["value"] = parsed
             report["raw_value"] = value
             report["templated"] = True
@@ -241,7 +260,7 @@ class RenderingSettings:
 
     on_undefined_error: Any = Exception
     on_value_error: Any = Exception
-    on_parse_error: Any = Exception
+    on_key_error: Any = Exception
     debug: bool = False
     cache: bool = True
 
@@ -265,7 +284,7 @@ class Renderer:
         self.sources = store.get_ordered_sources(scope=scope)
         # self.tpl_engine = StringTemplate
 
-        self.engine = PythonTemplateEngine()
+        self.engine = StringTemplateEngine()
 
     def render_values(self, debug=False, **kwargs):
         """Get all variables and their rendered values.
@@ -297,10 +316,10 @@ class Renderer:
         cache=True,
         # on_undefined_error: Any = Exception,
         # on_value_error: Any = Exception,
-        # on_parse_error: Any = Exception,
+        # on_key_error: Any = Exception,
         # on_undefined_error: Any = Exception, 
         # on_value_error: Any = Exception, 
-        # on_parse_error: Any = Exception,
+        # on_key_error: Any = Exception,
         settings = None,
     ) -> str:
         """Render a variable value, resolving any template references.
@@ -333,7 +352,7 @@ class Renderer:
         settings = settings or RenderingSettings(
             on_undefined_error=Exception,
             on_value_error=Exception,
-            on_parse_error=Exception,
+            on_key_error=Exception,
             debug=debug,
             cache=cache,
         )
@@ -361,14 +380,15 @@ class Renderer:
         _report["parsed"] = False
 
         # 5. Process template variables, if possible/requested
-        if not self.engine.is_template(value):
+        tpl_engine = self.engine
+        if not tpl_engine.is_template(value):
             _report["templated"] = False
 
         else:
             _report["templated"] = True
 
             # Inject text into template engine
-            template = self.engine.get_template(value)
+            template = tpl_engine.get_template(value)
 
             # Fetch template variable names from string
             # and recursively resolve template variables values
@@ -384,19 +404,11 @@ class Renderer:
             )
 
             # Try to parse value with dict_vars
-            try:
-                value, _report = template.render_var_template2(
-                    # value=value,
-                    dict_vars=dict_vars,
-                    settings=settings,
-
-                    report=_report,
-                )
-            except (TemplateValueError,  TemplateKeyError) as err:
-                msg=f"Renderer: Error parsing template '{var_name}' with value '{value}': {err}"
-                raise err(msg=msg, var_name=var_name) from err
-
-
+            value, _report = template.render(
+                dict_vars=dict_vars,
+                settings=settings,
+                report=_report,
+            )
 
         # Save in cache
         cached = False
