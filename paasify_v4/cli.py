@@ -173,6 +173,8 @@ class CollectionListCmd(Parser):
                         "apps": len(apps),
                         "source": collections_path.ident,
                         "collection_path": collection.sub_path,
+                        "remote": collection.get_git_remote(),
+
                     }
                 )
 
