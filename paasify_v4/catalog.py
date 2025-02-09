@@ -22,6 +22,7 @@ from pathlib import Path
 
 from paasify_v4.common import read_file, from_yaml
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
+from paasify_v4.git_helpers import GitRepo
 
 logger = logging.getLogger(__name__)
 
@@ -87,15 +88,59 @@ class PaasifyCollection(AppNode):
         self.sub_path = sub_path
         self.index = index
         self._store_apps = {}
+        self.git = None
 
-    @requires_setup_node("setup_node")
+    # Git support
+    # ------------
+
+    @setup_once("init_git")
+    def init_git(self):
+        "Init git"
+        logger.info("Init git: %s", self)
+        self.git = GitRepo(self.get_path())
+
+    @requires_setup_node("init_git")
+    def get_git_remote(self):
+        "Get git remote"
+        # self.git = GitRepo(self.get_path())
+
+        logger.debug("Get git remotes: %s", self)
+        return self.git.remote()
+
+    @requires_setup_node("init_git")
+    def get_git_branch(self):
+        "Get git branch"
+        # self.git = GitRepo(self.get_path())
+
+        logger.debug("Get git branch: %s", self)
+        return self.git.branch()
+
+    @requires_setup_node("init_git")
+    def is_git_clean_worktree(self):
+        "Check if git worktree is clean"
+        # self.git = GitRepo(self.get_path())
+
+        logger.debug("Get git dirtyness: %s", self)
+        return not self.git.is_dirty()
+
+    @requires_setup_node("init_git")
+    def get_git_status(self):
+        "Get git status"
+        # self.git = GitRepo(self.get_path())
+
+        logger.debug("Get git status: %s", self)
+        return self.git.git_status()
+
+    # Apps support
+    # ------------
+    @requires_setup_node("init_apps")
     def get_apps(self):
         "Return apps"
         logger.debug("Get %s apps", self)
         return list(self._store_apps.values())
 
-    @setup_once("setup_node")
-    def setup_node(self):
+    @setup_once("init_apps")
+    def init_apps(self):
         "Walk collection and get apps"
         logger.info("Setup collection: %s", self)
 

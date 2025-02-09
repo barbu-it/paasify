@@ -11,7 +11,7 @@ from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors import PathAnchor
 
-from paasify_v4.devel import PaasifyCatalog
+from paasify_v4.catalog import PaasifyCatalog
 from paasify_v4.common import truncate
 
 
@@ -126,13 +126,25 @@ class CollectionShowCmd(Parser):
         assert collection, f"Collection {name} not found"
         logger.info("Show collection %s", name)
 
+        is_clean = collection.is_git_clean_worktree()
         extra = {
             "ident": collection.ident,
             "source": collection.parent,
             "index": collection.index,
             "apps_count": len(collection.get_apps()),
             "path": collection.get_path(),
+            # "reference": f"{collection.get_git_remote()}#{collection.get_git_branch()}",
+            "remote": collection.get_git_remote(),
+            "branch": collection.get_git_branch(),
+            "clean": is_clean,
+            # "status": collection.get_git_status(),
         }
+        if not is_clean:
+            extra["status"] = collection.get_git_status()
+            # extra["status"] = ellipsize(collection.get_git_status(), 100)
+            # extra["status"] = truncate(collection.get_git_status())
+        
+        # pprint(extra)
         return ShowView(extra)
 
 
@@ -230,7 +242,7 @@ class CollectionGroup(Parser):
     info = Command(CollectionInfoCmd)
     list = Command(CollectionListCmd)
     show = Command(CollectionShowCmd)
-    devel = Command(CollectionDevelCmd)
+    # devel = Command(CollectionDevelCmd)
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 
@@ -406,8 +418,8 @@ class AppMain(LoggingOptMixin, Parser):
     )
 
     # Define subcommands
-    app = Command(AppGroup)
-    collection = Command(CollectionGroup)
+    app = Command(AppGroup, help="==SUPPRESS==")
+    collection = Command(CollectionGroup, help="==SUPPRESS==")
 
     # command2 = Command(AppCommand2)
     # demo = Command(DemoCmd)
