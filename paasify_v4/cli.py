@@ -81,6 +81,7 @@ class AppShowCmd(Parser):
         # print("===========")
 
         app_vars = app.get_vars()
+        app_vars = {f"var: {k}": v for k, v in app_vars.items()}
         extra = {
             # "Infos": "",
             "ident": app.ident,
@@ -89,12 +90,12 @@ class AppShowCmd(Parser):
             "index": app.index,
             # "apps_count": len(app.get_apps()),
             "path": app.get_path(),
-            # "Vars:": "",
+            "": "",
         }
-        ShowView(extra).render()
-        logger.info("Show app metadata: %s", name)
-        # extra.update(app_vars)
-        return ShowView(app_vars)
+        # ShowView(extra).render()
+        # logger.info("Show app metadata: %s", name)
+        extra.update(app_vars)
+        return ShowView(extra)
 
 
 class AppGroup(Parser):
