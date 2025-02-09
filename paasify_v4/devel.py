@@ -35,47 +35,64 @@ class Node:
         return f"{self.__class__.__name__}({self.ident or ''})"
 
 
-@staticmethod
-def setup_once(func):
-    "Decorator to ensure setup_node is called only once, with optional force parameter"
+# # @dataclass
+# class DataProtocol:
+#     "DataProtocol class, generic data protocols for inter class communication"
 
-    def wrapper(self, *args, force=False, **kwargs):
-        if not hasattr(self, "_setup_done") or force:
-            result = func(self, *args, **kwargs)
-            self._setup_done = True
-            return result
-        return None
+#     ident: str
 
-    return wrapper
+
+SETUP_PREFIX = "__node__setup__"
 
 
 @staticmethod
-def requires_setup_node(func):
-    "Decorator to ensure init_node is called only once before method execution"
+def setup_once(name="setup_node"):
+    "Decorator to ensure setup method is called only once, with optional force parameter"
 
-    def wrapper(self, *args, **kwargs):
-        # print("WRAPPED DECORATOR CALL", self, func, args, kwargs)
-        # pprint(self.__dict__)
-        if not hasattr(self, "_setup_done"):
-            # print("DECORATOR INIT NODE")
-            self.setup_node()
-            self._setup_done = True
-        return func(self, *args, **kwargs)
+    def decorator(func):
+        setup_marker = f"{SETUP_PREFIX}{name}"
 
-    return wrapper
+        def wrapper(self, *args, force=False, **kwargs):
+            if not hasattr(self, setup_marker) or force:
+                result = func(self, *args, **kwargs)
+                setattr(self, setup_marker, True)
+                return result
+            return None
+
+        return wrapper
+
+    return decorator
 
 
-# @dataclass
-class DataProtocol:
-    "DataProtocol class, generic data protocols for inter class communication"
+@staticmethod
+def requires_setup_node(name="setup_node"):
+    "Decorator to ensure setup method is called only once before method execution"
+    setup_marker = f"{SETUP_PREFIX}{name}"
 
-    ident: str
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            if not hasattr(self, setup_marker):
+                # print("--> SETUP REQUIRE METHOD", self, name)
+                setup_method = getattr(self, name)
+                setup_method()
+                setattr(self, setup_marker, True)
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class AppNode(Node):
     "AppNode class"
 
-    node__iterate_attr = "_children"
+    # Default config
+    # node__iterate_backend = "_children"
+    # node__iterate_setupmarker = "setup_node"
+
+    # Prefered config
+    node__iterate_backend = "_children"
+    node__iterate_setupmarker = None
 
     @property
     def name(self):
@@ -116,18 +133,108 @@ class AppNode(Node):
     # Special methods
     def _get_store_attr(self):
         "Get store attribute"
-        attr = getattr(self, self.node__iterate_attr)
-        # print("GET STORE ATTR", self,  self.node__iterate_attr, attr)
 
-        if self.node__iterate_attr.startswith("_store_"):
-            if hasattr(self, "setup_node"):
-                print("AUTOSTART SETUP NODE", self)
-                # Then setup the node
-                self.setup_node()
+        backend_store_name = self.node__iterate_backend
 
-        if isinstance(attr, dict):
-            return list(attr.values())
-        return attr
+        # Check if store is inited
+        backend_setup_marker_name = self.node__iterate_setupmarker
+        if backend_setup_marker_name is None:
+            # logger.info("Store '%s' does not need to setup backend: %s", self, backend_store_name)
+            logger.info(
+                "Store: Store: %s.%s: does not specify setup marker",
+                self,
+                backend_store_name,
+            )
+        else:
+            backend_setup_marker_attr = f"{SETUP_PREFIX}{backend_setup_marker_name}"
+            backend_setup_status = getattr(self, backend_setup_marker_attr, None)
+
+            if backend_setup_status:
+                logger.info(
+                    "Store: %s.%s: setup has already been done, no need to run it again",
+                    self,
+                    backend_store_name,
+                )
+            else:
+                func = getattr(self, backend_setup_marker_name, None)
+                if not callable(func):
+                    assert False, f"Setup marker is not callable: {func}"
+
+                logger.info(
+                    "Store: %s.%s: setup object with: %s",
+                    self,
+                    backend_store_name,
+                    func,
+                )
+
+                assert False, "TO IMPLEMENT"
+                # func()
+                # logger.info("Store '%s.%s': setup marker is not set", self, backend_store_name)
+                # print("RUN SETUP", self, backend_setup_marker_attr)
+                # assert False, "TO IMPLEMENT"
+
+        # Then fetch the store name
+        backend_store_attr = f"{backend_store_name}"
+        backend_store = getattr(self, backend_store_attr, None)
+        if backend_store_name != "_children":
+            backend_store_name = f"store_{backend_store_name}"
+        logger.info(
+            "Store: %s.%s: Fetching dynamic store: %s",
+            self,
+            backend_store_name,
+            backend_store_attr,
+        )
+
+        # Return always a list of things
+        if isinstance(backend_store, dict):
+            return list(backend_store.values())
+        assert isinstance(backend_store, list), f"Store is not a list: {backend_store}"
+        return backend_store
+
+        # assert False, "STOP"
+
+        # attr = getattr(self, self.node__iterate_backend)
+        # print("\n\nGET STORE ATTR", self, attr)
+
+        # iterate_setup_name = getattr(self, "node__iterate_setupmarker", None)
+        # if iterate_setup_name:
+        #     iterate_setup_marker = getattr(self, iterate_setup_name, None)
+        #     print("ITERATE SETUP:", iterate_setup_name, iterate_setup_marker)
+
+        #     setup_marker = f"_setup_{iterate_setup_name}"
+        #     print("SETUP MARKER:", setup_marker)
+        #     pprint(self.__dict__)
+
+        #     # Check if setup marker is not set to true
+        #     if not hasattr(self, setup_marker):
+        #         print("RUN SETUP", self, setup_marker)
+        #         func = iterate_setup_marker
+        #         func(self)
+        #         setattr(self, setup_marker, True)
+
+        # # marker_name = getattr(self, self.node__iterate_setupmarker)
+
+        # # setup_marker = f"_setup_{attr}"
+
+        # # print("GET STORE ATTR", self,  self.node__iterate_backend, attr)
+
+        # if self.node__iterate_backend.startswith("_store_"):
+        #     if hasattr(self, "setup_node"):
+        #         print("AUTOSTART SETUP NODE", self)
+        #         # Then setup the node
+        #         self.setup_node()
+
+        # # setup_marker = f"_setup_{marker_name}"
+        # # if not hasattr(self, setup_marker):
+        # #     func = getattr(self, marker_name)
+        # #     print("ITERATOR RUN SETUP", self, func)
+        # #     func(self)
+        # #     setattr(self, setup_marker, True)
+        # #     # return result
+
+        # if isinstance(attr, dict):
+        #     return list(attr.values())
+        # return attr
 
     def __iter__(self):
         "Iterate over children"
@@ -139,8 +246,9 @@ class AppNode(Node):
 
     def __getitem__(self, key):
         "Get item"
+        print("==> GET ITEM", self, key)
         store = self._get_store_attr()
-        print("GET ITEM", key, store)
+        print("__get__item__", key, store)
         for item in store:
             print("ITEM", item.ident, key)
             if item.ident == key:
@@ -150,6 +258,14 @@ class AppNode(Node):
     def __contains__(self, key):
         "Check if item is in store"
         return key in self._get_store_attr()
+
+    # def __getattr__(self, name):
+    #     "Get attribute"
+    #     return getattr(self._get_store_attr(), name)
+
+    def __bool__(self):
+        "Check if node is empty"
+        return True
 
 
 # Catalog
@@ -169,11 +285,17 @@ class PaasifyApp(AppNode):
 
         self._store_vars = {}
 
-    @setup_once
-    def setup_node(self):
+    # @setup_once("setup_node")
+    # def setup_node(self):
+    #     "Parse app metadata"
+    #     logger.info("Setup app vars: %s", self)
+
+    #     self._store_vars = self.read_vars()
+
+    @setup_once("setup_vars")
+    def setup_vars(self):
         "Parse app metadata"
         logger.info("Setup app vars: %s", self)
-
         self._store_vars = self.read_vars()
 
     def read_vars(self, filename="vars.yml"):
@@ -185,12 +307,12 @@ class PaasifyApp(AppNode):
             return data
         return {}
 
-    @requires_setup_node
+    @requires_setup_node("setup_vars")
     def get_vars(self):
         "Return vars"
         return self._store_vars
 
-    @requires_setup_node
+    @requires_setup_node("setup_vars")
     def get_description(self):
         "Return description"
         return self._store_vars.get("app_description", "")
@@ -207,12 +329,13 @@ class PaasifyCollection(AppNode):
         self.index = index
         self._store_apps = {}
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_apps(self):
         "Return apps"
+        logger.debug("Get %s apps", self)
         return list(self._store_apps.values())
 
-    @setup_once
+    @setup_once("setup_node")
     def setup_node(self):
         "Walk collection and get apps"
         logger.info("Setup collection: %s", self)
@@ -273,7 +396,7 @@ class CollectionsPath(AppNode):
         self.setup_node()
         self._setup_done = True
 
-    @setup_once
+    @setup_once("setup_node")
     def setup_node(self):
         logger.info("Setup collections path: %s", self)
         path = self._path
@@ -310,10 +433,10 @@ class CollectionsPath(AppNode):
 
         return out
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_collections(self, *args):
         "Return collections, from store"
-        logger.info("Get collections from %s", self)
+        logger.debug("Get %s collections", self)
 
         if len(args) == 0:
             return self._store_collections.values()
@@ -325,7 +448,8 @@ class CollectionsPath(AppNode):
 class PaasifyCatalog(AppNode):
     "Catalog class, manage list of collections paths"
 
-    # node__iterate_attr = "_children"
+    # node__iterate_backend = "_children"
+    node__iterate_setupmarker = "setup_node"
 
     def __init__(self, collections_paths=None):
         super().__init__()
@@ -343,7 +467,7 @@ class PaasifyCatalog(AppNode):
 
     # =============
 
-    @setup_once
+    @setup_once("setup_node")
     def setup_node(self, paths=None):
         "Init node"
         # logger.debug("Setup node333 %s", self)
@@ -381,15 +505,15 @@ class PaasifyCatalog(AppNode):
 
     ########################## Main objects
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_collections_paths(self):
         "Return collections paths"
         return self._store_paths
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_collections(self, *args):
         "Return collections, loop over each colections paths"
-        logger.info("Get collections from %s", self)
+        logger.debug("Get %s catalog collections", self)
         ret = []
         for collection_path in self._store_paths:
             if len(args) == 1:
@@ -401,7 +525,7 @@ class PaasifyCatalog(AppNode):
                     ret.append(collection)
         return ret
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_apps(self):
         "Return apps"
         ret = []
@@ -410,7 +534,7 @@ class PaasifyCatalog(AppNode):
                 ret.extend(collection.get_apps())
         return ret
 
-    @requires_setup_node
+    @requires_setup_node("setup_node")
     def get_app(self, name):
         "Return app"
 

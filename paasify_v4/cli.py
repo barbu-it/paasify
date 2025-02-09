@@ -35,6 +35,8 @@ class AppListCmd(Parser):
 
         apps = catalog_mgr.get_apps()
 
+        assert apps, f"No apps found: {apps}"
+
         # pprint(out)
         out = []
         for app in apps:
@@ -65,6 +67,18 @@ class AppShowCmd(Parser):
 
         logger.info("Show app: %s", name)
         app = catalog_mgr.get_app(name)
+        # print("===========")
+        app = catalog_mgr.get_app(name)
+        assert app, f"App {name} not found"
+        # app = catalog_mgr[name]
+        # assert app, f"App {name} not found"
+
+        # tmp = f"UNSET: {type(app)}"
+        # if app:
+        #     tmp = "YEAHHH"
+        # assert app, f"App {name} not found: {app} {tmp}"
+
+        # print("===========")
 
         app_vars = app.get_vars()
         extra = {
