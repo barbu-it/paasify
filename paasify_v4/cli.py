@@ -1,23 +1,25 @@
 "Main app command line interface"
 
 import os
-import sys
+# import sys
+import logging
 from pprint import pprint
 
-from pathlib import Path
-
-# from clak import Parser, Argument, Command
-
-from clak import Parser, Argument, Command
+from argparse import SUPPRESS
+from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors import PathAnchor
 
 from paasify_v4.devel import AppCatalog
 
 
+logger = logging.getLogger(__name__)
+# Never grab root, this break loggingMixin
+# logger_root = logging.getLogger()
+
+
 # App management
 # ================================================
-
 
 class AppListCmd(Parser):
     "List apps"
@@ -57,16 +59,7 @@ class CollectionAllAppsCmd(Parser):
             catalog_mgr.get_app("paasify-collection-infra/netbird"),
         ]
 
-        pprint(data)
-        # pprint(data.__dict__)
-        # return
-
-        # data = catalog_mgr.get_apps()
-
-        # return
-
         out = {}
-        # for app in data.values():
         for app in data:
             # render.append(app)
             # line = [app["app_path"]]
@@ -84,13 +77,12 @@ class CollectionAllAppsCmd(Parser):
 
             # break
 
-        pprint(out)
+        # pprint(out)
         # return
 
         return ListView(out)
-        pprint(out)
+        # pprint(out)
         # return ListView(out)
-
         # return ListView(out, headers=["ident", "collection", "path"])
 
 
@@ -103,11 +95,19 @@ class CollectionShowCmd(Parser):
         "Main command"
         catalog_mgr = ctx.data["catalog_mgr"]
 
-        out = catalog_mgr.get_collection_by_name(name)
 
-        pprint(out)
+        out = {}
+        collection = catalog_mgr.get_collections(name)
+        pprint(collection)
+        assert collection is not None
+        out.update(collection.__dict__)
 
-        # return ShowView(out)
+        extra = {
+            "apps_count": len(collection.get_apps()),
+        }
+
+        out.update(extra)
+        return ShowView(out, columns=["ident", "apps_count", "parent", "index"])
 
 
 class CollectionListCmd(Parser):
@@ -117,10 +117,8 @@ class CollectionListCmd(Parser):
         "Main command"
         catalog_mgr = ctx.data["catalog_mgr"]
 
-        catalog_mgr = ctx.data["catalog_mgr"]
-
-        # pprint(catalog_mgr.__dict__)
         collections_paths = catalog_mgr.get_collections_paths()
+        print = lambda x: x
 
         out = []
         print("Get Catalog")
@@ -130,7 +128,6 @@ class CollectionListCmd(Parser):
             for collection in collections:
                 apps = collection.get_apps()
                 print(f"    Get Collection: {collection.ident} ({len(apps)} apps)")
-                # pprint(collection.__dict__)
 
                 out.append(
                     {
@@ -151,15 +148,7 @@ class CollectionInfoCmd(Parser):
         "Main command"
         catalog_mgr = ctx.data["catalog_mgr"]
 
-        # pprint(catalog_mgr.collections_paths)
-        # out = catalog_mgr.walk_collections_paths()
-
-        # # out = list(out.values())
-        # return ListView(out)
-
-        # pprint(ctx.data)
         cwd = ctx.data["dir_cwd"]
-
         print("Working dir:")
         print(f"  get_path: {cwd.get_path()}")
         print(f"  get_dir : {cwd.get_dir()}")
@@ -167,7 +156,7 @@ class CollectionInfoCmd(Parser):
         print(f"  get_dir (rel): {cwd.get_dir(mode='rel')}")
         print("Collections paths:")
         for idx, path in enumerate(catalog_mgr.collections_paths):
-            print(f"path: {idx} => {path}")
+            print(f"  {idx}: {path}")
 
 
 ################# BETA
@@ -181,9 +170,7 @@ class CollectionDevelCmd(Parser):
 
         catalog_mgr = ctx.data["catalog_mgr"]
 
-        # pprint(catalog_mgr.__dict__)
         collections_paths = catalog_mgr.get_collections_paths()
-
         print("Get Catalog")
         for collections_path in collections_paths:
             print(f"  Get Collection path: {collections_path.ident}")
@@ -202,42 +189,30 @@ class CollectionGroup(Parser):
 
     info = Command(CollectionInfoCmd)
     list = Command(CollectionListCmd)
-    # show = Command(CollectionShowCmd)
+    show = Command(CollectionShowCmd)
     # apps = Command(CollectionAllAppsCmd)
-    devel = Command(CollectionDevelCmd)
+    # devel = Command(CollectionDevelCmd)
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 
-        # print("\n> Group executed")
-
-        # Create a test catalog
-        test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
-        test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
-        test_path3 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v3"
-        collections_paths = [
-            test_path1,
-            test_path2,
-            # test_path3,
-        ]
+        collections_paths = ctx.data["paths_collections"]
         mgr = AppCatalog(collections_paths=collections_paths)
         ctx.data["catalog_mgr"] = mgr
-
-        # print("\n> Command forward")
 
 
 # Beta
 # ================================================
 
 
-class AppCommand2(Parser):
-    "Command 2, with option and positional arguments"
-    aliases = Argument("--alias", "-a", action="append", help="Alias")  # (5)!
-    name = Argument("NAME", help="Name")
+# class AppCommand2(Parser):
+#     "Command 2, with option and positional arguments"
+#     aliases = Argument("--alias", "-a", action="append", help="Alias")  # (5)!
+#     name = Argument("NAME", help="Name")
 
-    def cli_run(self, name=None, aliases=None, force=False, config=None, **_):  # (6)!
-        print(f"Run command 2 World on: {name} in '{config}' file (force_mode={force})")
-        for alias in aliases or []:
-            print(f"Map: {alias} -> {name}")
+#     def cli_run(self, name=None, aliases=None, force=False, config=None, **_):  # (6)!
+#         print(f"Run command 2 World on: {name} in '{config}' file (force_mode={force})")
+#         for alias in aliases or []:
+#             print(f"Map: {alias} -> {name}")
 
 
 class Devel(Parser):
@@ -264,82 +239,117 @@ class Devel(Parser):
         # o = out.walk_collections_paths()
         # pprint(o)
 
+
+# class DemoCmd(Parser):
+#     "Demo viewers"
+
+#     def cli_run(self, ctx=None, **_):
+#         "Main command"
+
+#         # Tests1 - ShowView
+#         data_item_dict1 = {
+#             "name": "World",
+#             "age": 42,
+#             "city": "Paris",
+#         }
+#         data_item_list1 = [
+#             "World",
+#             42,
+#             "Paris",
+#         ]
+
+#         view = ShowView(data_item_dict1)
+#         view.render()
+
+#         view = ShowView(data_item_list1)
+#         view.render()
+
+#         # Tests2 - DictView
+
+#         data_item_dict2 = {
+#             "name": "World2",
+#             "age": 43,
+#             "city": "Berlin",
+#         }
+#         data_items_dict_of_dicts = {
+#             "item1": data_item_dict1,
+#             "item2": data_item_dict2,
+#         }
+#         view = ListView(data_items_dict_of_dicts)
+#         view.render()
+
+#         # Tests3 - ListView
+#         data_items_list_of_dicts = [
+#             data_item_dict1,
+#             data_item_dict2,
+#         ]
+#         view = ListView(data_items_list_of_dicts)
+#         view.render()
+
+#         return
+
+
+# Main Prod application
+# ================================================
+
+
 class DebugCmd(Parser):
     "Debug commands"
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        print("Debug command executed")
+        head = lambda: print("=" * 80)
+
+        head()
+        print("Logging")
+        head()
+        logger.debug("Hello World - App")
+        logger.info("Hello World - App")
+        logger.warning("Hello World - App")
+        logger.error("Hello World - App")
+        self.logger.debug("Hello World - Self")
+        self.logger.info("Hello World - Self")
+        self.logger.warning("Hello World - Self")
+        self.logger.error("Hello World - Self")
+        # logger_root.warning("Hello World - Root")
+
+        head()
+        print("Arguments")
+        head()
+        ShowView(ctx.args.__dict__).render()
+
+        head()
+        print("Debug context")
+        head()
         pprint(ctx.__dict__)
+        # ListView(ctx.__dict__).render()
 
+        head()
+        print("Debug infos")
+        head()
 
-
-class DemoCmd(Parser):
-    "Demo viewers"
-
-    def cli_run(self, ctx=None, **_):
-        "Main command"
-
-        # Tests1 - ShowView
-        data_item_dict1 = {
-            "name": "World",
-            "age": 42,
-            "city": "Paris",
-        }
-        data_item_list1 = [
-            "World",
-            42,
-            "Paris",
-        ]
-
-        view = ShowView(data_item_dict1)
-        view.render()
-
-        view = ShowView(data_item_list1)
-        view.render()
-
-        # Tests2 - DictView
-
-        data_item_dict2 = {
-            "name": "World2",
-            "age": 43,
-            "city": "Berlin",
-        }
-        data_items_dict_of_dicts = {
-            "item1": data_item_dict1,
-            "item2": data_item_dict2,
-        }
-        view = ListView(data_items_dict_of_dicts)
-        view.render()
-
-        # Tests3 - ListView
-        data_items_list_of_dicts = [
-            data_item_dict1,
-            data_item_dict2,
-        ]
-        view = ListView(data_items_list_of_dicts)
-        view.render()
-
-        return
+        cwd = ctx.data["dir_cwd"]
+        print("Working dir:")
+        print(f"  get_path: {cwd.get_path()}")
+        print(f"  get_dir : {cwd.get_dir()}")
+        print(f"  get_dir (abs): {cwd.get_dir(mode='abs')}")
+        print(f"  get_dir (rel): {cwd.get_dir(mode='rel')}")
 
 
 # Main application
 # ================================================
 
 
-class Hidden(Argument):
-    "Hidden argument"
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.hidden = True
+# from clak.common import get_top_package
 
 
-HIDDEN = Hidden()
-from argparse import SUPPRESS
-
-
-class AppMain(Parser):
+class AppMain(LoggingOptMixin, Parser):
     """Demo application with options and two subcommands."""
+
+    class Meta:
+        "Main app config"
+        log_prefix = f"{__name__}"
+
 
     debug = Argument("--debug", action="store_true", help="Enable debug mode")  # (8)!
     config = Argument("--config", "-c", help="Config file path", default="config.yaml")
@@ -358,15 +368,13 @@ class AppMain(Parser):
     )
 
     # Define subcommands
-    app = Command(AppGroup)
+    # app = Command(AppGroup)
     collection = Command(CollectionGroup)
 
+    # command2 = Command(AppCommand2)
+    # demo = Command(DemoCmd)
     dev = Command(Devel)
-    command2 = Command(AppCommand2)
-    demo = Command(DemoCmd)
-
     debug = Command(DebugCmd)
-
 
     def cli_group(self, ctx, **_):
         "Main group"
@@ -398,8 +406,8 @@ class AppMain(Parser):
             test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
             # test_path3 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v3"
             paths_collections = [
-                test_path1,
                 test_path2,
+                test_path1,
                 # test_path3,
             ]
 
@@ -424,7 +432,7 @@ class AppMain(Parser):
 def run():
     "Return a Paasify App instance"
 
-    app = AppMain()
+    _ = AppMain()
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 from typing import List, Dict
 from dataclasses import dataclass
@@ -6,6 +7,9 @@ from types import SimpleNamespace
 from pathlib import Path
 
 from superconf.anchors import PathAnchor
+
+
+logger = logging.getLogger(__name__)
 
 
 class Node:
@@ -88,40 +92,16 @@ class ApplicationObj(AppNode):
         self.sub_path = path
         self.index = index
 
-        # self.test_coll = id(parent)
-
-        # # self.collection_dir = parent
-        # self.collection = parent
-        # self.collection_path = self.collection.parent
-        # self.catalog = self.collection_path.parent
-
-
-#     def get_info(self):
-#         "Return application info"
-
-
-#     @property
-#     def path(self):
-#         "Return collection ident"
-#         # return str(self.sub_path)
-#         return str(Path(self.collection.sub_path , self.sub_path))
-
-
 class CollectionObj(AppNode):
     "CollectionObj class"
 
-    def __init__(self, ident, path=None, parent=None, index=None):
+    def __init__(self, ident, sub_path=None, parent=None, index=None):
         assert isinstance(parent, CollectionsPath)
         super().__init__(ident, parent)
 
-        self.sub_path = path
+        self.sub_path = sub_path
         self.index = index
         self._store_apps = {}
-
-        # self.collection_path = parent
-
-    #     # def __repr__(self):
-    #     #     return f"{self.__class__.__name__}({self.ident}.{self.index})"
 
     @requires_setup_node
     def get_apps(self):
@@ -136,8 +116,6 @@ class CollectionObj(AppNode):
         "Walk collections directories and return scan report"
 
         ret = {}
-        # collection_path = self.sub_path
-
         # List recursively on three levels all docker-compose.yml files
         needle = "docker-compose.yml"
         for match in Path(collection_path).rglob(needle):
@@ -164,29 +142,6 @@ class CollectionObj(AppNode):
         return ret
 
 
-#     def setup_node(self, paths=None):
-#         "Init node"
-#         # print ("WALK COLLECTION NODE", self)
-
-#         self._store_apps = self.walk_apps()
-#         # print ("WALK COLLECTION NODE", self)
-#         # pprint(self._store_apps)
-
-#     @requires_setup_node
-#     def dump(self):
-#         "Dump collection"
-#         print(f"Dump of {self}:")
-#         pprint(self.__dict__)
-
-
-#     @requires_setup_node
-#     def get_apps(self, name=None):
-#         "Return apps"
-#         if name is None:
-#             return self._store_apps or {}
-#         return self._store_apps.get(name, None)
-
-
 ##############################################################
 
 
@@ -200,13 +155,11 @@ class CollectionsPath(AppNode):
 
         self.path = path
         self.index = index
-        # self.catalog = parent
         self._store_collections = {}
 
-    @requires_setup_node
-    def get_collections(self):
-        "Return collections"
-        return self._store_collections.values()
+        # Auto init
+        self.setup_node()
+        self._setup_done = True
 
     def setup_node(self):
         path = self.path
@@ -214,25 +167,22 @@ class CollectionsPath(AppNode):
 
     def walk_collections(self, collections_path) -> Dict:
         "Walk collections directories and return scan report"
-
-        # print("WALK COLLECTIONS DIRECTORY FOR APPS", collections_path)
-
         out = {}
         # List all directories names
         for dir_path in Path(collections_path).iterdir():
             # Dir_path must be a directory
-            # print("T1", dir_path)
             if not dir_path.is_dir():
                 continue
-            # Fetch the directory name
-            dir_name = dir_path.name
 
-            # print("T2", dir_name)
+            # Fetch the directory name, and skip hidden directories
+            dir_name = dir_path.name
+            if dir_name.startswith("."):
+                continue
 
             # collection = CollectionObj(
             collection = CollectionObj(
                 ident=dir_name,
-                path=dir_path,
+                sub_path=dir_name,
                 parent=self,
                 index=self.index,
             )
@@ -246,6 +196,17 @@ class CollectionsPath(AppNode):
 
         return out
 
+    @requires_setup_node
+    def get_collections(self, *args):
+        "Return collections, from store"
+        logger.info("Get collections from %s", self)
+
+        if len(args) == 0:
+            return self._store_collections.values()
+        if len(args) == 1:
+            return self._store_collections.get(args[0], None)
+        raise ValueError(f"Invalid arguments: {args}")
+
 
 class AppCatalog(AppNode):
     "Catalog class, manage list of collections paths"
@@ -255,9 +216,6 @@ class AppCatalog(AppNode):
 
         # Settings attributes
         self.collections_paths = collections_paths
-
-        # Caching attributes
-        # self._cached_collections_paths = None
 
         self._store_paths = []
         self._store_collections = {}
@@ -274,13 +232,8 @@ class AppCatalog(AppNode):
     def setup_node(self, paths=None):
         "Init node"
         paths = paths or self.collections_paths
-        print("INIT NODE STARTED WALK", paths)
-
         self._store_paths = self.walk_collections_paths(paths)
-        # self._store_collections = self.walk_collections(self._store_paths)
 
-        # self._store_apps =
-        # self.walk_applications()
 
     def walk_collections_paths(self, paths) -> List[Dict]:
         "Walk collections directories and return scan report"
@@ -310,74 +263,19 @@ class AppCatalog(AppNode):
 
         return "WIP"
 
-    ##########################
+    ########################## Main objects
 
     @requires_setup_node
-    def dump(self):
-
-        print(f"Dump of {self}:")
-        pprint(self.__dict__)
-
-        print("Dump of collections")
-        for _, collection in self._store_collections.items():
-            collection.dump()
-
-    @requires_setup_node
-    def get_app(self, ident):
-
-        for collection in self._store_collections.values():
-            app = collection.get_apps(ident)
-            if app is not None:
-                return app
-        return None
-
-    @requires_setup_node
-    def get_apps(self):
-        "Dump apps"
-        print("Dump of apps")
-        # pprint(self._store_apps)
-
-        out = {}
-        out2 = {}
-        out3 = []
-        for collection in self._store_collections.values():
-            print("COLLECTION", collection)
-            # return collection.get_apps()
-            # out.update(collection.get_apps())
-            # out2[collection.ident]= collection #collection.get_apps()
-            out2[collection.ident] = []
-
-            for app in collection.get_apps().values():
-                print("APP", app)
-                out2[collection.ident].append(app.ident)
-                out[app.ident] = app.collection
-                out3.append(app)
-
-        return out3
-
-    # @requires_setup_node
-    # def get_collections_names(self):
-    #     "Return list of collections names"
-    #     ret = []
-    #     for collection in self._db:
-    #         ret.extend(collection.get_app_names())
-    #     return ret
-
-    # @requires_setup_node
-    # def get_collection_by_name(self, name):
-    #     "Return collection by name"
-    #     print(f"Show collection name: {name}")
-    #     for collection in self._db:
-    #         if name in collection.get_app_names():
-    #             return collection
-    #     return None
-
-    # @requires_setup_node
-    # def show_applications(self):
-    #     "Show applications"
-    #     for collection_path in self.collections_paths:
-    #         print(f"Collection: {collection_path}")
-
-    #         # List all directories containing a docker-compose.yml file
-    #         for dir_path in Path(collection_path).rglob("docker-compose.yml"):
-    #             print(f"Application: {dir_path}")
+    def get_collections(self, *args):
+        "Return collections, loop over each colections paths"
+        logger.info("Get collections from %s", self)
+        ret = []
+        for collection_path in self._store_paths:
+            if len(args) == 1:
+                match = collection_path.get_collections(*args)
+                if match is not None:
+                    return match
+            else:
+                for collection in collection_path.get_collections():
+                    ret.append(collection)
+        return ret
