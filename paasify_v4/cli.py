@@ -1,6 +1,7 @@
 "Main app command line interface"
 
 import os
+
 # import sys
 import logging
 from pprint import pprint
@@ -10,7 +11,8 @@ from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors import PathAnchor
 
-from paasify_v4.devel import AppCatalog
+from paasify_v4.devel import PaasifyCatalog
+from paasify_v4.common import truncate
 
 
 logger = logging.getLogger(__name__)
@@ -21,12 +23,64 @@ logger = logging.getLogger(__name__)
 # App management
 # ================================================
 
+
 class AppListCmd(Parser):
     "List apps"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        catalog_mgr = ctx.data["catalog_mgr"]
+        logger.info("Get apps")
+
+        apps = catalog_mgr.get_apps()
+
+        # pprint(out)
+        out = []
+        for app in apps:
+            # print(f"  {app.ident}: {app.get_path()}")
+            out.append(
+                {
+                    "ident": app.ident,
+                    "description": truncate(app.get_description()),
+                    "name": app.name,
+                    # "ident": app.name,
+                    # "path": app.get_path(),
+                    "collection": app.parent.name,
+                    # "collection_path": app.collection_path,
+                }
+            )
+
+        return ListView(out)
 
 
 class AppShowCmd(Parser):
     "Show app"
+
+    name = Argument("NAME", help="App name")
+
+    def cli_run(self, ctx=None, name=None, **_):
+        "Main command"
+        catalog_mgr = ctx.data["catalog_mgr"]
+
+        logger.info("Show app: %s", name)
+        app = catalog_mgr.get_app(name)
+
+        app_vars = app.get_vars()
+        extra = {
+            # "Infos": "",
+            "ident": app.ident,
+            "name": app.name,
+            "source": app.parent.name,
+            "index": app.index,
+            # "apps_count": len(app.get_apps()),
+            "path": app.get_path(),
+            # "Vars:": "",
+        }
+        ShowView(extra).render()
+        logger.info("Show app metadata: %s", name)
+        # extra.update(app_vars)
+        return ShowView(app_vars)
 
 
 class AppGroup(Parser):
@@ -35,55 +89,15 @@ class AppGroup(Parser):
     list = Command(AppListCmd)
     show = Command(AppShowCmd)
 
-    def cli_run(self, force=None, debug=False, **_):
-        print(f"Run Command 1: Hello force={force}")
-        if debug:
-            print("Debug mode enabled")
+    def cli_group(self, ctx, **_):
+
+        collections_paths = ctx.data["paths_collections"]
+        mgr = PaasifyCatalog(collections_paths=collections_paths)
+        ctx.data["catalog_mgr"] = mgr
 
 
 # Collection management
 # ================================================
-
-
-class CollectionAllAppsCmd(Parser):
-    "Show all apps"
-
-    def cli_run(self, ctx=None, **_):
-        "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
-        # data = catalog_mgr.get_app("paasify-collection-lscr/jellyfin")
-
-        # GUBBB HERE
-        data = [
-            catalog_mgr.get_app("paasify-collection-lscr/jellyfin"),
-            catalog_mgr.get_app("paasify-collection-infra/netbird"),
-        ]
-
-        out = {}
-        for app in data:
-            # render.append(app)
-            # line = [app["app_path"]]
-            # render[app["app_ident"]] = line
-
-            out[app.ident] = {
-                "ident": app,
-                "test_coll": app.test_coll,
-                "Catalog": app.catalog,
-                "Collection path": app.collection_path,
-                "Collection": str(app.collection),
-                # "App": app.name,
-                # # "path": app.path,
-            }
-
-            # break
-
-        # pprint(out)
-        # return
-
-        return ListView(out)
-        # pprint(out)
-        # return ListView(out)
-        # return ListView(out, headers=["ident", "collection", "path"])
 
 
 class CollectionShowCmd(Parser):
@@ -94,20 +108,18 @@ class CollectionShowCmd(Parser):
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"
         catalog_mgr = ctx.data["catalog_mgr"]
-
-
-        out = {}
         collection = catalog_mgr.get_collections(name)
-        pprint(collection)
-        assert collection is not None
-        out.update(collection.__dict__)
+        assert collection, f"Collection {name} not found"
+        logger.info("Show collection %s", name)
 
         extra = {
+            "ident": collection.ident,
+            "source": collection.parent,
+            "index": collection.index,
             "apps_count": len(collection.get_apps()),
+            "path": collection.get_path(),
         }
-
-        out.update(extra)
-        return ShowView(out, columns=["ident", "apps_count", "parent", "index"])
+        return ShowView(extra)
 
 
 class CollectionListCmd(Parser):
@@ -149,14 +161,15 @@ class CollectionInfoCmd(Parser):
         catalog_mgr = ctx.data["catalog_mgr"]
 
         cwd = ctx.data["dir_cwd"]
-        print("Working dir:")
-        print(f"  get_path: {cwd.get_path()}")
-        print(f"  get_dir : {cwd.get_dir()}")
-        print(f"  get_dir (abs): {cwd.get_dir(mode='abs')}")
-        print(f"  get_dir (rel): {cwd.get_dir(mode='rel')}")
-        print("Collections paths:")
-        for idx, path in enumerate(catalog_mgr.collections_paths):
-            print(f"  {idx}: {path}")
+        print(" * Working dir:")
+        print(f"    get_path: {cwd.get_path()}")
+        print(f"    get_dir : {cwd.get_dir()}")
+        print(f"    get_dir (abs): {cwd.get_dir(mode='abs')}")
+        print(f"    get_dir (rel): {cwd.get_dir(mode='rel')}")
+        print(" * Collections paths:")
+
+        for col_path in catalog_mgr.get_collections_paths():
+            print(f"    {col_path.index}: {col_path.ident}: {col_path.get_path()}")
 
 
 ################# BETA
@@ -171,15 +184,28 @@ class CollectionDevelCmd(Parser):
         catalog_mgr = ctx.data["catalog_mgr"]
 
         collections_paths = catalog_mgr.get_collections_paths()
+        # print("Get Catalog")
+        # for collections_path in collections_paths:
+        #     print(f"  Get Collection path: {collections_path.ident}")
+        #     collections = collections_path.get_collections()
+        #     for collection in collections:
+        #         apps = collection.get_apps()
+        #         print(f"    Get Collection: {collection.ident} ({len(apps)} apps)")
+        #         for app in apps:
+        #             print(f"      Get App: {app.ident}")
+
+        # print("Test2")
+        collections_paths = catalog_mgr.get_collections_paths()
         print("Get Catalog")
         for collections_path in collections_paths:
-            print(f"  Get Collection path: {collections_path.ident}")
-            collections = collections_path.get_collections()
-            for collection in collections:
-                apps = collection.get_apps()
-                print(f"    Get Collection: {collection.ident} ({len(apps)} apps)")
-                for app in apps:
-                    print(f"      Get App: {app.ident}")
+            for collection in collections_path:
+                print(f"  {collection.ident}")
+                # for app in collection:
+                #     print(f"    {app.ident}")
+
+        print("Test3")
+        for app in catalog_mgr.get_apps():
+            print(f"  {app.ident}: {app.get_path()}")
 
         return
 
@@ -190,13 +216,12 @@ class CollectionGroup(Parser):
     info = Command(CollectionInfoCmd)
     list = Command(CollectionListCmd)
     show = Command(CollectionShowCmd)
-    # apps = Command(CollectionAllAppsCmd)
-    # devel = Command(CollectionDevelCmd)
+    devel = Command(CollectionDevelCmd)
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 
         collections_paths = ctx.data["paths_collections"]
-        mgr = AppCatalog(collections_paths=collections_paths)
+        mgr = PaasifyCatalog(collections_paths=collections_paths)
         ctx.data["catalog_mgr"] = mgr
 
 
@@ -230,7 +255,7 @@ class Devel(Parser):
         #     # test_path2,
         # ]
 
-        # out = AppCatalog(collections_paths=collections_paths)
+        # out = PaasifyCatalog(collections_paths=collections_paths)
 
         # pprint(out)
         # pprint(out.__dict__)
@@ -348,8 +373,7 @@ class AppMain(LoggingOptMixin, Parser):
 
     class Meta:
         "Main app config"
-        log_prefix = f"{__name__}"
-
+        log_prefix = f"{__name__.split('.', maxsplit=1)[0]}"
 
     debug = Argument("--debug", action="store_true", help="Enable debug mode")  # (8)!
     config = Argument("--config", "-c", help="Config file path", default="config.yaml")
@@ -368,7 +392,7 @@ class AppMain(LoggingOptMixin, Parser):
     )
 
     # Define subcommands
-    # app = Command(AppGroup)
+    app = Command(AppGroup)
     collection = Command(CollectionGroup)
 
     # command2 = Command(AppCommand2)

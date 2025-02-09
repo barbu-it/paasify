@@ -1,3 +1,4 @@
+import os
 import logging
 from pprint import pprint
 from typing import List, Dict
@@ -8,6 +9,7 @@ from pathlib import Path
 
 from superconf.anchors import PathAnchor
 
+from paasify_v4.common import read_file, from_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,20 @@ class Node:
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.ident or ''})"
+
+
+@staticmethod
+def setup_once(func):
+    "Decorator to ensure setup_node is called only once, with optional force parameter"
+
+    def wrapper(self, *args, force=False, **kwargs):
+        if not hasattr(self, "_setup_done") or force:
+            result = func(self, *args, **kwargs)
+            self._setup_done = True
+            return result
+        return None
+
+    return wrapper
 
 
 @staticmethod
@@ -59,41 +75,129 @@ class DataProtocol:
 class AppNode(Node):
     "AppNode class"
 
+    node__iterate_attr = "_children"
+
     @property
     def name(self):
         "Return collection ident"
+        if hasattr(self, "_name"):
+            return self._name
         name = self.ident
         if "/" in name:
             name = name.split("/")[-1]
         return name
 
-    @property
-    def path2(self):
-        "Return source"
+    # @property
+    # def path2(self):
+    #     "Return source"
 
-        if hasattr(self, "sub_path"):
-            return self.sub_path
+    #     if hasattr(self, "sub_path"):
+    #         return self.sub_path
+    #     if hasattr(self, "_path"):
+    #         return self._path
+    #     return "NO PATH"
+
+    def get_path(self, mode=None):
+        "Return path"
+
+        # If path is hardcoded, return it
         if hasattr(self, "_path"):
             return self._path
-        return "NO PATH"
+
+        if hasattr(self, "sub_path"):
+            sub_path = self.sub_path
+
+            # If there is no path, then look recurisveley in each parent
+            # until we find a path attribute
+            if self.parent is not None:
+                return os.path.join(self.parent.get_path(), sub_path)
+            return "NO PATH"
+
+    # Special methods
+    def _get_store_attr(self):
+        "Get store attribute"
+        attr = getattr(self, self.node__iterate_attr)
+        # print("GET STORE ATTR", self,  self.node__iterate_attr, attr)
+
+        if self.node__iterate_attr.startswith("_store_"):
+            if hasattr(self, "setup_node"):
+                print("AUTOSTART SETUP NODE", self)
+                # Then setup the node
+                self.setup_node()
+
+        if isinstance(attr, dict):
+            return list(attr.values())
+        return attr
+
+    def __iter__(self):
+        "Iterate over children"
+        return iter(self._get_store_attr())
+
+    def __len__(self):
+        "Return length"
+        return len(self._get_store_attr())
+
+    def __getitem__(self, key):
+        "Get item"
+        store = self._get_store_attr()
+        print("GET ITEM", key, store)
+        for item in store:
+            print("ITEM", item.ident, key)
+            if item.ident == key:
+                return item
+        return None
+
+    def __contains__(self, key):
+        "Check if item is in store"
+        return key in self._get_store_attr()
 
 
 # Catalog
 # ================================================
 
 
-class ApplicationObj(AppNode):
-    "ApplicationObj class"
+class PaasifyApp(AppNode):
+    "PaasifyApp class"
 
-    def __init__(self, ident, path=None, parent=None, index=None):
+    def __init__(self, ident, name=None, path=None, parent=None, index=None):
         super().__init__(ident, parent)
-        assert isinstance(parent, CollectionObj)
+        assert isinstance(parent, PaasifyCollection)
 
         self.sub_path = path
         self.index = index
+        self._name = name
 
-class CollectionObj(AppNode):
-    "CollectionObj class"
+        self._store_vars = {}
+
+    @setup_once
+    def setup_node(self):
+        "Parse app metadata"
+        logger.info("Setup app vars: %s", self)
+
+        self._store_vars = self.read_vars()
+
+    def read_vars(self, filename="vars.yml"):
+        "Read vars.yml file"
+        vars_file = os.path.join(self.get_path(), filename)
+        if os.path.exists(vars_file):
+            data = read_file(vars_file)
+            data = from_yaml(data)
+            return data
+        return {}
+
+    @requires_setup_node
+    def get_vars(self):
+        "Return vars"
+        return self._store_vars
+
+    @requires_setup_node
+    def get_description(self):
+        "Return description"
+        return self._store_vars.get("app_description", "")
+
+
+class PaasifyCollection(AppNode):
+    "PaasifyCollection class"
 
     def __init__(self, ident, sub_path=None, parent=None, index=None):
         assert isinstance(parent, CollectionsPath)
@@ -108,9 +212,14 @@ class CollectionObj(AppNode):
         "Return apps"
         return list(self._store_apps.values())
 
+    @setup_once
     def setup_node(self):
-        path = self.sub_path
-        self._store_apps = self.walk_apps(path)
+        "Walk collection and get apps"
+        logger.info("Setup collection: %s", self)
+
+        # collection_path = os.path.join(self.get_path(), self.sub_path)
+        collection_path = self.get_path()
+        self._store_apps = self.walk_apps(collection_path)
 
     def walk_apps(self, collection_path) -> Dict:
         "Walk collections directories and return scan report"
@@ -118,7 +227,9 @@ class CollectionObj(AppNode):
         ret = {}
         # List recursively on three levels all docker-compose.yml files
         needle = "docker-compose.yml"
+
         for match in Path(collection_path).rglob(needle):
+            # print("MATCH", match)
             # Get relative path from collection root
             rel_path = match.relative_to(collection_path)
 
@@ -128,8 +239,9 @@ class CollectionObj(AppNode):
             # Use path as app identifier
             app_ident = str(app_path)
 
-            app = SimpleNamespace(
-                ident=app_ident,
+            app = PaasifyApp(
+                ident=f"{self.ident}@{app_ident}",
+                name=app_ident,
                 path=str(app_path),
                 parent=self,
                 index=self.index,
@@ -149,11 +261,11 @@ class CollectionsPath(AppNode):
     "CollectionsPath class"
 
     def __init__(self, ident, parent=None, path=None, index=None):
-        assert isinstance(parent, AppCatalog)
+        assert isinstance(parent, PaasifyCatalog)
         super().__init__(ident, parent)
-        # assert isinstance(parent, (type(None), CollectionObj))
+        # assert isinstance(parent, (type(None), PaasifyCollection))
 
-        self.path = path
+        self._path = path
         self.index = index
         self._store_collections = {}
 
@@ -161,8 +273,10 @@ class CollectionsPath(AppNode):
         self.setup_node()
         self._setup_done = True
 
+    @setup_once
     def setup_node(self):
-        path = self.path
+        logger.info("Setup collections path: %s", self)
+        path = self._path
         self._store_collections = self.walk_collections(path)
 
     def walk_collections(self, collections_path) -> Dict:
@@ -179,8 +293,8 @@ class CollectionsPath(AppNode):
             if dir_name.startswith("."):
                 continue
 
-            # collection = CollectionObj(
-            collection = CollectionObj(
+            # collection = PaasifyCollection(
+            collection = PaasifyCollection(
                 ident=dir_name,
                 sub_path=dir_name,
                 parent=self,
@@ -208,8 +322,10 @@ class CollectionsPath(AppNode):
         raise ValueError(f"Invalid arguments: {args}")
 
 
-class AppCatalog(AppNode):
+class PaasifyCatalog(AppNode):
     "Catalog class, manage list of collections paths"
+
+    # node__iterate_attr = "_children"
 
     def __init__(self, collections_paths=None):
         super().__init__()
@@ -221,19 +337,19 @@ class AppCatalog(AppNode):
         self._store_collections = {}
         # self._store_apps = {}
 
-    # =============
-    @requires_setup_node
-    def get_collections_paths(self):
-        "Return collections paths"
-        return self._store_paths
+        # Auto init
+        self.setup_node()
+        # self._setup_done = True
 
     # =============
 
+    @setup_once
     def setup_node(self, paths=None):
         "Init node"
+        # logger.debug("Setup node333 %s", self)
+        logger.info("Setup catalog: %s", self)
         paths = paths or self.collections_paths
         self._store_paths = self.walk_collections_paths(paths)
-
 
     def walk_collections_paths(self, paths) -> List[Dict]:
         "Walk collections directories and return scan report"
@@ -266,6 +382,11 @@ class AppCatalog(AppNode):
     ########################## Main objects
 
     @requires_setup_node
+    def get_collections_paths(self):
+        "Return collections paths"
+        return self._store_paths
+
+    @requires_setup_node
     def get_collections(self, *args):
         "Return collections, loop over each colections paths"
         logger.info("Get collections from %s", self)
@@ -279,3 +400,30 @@ class AppCatalog(AppNode):
                 for collection in collection_path.get_collections():
                     ret.append(collection)
         return ret
+
+    @requires_setup_node
+    def get_apps(self):
+        "Return apps"
+        ret = []
+        for collections_path in self._store_paths:
+            for collection in collections_path:
+                ret.extend(collection.get_apps())
+        return ret
+
+    @requires_setup_node
+    def get_app(self, name):
+        "Return app"
+
+        out = []
+        for collection in self.get_collections():
+            for app in collection.get_apps():
+                if name in [app.name, app.ident]:
+                    out.append(app)
+
+        # Unicity checker
+        if len(out) > 1:
+            out = " ".join([app.ident for app in out])
+            raise ValueError(f"Multiple apps found for '{name}': {out}")
+        if len(out) == 0:
+            raise ValueError(f"App '{name}' not found")
+        return out[0]
