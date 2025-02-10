@@ -17,6 +17,7 @@ import logging
 
 # pylint: disable=unused-import
 from pprint import pprint
+from paasify_v4.common import read_file, from_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,18 @@ def requires_setup_node(name="setup_node"):
     return decorator
 
 
-class AppNode(Node):
+class HelperMethods:
+    def read_yaml_file(self, filename="vars.yml"):
+        "Read vars.yml file"
+        vars_file = os.path.join(self.get_path(), filename)
+        if os.path.exists(vars_file):
+            data = read_file(vars_file)
+            data = from_yaml(data)
+            return data
+        return {}
+
+
+class AppNode(HelperMethods, Node):
     "AppNode class"
 
     # Default config

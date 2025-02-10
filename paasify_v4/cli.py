@@ -12,7 +12,7 @@ from clak.views import ListView, ShowView
 from superconf.anchors import PathAnchor
 
 from paasify_v4.catalog import PaasifyCatalog
-from paasify_v4.common import truncate
+from paasify_v4.common import truncate, to_yaml
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,10 @@ class AppShowCmd(Parser):
         #     tmp = "YEAHHH"
         # assert app, f"App {name} not found: {app} {tmp}"
 
-        # print("===========")
+        print("===========")
+        tag_config = app.get_tags()
+        tags = list(tag_config.keys())
+        pprint(tag_config)
 
         app_vars = app.get_vars()
         app_vars = {f"var: {k}": v for k, v in app_vars.items()}
@@ -90,6 +93,7 @@ class AppShowCmd(Parser):
             "index": app.index,
             # "apps_count": len(app.get_apps()),
             "path": app.get_path(),
+            "tags": " ".join(tags),
             "": "",
         }
         # ShowView(extra).render()
@@ -98,11 +102,39 @@ class AppShowCmd(Parser):
         return ShowView(extra)
 
 
+class AppTagsCmd(Parser):
+    "Show app tags"
+
+    name = Argument("NAME", help="App name")
+
+    def cli_run(self, ctx=None, name=None, **_):
+        "Main command"
+        catalog_mgr = ctx.data["catalog_mgr"]
+        app = catalog_mgr.get_app(name)
+        assert app, f"App {name} not found"
+
+        tags = app.get_tags()
+        pprint(tags)
+        out = []
+        for tag_name, tag in tags.items():
+            # line = f"{tag_name}: {tag['path']}"
+            line = {
+                "tag": tag_name,
+                # "path": tag["path"],
+                # "metadata2": tag["metadata"],
+                "metadata": to_yaml(tag["metadata"], strip_last=True),
+                "rules": to_yaml(tag["rules"], strip_last=True),
+            }
+            out.append(line)
+        return ListView(out)
+
+
 class AppGroup(Parser):
     "Manage collections"
 
     list = Command(AppListCmd)
     show = Command(AppShowCmd)
+    tags = Command(AppTagsCmd)
 
     def cli_group(self, ctx, **_):
 
@@ -144,7 +176,7 @@ class CollectionShowCmd(Parser):
             extra["status"] = collection.get_git_status()
             # extra["status"] = ellipsize(collection.get_git_status(), 100)
             # extra["status"] = truncate(collection.get_git_status())
-        
+
         # pprint(extra)
         return ShowView(extra)
 
@@ -175,7 +207,6 @@ class CollectionListCmd(Parser):
                         "source": collections_path.ident,
                         "collection_path": collection.sub_path,
                         "remote": collection.get_git_remote(),
-
                     }
                 )
 

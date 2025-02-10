@@ -13,14 +13,13 @@ The module focuses on organizing and managing applications in a hierarchical cat
 with support for metadata, variables, and collection management.
 """
 
-import os
+import re
 import logging
 from typing import List, Dict
 
 # from pprint import pprint
 from pathlib import Path
 
-from paasify_v4.common import read_file, from_yaml
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from paasify_v4.git_helpers import GitRepo
 
@@ -44,28 +43,22 @@ class PaasifyApp(AppNode):
         self._name = name
 
         self._store_vars = {}
+        self._store_tags = {}
 
     # @setup_once("setup_node")
     # def setup_node(self):
     #     "Parse app metadata"
     #     logger.info("Setup app vars: %s", self)
 
-    #     self._store_vars = self.read_vars()
+    #     self._store_vars = self.read_yaml_file()
 
+    # Vars support
+    # ------------
     @setup_once("setup_vars")
     def setup_vars(self):
         "Parse app metadata"
         logger.info("Setup app vars: %s", self)
-        self._store_vars = self.read_vars()
-
-    def read_vars(self, filename="vars.yml"):
-        "Read vars.yml file"
-        vars_file = os.path.join(self.get_path(), filename)
-        if os.path.exists(vars_file):
-            data = read_file(vars_file)
-            data = from_yaml(data)
-            return data
-        return {}
+        self._store_vars = self.read_yaml_file()
 
     @requires_setup_node("setup_vars")
     def get_vars(self):
@@ -76,6 +69,51 @@ class PaasifyApp(AppNode):
     def get_description(self):
         "Return description"
         return self._store_vars.get("app_description", "")
+
+    # Structure scan support
+    # ------------
+    @setup_once("setup_tags")
+    def setup_tags(self):
+        "Parse app tags"
+        logger.info("Setup app tags: %s", self)
+        self._store_tags = self.walk_tags()
+
+    # def walk_tags(self):
+    #     "Walk app tags"
+    #     path = self.get_path()
+    #     tags = self.get_tags(path)
+    #     return tags
+
+    def walk_tags(self):
+        "Return tags"
+        path = self.get_path()
+        # print("SCAN PATH", path)
+
+        needle = "docker-compose.*.yml"
+        tags = {}
+
+        for match in sorted(Path(path).rglob(needle)):
+            tag_parts = match.stem.split(".")
+            tag = tag_parts[1:]
+            tag = ".".join(tag)
+            tags[tag] = {"path": str(match)}
+
+            # Read the tag file
+            content = self.read_yaml_file(match)
+            if content:
+                metadata = content.get("x-meta", {})
+                tags[tag]["metadata"] = metadata
+
+                # https://jsonlogic.com/play.html
+                rules = content.get("x-rules", {})
+                tags[tag]["rules"] = rules
+
+        return tags
+
+    @requires_setup_node("setup_tags")
+    def get_tags(self):
+        "Return tags"
+        return self._store_tags
 
 
 class PaasifyCollection(AppNode):

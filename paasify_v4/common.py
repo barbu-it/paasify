@@ -12,6 +12,7 @@ This module provides common utility functions used throughout Paasify:
 
 import json
 import logging
+
 # import os
 
 import yaml
@@ -42,14 +43,20 @@ def to_json(obj, nice=True):
     return json.dumps(obj)
 
 
-def from_yaml(string):
+def from_yaml(string, strip_last=False):
     "Transform YAML string to python dict"
-    return yaml.safe_load(string)
+    data = yaml.safe_load(string)
+    if strip_last:
+        return data.rstrip()
+    return data
 
 
-def to_yaml(obj):
+def to_yaml(obj, strip_last=False):
     "Transform obj to YAML"
-    return yaml.dump(obj)
+    data = yaml.dump(obj)
+    if strip_last:
+        return data.rstrip()
+    return data
 
     # # Ruamel support
     # options = {}

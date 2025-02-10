@@ -29,6 +29,7 @@ def git_repo(path):
     cmd = git.cmd.Git(path)
     return cmd
 
+
 class GitRepo:
     "Git repo class"
 
@@ -37,15 +38,13 @@ class GitRepo:
         self.repo = Repo(path)
         self.cmd = git.cmd.Git(path)
 
-
-
     def remotes(self):
         "Get remote"
         remotes = {}
         for remote in self.repo.remotes:
             remotes[remote.name] = remote.url
         return remotes
-    
+
     def remote(self, name="origin"):
         "Get remote by name, otherwise return default origin remote or None"
         remotes = self.remotes()
@@ -58,11 +57,9 @@ class GitRepo:
         "Get current branch"
         return self.repo.active_branch
 
-
     def is_dirty(self):
         "Check if repo is dirty"
         return self.repo.is_dirty(untracked_files=True)
-
 
     def git_status(self):
         "Get git status"
