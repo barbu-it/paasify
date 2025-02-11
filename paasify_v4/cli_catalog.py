@@ -129,11 +129,11 @@ class AppGroup(Parser):
     show = Command(AppShowCmd)
     tags = Command(AppTagsCmd)
 
-    def cli_group(self, ctx, **_):
+    # def cli_group(self, ctx, **_):
 
-        collections_paths = ctx.data["paths_collections"]
-        mgr = PaasifyCatalog(collections_paths=collections_paths)
-        ctx.data["catalog_mgr"] = mgr
+    #     collections_paths = ctx.data["paths_collections"]
+    #     mgr = PaasifyCatalog(collections_paths=collections_paths)
+    #     ctx.data["catalog_mgr"] = mgr
 
 
 # Collection management
@@ -270,6 +270,7 @@ class CollectionGroup(Parser):
     list = Command(CollectionListCmd)
     show = Command(CollectionShowCmd)
     # devel = Command(CollectionDevelCmd)
+    app = Command(AppGroup)
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 

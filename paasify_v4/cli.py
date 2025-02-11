@@ -192,7 +192,7 @@ class AppMain(LoggingOptMixin, Parser):
     )
 
     # Define subcommands
-    app = Command(AppGroup, help="==SUPPRESS==")
+    # app = Command(AppGroup, help="==SUPPRESS==")
     collection = Command(CollectionGroup, help="==SUPPRESS==")
 
 
