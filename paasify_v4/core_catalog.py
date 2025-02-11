@@ -21,7 +21,7 @@ from typing import List, Dict
 from pathlib import Path
 
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
-from paasify_v4.git_helpers import GitRepo
+from paasify_v4.lib.git_helpers import GitRepo
 
 logger = logging.getLogger(__name__)
 

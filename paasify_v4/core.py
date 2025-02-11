@@ -397,7 +397,7 @@ class WorkingDirNode(AppNode):
             target = self.ALLOWED_CONF_FILES[0]
             msg = f"Can't find file '{target}' for {self.OBJECT_NAME} in path: {path}"
             if search_up:
-                msg = f"Can't find file '{target}' for {self.OBJECT_NAME} in hierarchy of: {path}"
+                msg = f"Can't find file '{target}' for {self.OBJECT_NAME} in or above: {path}"
 
             raise exc.PaasifyWorkdirNotFoundError(msg)
         assert config_file

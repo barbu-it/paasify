@@ -13,9 +13,10 @@ from paasify_v4.common import (
     to_json,
     to_yaml,
 )
-from paasify_v4.catalog import PaasifyCatalog
+from paasify_v4.core_catalog import PaasifyCatalog
 
-from paasify_v4.devel import PaasifyNamespace, PaasifyStack, find_closest_workdir
+from paasify_v4.core_namespace import PaasifyNamespace
+from paasify_v4.core_stack import PaasifyStack, find_closest_workdir
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class PodInfoCmd(Parser):
 
 
 class PodPlaceholderCmd(Parser):
-    "Show pod placeholder"
+    "Not implemented yet"
 
     def cli_run(self, ctx=None, **_):
         "Main command"
@@ -81,6 +82,23 @@ class PodGroup(Parser):
 
 # Stack management
 # ================================================
+class StackListAppsCmd(Parser):
+    "List stack apps"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        # catalog = ctx.data["catalog"]
+        stack = ctx.data["stack"]
+
+        # pprint(stack.__dict__)
+
+        out = stack.get_deployments()
+        # render = []
+        # for item in out.items():
+        # pprint(out)
+        return ListView(out)
+
 
 
 class StackInfoCmd(Parser):
@@ -93,6 +111,9 @@ class StackInfoCmd(Parser):
         stack = ctx.data["stack"]
 
         pprint(stack.__dict__)
+
+        out = stack.get_deployments()
+        pprint(out)
 
         # print(f"Stack: {stack.ident}")
 
@@ -120,7 +141,7 @@ class StackGroup(Parser):
     "Manage stacks"
 
     info = Command(StackInfoCmd)
-    # list = Command(StackListCmd)
+    list = Command(StackListAppsCmd)
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
 

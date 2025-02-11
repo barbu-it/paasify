@@ -8,10 +8,11 @@ from clak import Parser, Argument, Command
 from clak.views import ListView, ShowView
 
 from paasify_v4.common import truncate, to_yaml
-from paasify_v4.catalog import PaasifyCatalog
+from paasify_v4.core_catalog import PaasifyCatalog
 
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+logger = logging.getLogger("paasify_v4.cli.catalog")
 
 
 # App management

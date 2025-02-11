@@ -11,12 +11,13 @@ from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors2 import PathAnchor
 
-from paasify_v4.catalog import PaasifyCatalog
+from paasify_v4.core_catalog import PaasifyCatalog
 from paasify_v4.common import truncate, to_yaml
 
 
-from paasify_v4.cli_catalog import AppGroup, CollectionGroup
+from paasify_v4.core_catalog_cli import AppGroup, CollectionGroup
 from paasify_v4.cli_devel import StackGroup, NamespaceGroup, PodGroup
+from paasify_v4.cli_dyn import DynMixin, DynUpCmd
 import paasify_v4.exception as exc
 
 
@@ -168,15 +169,19 @@ class DebugCmd(Parser):
 # from clak.common import get_top_package
 
 
-class AppMain(LoggingOptMixin, Parser):
+class AppMain(LoggingOptMixin, DynMixin, Parser):
     """Demo application with options and two subcommands."""
 
     class Meta:
         "Main app config"
         log_prefix = f"{__name__.split('.', maxsplit=1)[0]}"
+        # log_prefix = "paasify_v4"
         known_exceptions = [
             exc.PaasifyError,
         ]
+
+    # Define options
+    # ----------------------
 
     debug = Argument("--debug", action="store_true", help="Enable debug mode")  # (8)!
     config = Argument("--config", "-c", help="Config file path", default="config.yaml")
@@ -195,13 +200,17 @@ class AppMain(LoggingOptMixin, Parser):
     )
 
     # Define subcommands
-    # app = Command(AppGroup, help="==SUPPRESS==")
-    collection = Command(CollectionGroup, help="==SUPPRESS==")
+    # ----------------------
 
+    # Component commands
+    collection = Command(CollectionGroup, help="==SUPPRESS==")
     pod = Command(PodGroup)  # , help="==SUPPRESS==")
     stack = Command(StackGroup)  # , help="==SUPPRESS==")
     ns = Command(NamespaceGroup)  # , help="==SUPPRESS==")
 
+
+
+    # Beta commands
     # command2 = Command(AppCommand2)
     # demo = Command(DemoCmd)
     dev = Command(Devel)
@@ -246,7 +255,6 @@ class AppMain(LoggingOptMixin, Parser):
         ctx.data["dir_cwd"] = working_dir
         ctx.data["dir_mode"] = dir_mode
         ctx.data["paths_collections"] = paths_collections
-
 
 # stacks:
 #   - list
