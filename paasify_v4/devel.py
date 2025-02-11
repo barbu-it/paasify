@@ -13,7 +13,7 @@ from typing import List, Optional, Union
 
 from paasify_v4.common import read_file, from_yaml, find_file_up, list_parent_dirs, to_json
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
-
+import paasify_v4.exception as exc
 
 from superconf.anchors2 import PathAnchor, FileAnchor
 
@@ -21,9 +21,6 @@ from superconf.anchors2 import PathAnchor, FileAnchor
 
 logger = logging.getLogger(__name__)
 
-
-class PaasifyError(Exception):
-    "Base class for all Paasify errors"
 
 
 # Directory Common classes
@@ -49,11 +46,11 @@ class _WorkingDir(AppNode):
         self._path = root_path
         self.config_path = root_config_path
 
-        logger.info("%s config using '%s' from: %s", self.OBJECT_NAME, ~root_config_path, ~root_path)
+        logger.debug("Workdir %s config file: %s", self.OBJECT_NAME, ~root_config_path)
         self.config = self.load_config(~root_config_path)
 
-
-        # print(to_json(self.config))
+        # TODO: Remove absolute path in logs
+        logger.info("Initilize %s from: %s", self.OBJECT_NAME, self._path.get_path(mode="abs"))
 
 
     def load_config(self, config: Optional[str] = None):
@@ -72,30 +69,28 @@ class _WorkingDir(AppNode):
         # ------------------------
         config_files = None
         root_path = None
-        if path:
+        if search_up and path:
+            logger.debug("Workdir %s search up from: %s", self.OBJECT_NAME, path)
+            paths = list_parent_dirs(path)
+            config_files = find_file_up(self.ALLOWED_CONF_FILES, paths)
+        elif path:
             if os.path.isfile(path):
-                logger.debug("%s file fetch from: %s", self.OBJECT_NAME, path)
+                logger.debug("Workdir %s file fetch from: %s", self.OBJECT_NAME, path)
                 config_files = [path]
                 root_path =  os.path.dirname(config_files[0])
             else:
-                logger.debug("%s directory fetch from: %s", self.OBJECT_NAME, path)
+                logger.debug("Workdir %s directory fetch from: %s", self.OBJECT_NAME, path)
                 root_path = path
                 config_files = find_file_up(self.ALLOWED_CONF_FILES, [path])
-
-        elif search_up:
-            logger.debug("%s search up from: %s", self.OBJECT_NAME, search_up)
-            paths = list_parent_dirs(search_up)
-            config_files = find_file_up(self.ALLOWED_CONF_FILES, paths)
-
         else:
-            raise PaasifyError(f"No path or search_up provided to start {self.OBJECT_NAME}")
+            raise exc.PaasifyError(f"No path or search_up provided to start {self.OBJECT_NAME}")
         
 
         # Load configuration file
         # ------------------------
         # Actually, we should have a list of zero or one config file.
         if len(config_files) > 1:
-            msg = f"Multiple namespace files found: {config_files}, we use only first one"
+            msg = f"Multiple config files found: {config_files}, we use only first one"
             logger.warning(msg)
 
         config_file = self.ALLOWED_CONF_FILES[0]
@@ -107,12 +102,17 @@ class _WorkingDir(AppNode):
                 root_path = os.path.dirname(config_file)
 
         # Final checks
-        assert root_path
+        if not root_path:
+            target = self.ALLOWED_CONF_FILES[0]
+            msg = f"Can't find file '{target}' for {self.OBJECT_NAME} in path: {path}"
+            if search_up:
+                msg = f"Can't find file '{target}' for {self.OBJECT_NAME} in hierarchy of: {path}"
+
+            raise exc.PaasifyWorkdirNotFoundError(msg)
         assert config_file
 
         # Create anchored paths
         # ------------------------
-
         return (root_path, config_file)
 
 
@@ -147,8 +147,33 @@ class PaasifyStack(_WorkingDir):
     # def __init__(self, ident=None, parent=None, path=None,search_up=None):
     #     super().__init__(ident=ident, parent=parent)
 
-    def __init__(self, ident=None, parent=None, path=None,search_up=None):
+    def __init__(self, ident=None, parent=None, path=None,search_up=None, namespace=None):
         super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
+
+        self.ns = namespace
+        if self.ns is None:
+            logger.debug("No namespace provided, searching for in parents of: %s", ~self._path)
+            self.ns = self.find_namespace()
+
+
+
+    def find_namespace(self):
+        "Find the closest namespace above the stack"
+
+        ret = None
+        try:
+            path = self._path.get_path(mode="abs")
+            match = find_closest_workdir(
+                path=path,
+                search_up=True,
+                kind=[PaasifyNamespace])
+            if match:
+                ret = match
+        except exc.PaasifyWorkdirNotFoundError as err:
+            logger.debug("No namespace found in %s: %s", path, err)
+
+        return ret
+
 
     def get_deployments(self):
         "Get all deployments for the stack"
@@ -184,3 +209,35 @@ class PaasifyNamespace(_WorkingDir):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+
+# Context helper
+# ================================================
+
+def find_closest_workdir(path=None, search_up=True, kind=None):
+    "Find the closest workdir"
+
+    # Prepare args
+    items = kind or [
+        PaasifyStack,
+        PaasifyNamespace,
+    ]
+    items = [items] if not isinstance(kind, list) else kind
+    if not path:
+        # path = list_parent_dirs(os.getcwd())
+        path = os.getcwd()
+    items_names = " or ".join([item.__name__ for item in items])
+
+    # Loop over first match
+    logger.debug("Searching for %s in path: %s", items_names, path)
+    last_error = None
+    for item in items:
+        try:
+            return item(path=path, search_up=search_up)
+        except exc.PaasifyWorkdirNotFoundError as err:
+            logger.debug("Can't find %s in path '%s': %s", item.__name__, path, err)
+            last_error = err
+
+    # msg = f"Can't find any {items_names} in path: {last_error}"
+    raise exc.PaasifyWorkdirNotFoundError(last_error)

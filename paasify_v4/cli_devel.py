@@ -10,9 +10,72 @@ from clak.views import ListView, ShowView
 from paasify_v4.common import read_file, from_yaml, find_file_up, list_parent_dirs, to_json, to_yaml
 from paasify_v4.catalog import PaasifyCatalog
 
-from paasify_v4.devel import PaasifyNamespace, PaasifyStack
+from paasify_v4.devel import PaasifyNamespace, PaasifyStack, find_closest_workdir
 
 logger = logging.getLogger(__name__)
+
+
+
+# Pod management
+# ================================================
+class PodInfoCmd(Parser):
+    "Show pod info"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        print("PodInfoCmd")
+
+        # stack = ctx.data["stack"]
+        # ns = ctx.data["namespace"]
+        # catalog = ctx.data["catalog"]
+
+
+class PodPlaceholderCmd(Parser):
+    "Show pod placeholder"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        print("PodPlaceholderCmd")
+
+        raise NotImplementedError(f"Command for {self.name} is not implemented yet")
+
+
+class PodGroup(Parser):
+    "Manage pods"
+
+    info = Command(PodInfoCmd)
+    # list = Command(StackListCmd)
+    # show = Command(StackShowCmd)
+    # devel = Command(CollectionDevelCmd)
+    up = Command(PodPlaceholderCmd)
+    down = Command(PodPlaceholderCmd)
+    # start = Command(PodPlaceholderCmd)
+    # stop = Command(PodPlaceholderCmd)
+    # restart = Command(PodPlaceholderCmd)
+    # status = Command(PodPlaceholderCmd)
+    # logs = Command(PodPlaceholderCmd)
+    # exec = Command(PodPlaceholderCmd)
+    
+
+    def cli_group(self, ctx, force=None, debug=False, **_):
+
+        collections_paths = ctx.data["paths_collections"]
+        catalog = PaasifyCatalog(collections_paths=collections_paths)
+        ctx.data["catalog"] = catalog
+
+        # ns = PaasifyNamespace(ident="cli_init", path=os.getcwd(), search_up=True)
+        # ctx.data["namespace"] = ns
+
+        # stack = PaasifyStack(ident="cli_init", path=os.getcwd(), search_up=True)
+        # ctx.data["stack"] = stack
+
+
+        stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
+        if stack:
+            ctx.data["stack"] = stack
+
 
 
 
@@ -26,18 +89,19 @@ class StackInfoCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
+        # catalog = ctx.data["catalog"]
         stack = ctx.data["stack"]
-        ns = ctx.data["namespace"]
-        catalog = ctx.data["catalog"]
 
-        print(f"Stack: {stack.name}")
+        pprint(stack.__dict__)
+
+        # print(f"Stack: {stack.ident}")
 
 
-        print(to_json(stack.config))
+        # print(to_json(stack.config))
 
-        print(to_json(ns.config))
+        # print(to_json(ns.config))
 
-        print(catalog)
+        # print(catalog)
         # print(to_yaml(catalog.__dict__))
         # help(catalog)
 
@@ -51,8 +115,6 @@ class StackInfoCmd(Parser):
 
         # for col_path in catalog_mgr.get_collections_paths():
         #     print(f"    {col_path.index}: {col_path.ident}: {col_path.get_path()}")
-
-
 
 
 class StackGroup(Parser):
@@ -69,12 +131,9 @@ class StackGroup(Parser):
         catalog = PaasifyCatalog(collections_paths=collections_paths)
         ctx.data["catalog"] = catalog
 
-        ns = PaasifyNamespace(ident="cli_init", search_up=os.getcwd())
-        ctx.data["namespace"] = ns
-
-        stack = PaasifyStack(ident="cli_init", search_up=os.getcwd())
-        ctx.data["stack"] = stack
-
+        stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
+        if stack:
+            ctx.data["stack"] = stack
 
 # Namespace management
 # ================================================
@@ -88,20 +147,6 @@ class NamespaceInfoCmd(Parser):
 
         print(f"Namespace: {ns.name}")
 
-        # cwd = ctx.data["dir_cwd"]
-        # print(" * Working dir:")
-        # print(f"    get_path: {cwd.get_path()}")
-        # print(f"    get_dir : {cwd.get_dir()}")
-        # print(f"    get_dir (abs): {cwd.get_dir(mode='abs')}")
-        # print(f"    get_dir (rel): {cwd.get_dir(mode='rel')}")
-        # print(" * Collections paths:")
-
-        # for col_path in catalog_mgr.get_collections_paths():
-        #     print(f"    {col_path.index}: {col_path.ident}: {col_path.get_path()}")
-
-
-
-
 
 class NamespaceGroup(Parser):
     "Manage namespaces"
@@ -113,12 +158,6 @@ class NamespaceGroup(Parser):
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 
-        # collections_paths = ctx.data["paths_collections"]
-        # mgr = PaasifyCatalog(collections_paths=collections_paths)
-        # ctx.data["catalog_mgr"] = mgr
-
-
-        ns = PaasifyNamespace(ident="cli_init", search_up=os.getcwd())
+        ns = PaasifyNamespace(ident="cli_init", path=os.getcwd(), search_up=True)
         ctx.data["namespace"] = ns
 
-        # namespace.setup_node()

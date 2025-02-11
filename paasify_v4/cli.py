@@ -16,7 +16,8 @@ from paasify_v4.common import truncate, to_yaml
 
 
 from paasify_v4.cli_catalog import AppGroup, CollectionGroup
-from paasify_v4.cli_devel import StackGroup, NamespaceGroup
+from paasify_v4.cli_devel import StackGroup, NamespaceGroup, PodGroup
+import paasify_v4.exception as exc
 
 
 logger = logging.getLogger(__name__)
@@ -174,6 +175,9 @@ class AppMain(LoggingOptMixin, Parser):
     class Meta:
         "Main app config"
         log_prefix = f"{__name__.split('.', maxsplit=1)[0]}"
+        known_exceptions = [
+            exc.PaasifyError,
+        ]
 
     debug = Argument("--debug", action="store_true", help="Enable debug mode")  # (8)!
     config = Argument("--config", "-c", help="Config file path", default="config.yaml")
@@ -195,7 +199,7 @@ class AppMain(LoggingOptMixin, Parser):
     # app = Command(AppGroup, help="==SUPPRESS==")
     collection = Command(CollectionGroup, help="==SUPPRESS==")
 
-
+    pod = Command(PodGroup) #, help="==SUPPRESS==")
     stack = Command(StackGroup) #, help="==SUPPRESS==")
     ns = Command(NamespaceGroup) #, help="==SUPPRESS==")
 
