@@ -1,5 +1,3 @@
-
-
 import os
 import logging
 from pprint import pprint
@@ -7,13 +5,19 @@ from pprint import pprint
 from clak import Parser, Argument, Command
 from clak.views import ListView, ShowView
 
-from paasify_v4.common import read_file, from_yaml, find_file_up, list_parent_dirs, to_json, to_yaml
+from paasify_v4.common import (
+    read_file,
+    from_yaml,
+    find_file_up,
+    list_parent_dirs,
+    to_json,
+    to_yaml,
+)
 from paasify_v4.catalog import PaasifyCatalog
 
 from paasify_v4.devel import PaasifyNamespace, PaasifyStack, find_closest_workdir
 
 logger = logging.getLogger(__name__)
-
 
 
 # Pod management
@@ -57,7 +61,6 @@ class PodGroup(Parser):
     # status = Command(PodPlaceholderCmd)
     # logs = Command(PodPlaceholderCmd)
     # exec = Command(PodPlaceholderCmd)
-    
 
     def cli_group(self, ctx, force=None, debug=False, **_):
 
@@ -71,12 +74,9 @@ class PodGroup(Parser):
         # stack = PaasifyStack(ident="cli_init", path=os.getcwd(), search_up=True)
         # ctx.data["stack"] = stack
 
-
         stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
         if stack:
             ctx.data["stack"] = stack
-
-
 
 
 # Stack management
@@ -95,7 +95,6 @@ class StackInfoCmd(Parser):
         pprint(stack.__dict__)
 
         # print(f"Stack: {stack.ident}")
-
 
         # print(to_json(stack.config))
 
@@ -135,8 +134,10 @@ class StackGroup(Parser):
         if stack:
             ctx.data["stack"] = stack
 
+
 # Namespace management
 # ================================================
+
 
 class NamespaceInfoCmd(Parser):
     "Show namespace info"
@@ -160,4 +161,3 @@ class NamespaceGroup(Parser):
 
         ns = PaasifyNamespace(ident="cli_init", path=os.getcwd(), search_up=True)
         ctx.data["namespace"] = ns
-

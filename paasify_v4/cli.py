@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 # logger_root = logging.getLogger()
 
 
-
 # Beta
 # ================================================
 
@@ -199,9 +198,9 @@ class AppMain(LoggingOptMixin, Parser):
     # app = Command(AppGroup, help="==SUPPRESS==")
     collection = Command(CollectionGroup, help="==SUPPRESS==")
 
-    pod = Command(PodGroup) #, help="==SUPPRESS==")
-    stack = Command(StackGroup) #, help="==SUPPRESS==")
-    ns = Command(NamespaceGroup) #, help="==SUPPRESS==")
+    pod = Command(PodGroup)  # , help="==SUPPRESS==")
+    stack = Command(StackGroup)  # , help="==SUPPRESS==")
+    ns = Command(NamespaceGroup)  # , help="==SUPPRESS==")
 
     # command2 = Command(AppCommand2)
     # demo = Command(DemoCmd)

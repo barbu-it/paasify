@@ -36,7 +36,6 @@ def truncate(data, max=72, txt=" ..."):
     return data
 
 
-
 # Data utils
 # ================================================
 
@@ -89,9 +88,9 @@ def read_file(file):
         return "".join(_file.readlines())
 
 
-
 # File utils
 # ================================================
+
 
 def list_parent_dirs(path):
     """
@@ -122,5 +121,3 @@ def find_file_up(names, paths):
                 result.append(file_path)
 
     return result
-
-

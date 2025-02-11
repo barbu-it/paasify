@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # App management
 # ================================================
 
+
 class AppListCmd(Parser):
     "List apps"
 
@@ -277,5 +278,3 @@ class CollectionGroup(Parser):
         collections_paths = ctx.data["paths_collections"]
         mgr = PaasifyCatalog(collections_paths=collections_paths)
         ctx.data["catalog_mgr"] = mgr
-
-

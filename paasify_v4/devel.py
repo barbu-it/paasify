@@ -11,7 +11,13 @@ from typing import List, Optional, Union
 
 # from superconf.anchors import PathAnchor
 
-from paasify_v4.common import read_file, from_yaml, find_file_up, list_parent_dirs, to_json
+from paasify_v4.common import (
+    read_file,
+    from_yaml,
+    find_file_up,
+    list_parent_dirs,
+    to_json,
+)
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 import paasify_v4.exception as exc
 
@@ -20,7 +26,6 @@ from superconf.anchors2 import PathAnchor, FileAnchor
 # from paasify_v4.catalog import PaasifyCatalog
 
 logger = logging.getLogger(__name__)
-
 
 
 # Directory Common classes
@@ -36,7 +41,7 @@ class _WorkingDir(AppNode):
     ALLOWED_CONF_FILES = []
     OBJECT_NAME = "working_dir"
 
-    def __init__(self, ident=None, parent=None, path=None,search_up=None):
+    def __init__(self, ident=None, parent=None, path=None, search_up=None):
         super().__init__(ident=ident, parent=parent)
 
         _root_path, _config_file = self.find_workdir(path=path, search_up=search_up)
@@ -50,13 +55,14 @@ class _WorkingDir(AppNode):
         self.config = self.load_config(~root_config_path)
 
         # TODO: Remove absolute path in logs
-        logger.info("Initilize %s from: %s", self.OBJECT_NAME, self._path.get_path(mode="abs"))
-
+        logger.info(
+            "Initilize %s from: %s", self.OBJECT_NAME, self._path.get_path(mode="abs")
+        )
 
     def load_config(self, config: Optional[str] = None):
         "Load the namespace config from a file"
 
-        _conf = ~ self.config_path if not config else config
+        _conf = ~self.config_path if not config else config
         if os.path.isfile(_conf):
             return from_yaml(read_file(_conf))
 
@@ -77,14 +83,17 @@ class _WorkingDir(AppNode):
             if os.path.isfile(path):
                 logger.debug("Workdir %s file fetch from: %s", self.OBJECT_NAME, path)
                 config_files = [path]
-                root_path =  os.path.dirname(config_files[0])
+                root_path = os.path.dirname(config_files[0])
             else:
-                logger.debug("Workdir %s directory fetch from: %s", self.OBJECT_NAME, path)
+                logger.debug(
+                    "Workdir %s directory fetch from: %s", self.OBJECT_NAME, path
+                )
                 root_path = path
                 config_files = find_file_up(self.ALLOWED_CONF_FILES, [path])
         else:
-            raise exc.PaasifyError(f"No path or search_up provided to start {self.OBJECT_NAME}")
-        
+            raise exc.PaasifyError(
+                f"No path or search_up provided to start {self.OBJECT_NAME}"
+            )
 
         # Load configuration file
         # ------------------------
@@ -116,7 +125,6 @@ class _WorkingDir(AppNode):
         return (root_path, config_file)
 
 
-
 # Pod classes
 # ================================================
 
@@ -128,10 +136,12 @@ class PaasifyPod(_WorkingDir):
     ALLOWED_CONF_FILES = [
         "paasify.pod.yml",
         "paasify.pod.yaml",
-        ]
+    ]
+
 
 # Stacks classes
 # ================================================
+
 
 class PaasifyStack(_WorkingDir):
     "Base class for all Paasify stacks"
@@ -139,23 +149,25 @@ class PaasifyStack(_WorkingDir):
     OBJECT_NAME = "Stack"
     ALLOWED_CONF_FILES = [
         "paasify.yml",
-        "paasify.yaml", 
+        "paasify.yaml",
         "paasify.stack.yml",
         "paasify.stack.yaml",
-        ]
+    ]
 
     # def __init__(self, ident=None, parent=None, path=None,search_up=None):
     #     super().__init__(ident=ident, parent=parent)
 
-    def __init__(self, ident=None, parent=None, path=None,search_up=None, namespace=None):
+    def __init__(
+        self, ident=None, parent=None, path=None, search_up=None, namespace=None
+    ):
         super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
 
         self.ns = namespace
         if self.ns is None:
-            logger.debug("No namespace provided, searching for in parents of: %s", ~self._path)
+            logger.debug(
+                "No namespace provided, searching for in parents of: %s", ~self._path
+            )
             self.ns = self.find_namespace()
-
-
 
     def find_namespace(self):
         "Find the closest namespace above the stack"
@@ -164,9 +176,8 @@ class PaasifyStack(_WorkingDir):
         try:
             path = self._path.get_path(mode="abs")
             match = find_closest_workdir(
-                path=path,
-                search_up=True,
-                kind=[PaasifyNamespace])
+                path=path, search_up=True, kind=[PaasifyNamespace]
+            )
             if match:
                 ret = match
         except exc.PaasifyWorkdirNotFoundError as err:
@@ -174,13 +185,14 @@ class PaasifyStack(_WorkingDir):
 
         return ret
 
-
     def get_deployments(self):
         "Get all deployments for the stack"
         return self.config.get("apps", [])
 
+
 # Namespace class
 # ================================================
+
 
 class PaasifyNoNamespace(AppNode):
     "No namespace class, just implement dumb methods"
@@ -192,7 +204,6 @@ class PaasifyNoNamespace(AppNode):
         super().__init__(**kwargs)
 
 
-
 class PaasifyNamespace(_WorkingDir):
     "Namespace class, manage list of stacks"
 
@@ -202,18 +213,18 @@ class PaasifyNamespace(_WorkingDir):
     OBJECT_NAME = "Namespace"
     ALLOWED_CONF_FILES = [
         "paasify.ns.yml",
-        "paasify.ns.yaml", 
+        "paasify.ns.yaml",
         "paasify.namespace.yml",
         "paasify.namespace.yaml",
-        ]
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-
 # Context helper
 # ================================================
+
 
 def find_closest_workdir(path=None, search_up=True, kind=None):
     "Find the closest workdir"
