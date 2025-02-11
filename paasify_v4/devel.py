@@ -26,53 +26,46 @@ class PaasifyError(Exception):
     "Base class for all Paasify errors"
 
 
-class PaasifyNoNamespace(AppNode):
-    "No namespace class, just implement dumb methods"
-
-    def __init__(self, ident=None, parent=None):
-        super().__init__(ident=ident, parent=parent)
+# Directory Common classes
+# ================================================
 
 
-class PaasifyNamespace(PaasifyNoNamespace):
-    "Namespace class, manage list of stacks"
+class _WorkingDir(AppNode):
+    "Working directory mixin class"
 
     # node__iterate_backend = "_children"
     # node__iterate_setupmarker = "setup_node"
 
-    ALLOWED_CONF_FILES = [
-        "paasify.ns.yml",
-        "paasify.ns.yaml", 
-        "paasify.namespace.yml",
-        "paasify.namespace.yaml",
-        ]
+    ALLOWED_CONF_FILES = []
+    OBJECT_NAME = "working_dir"
 
     def __init__(self, ident=None, parent=None, path=None,search_up=None):
         super().__init__(ident=ident, parent=parent)
 
-        _root_path, _config_file = self.build_ns_path(path=path, search_up=search_up)
+        _root_path, _config_file = self.find_workdir(path=path, search_up=search_up)
 
         root_path = PathAnchor(_root_path, mode="rel")
         root_config_path = FileAnchor(path=_config_file, parent=root_path)
         self._path = root_path
-        self.ns_config_path = root_config_path
+        self.config_path = root_config_path
 
-        logger.info("Namespace config using '%s' from: %s", ~root_config_path, ~root_path)
+        logger.info("%s config using '%s' from: %s", self.OBJECT_NAME, ~root_config_path, ~root_path)
         self.config = self.load_config(~root_config_path)
 
 
-        print(to_json(self.config))
+        # print(to_json(self.config))
 
 
     def load_config(self, config: Optional[str] = None):
         "Load the namespace config from a file"
 
-        _conf = ~ self.ns_config_path if not config else config
+        _conf = ~ self.config_path if not config else config
         if os.path.isfile(_conf):
             return from_yaml(read_file(_conf))
 
         return {}
 
-    def build_ns_path(self, path=None, search_up=None):
+    def find_workdir(self, path=None, search_up=None):
         "Find the namespace path and config file"
 
         # Prepare discovery method
@@ -81,21 +74,21 @@ class PaasifyNamespace(PaasifyNoNamespace):
         root_path = None
         if path:
             if os.path.isfile(path):
-                logger.debug("Namespace file fetch from: %s", path)
+                logger.debug("%s file fetch from: %s", self.OBJECT_NAME, path)
                 config_files = [path]
                 root_path =  os.path.dirname(config_files[0])
             else:
-                logger.debug("Namespace directory fetch from: %s", path)
+                logger.debug("%s directory fetch from: %s", self.OBJECT_NAME, path)
                 root_path = path
                 config_files = find_file_up(self.ALLOWED_CONF_FILES, [path])
 
         elif search_up:
-            logger.debug("Namespace search up from: %s", search_up)
+            logger.debug("%s search up from: %s", self.OBJECT_NAME, search_up)
             paths = list_parent_dirs(search_up)
             config_files = find_file_up(self.ALLOWED_CONF_FILES, paths)
 
         else:
-            raise PaasifyError("No path or search_up provided to start namespace")
+            raise PaasifyError(f"No path or search_up provided to start {self.OBJECT_NAME}")
         
 
         # Load configuration file
@@ -124,15 +117,70 @@ class PaasifyNamespace(PaasifyNoNamespace):
 
 
 
+# Pod classes
+# ================================================
 
-        # Settings attributes
-        # self.collections_paths = collections_paths
 
-        # self._store_paths = []
-        # self._store_collections = {}
-        # self._store_apps = {}
+class PaasifyPod(_WorkingDir):
+    "Base class for all Paasify pods"
 
-        # Auto init
-        # self.setup_node()
-        # self._setup_done = True
+    OBJECT_NAME = "Pod"
+    ALLOWED_CONF_FILES = [
+        "paasify.pod.yml",
+        "paasify.pod.yaml",
+        ]
 
+# Stacks classes
+# ================================================
+
+class PaasifyStack(_WorkingDir):
+    "Base class for all Paasify stacks"
+
+    OBJECT_NAME = "Stack"
+    ALLOWED_CONF_FILES = [
+        "paasify.yml",
+        "paasify.yaml", 
+        "paasify.stack.yml",
+        "paasify.stack.yaml",
+        ]
+
+    # def __init__(self, ident=None, parent=None, path=None,search_up=None):
+    #     super().__init__(ident=ident, parent=parent)
+
+    def __init__(self, ident=None, parent=None, path=None,search_up=None):
+        super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
+
+    def get_deployments(self):
+        "Get all deployments for the stack"
+        return self.config.get("apps", [])
+
+# Namespace class
+# ================================================
+
+class PaasifyNoNamespace(AppNode):
+    "No namespace class, just implement dumb methods"
+
+    OBJECT_NAME = "EmptyNamespace"
+    ALLOWED_CONF_FILES = ["paasify.ns.yml"]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+
+class PaasifyNamespace(_WorkingDir):
+    "Namespace class, manage list of stacks"
+
+    # node__iterate_backend = "_children"
+    # node__iterate_setupmarker = "setup_node"
+
+    OBJECT_NAME = "Namespace"
+    ALLOWED_CONF_FILES = [
+        "paasify.ns.yml",
+        "paasify.ns.yaml", 
+        "paasify.namespace.yml",
+        "paasify.namespace.yaml",
+        ]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
