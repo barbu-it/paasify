@@ -200,7 +200,7 @@ class CollectionListCmd(Parser):
                         "collection": collection.ident,
                         "apps": len(apps),
                         "source": collections_path.ident,
-                        "collection_path": collection.sub_path,
+                        "collection_path": collection.path,
                         "remote": collection.get_git_remote(),
                     }
                 )

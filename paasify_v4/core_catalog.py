@@ -38,7 +38,7 @@ class PaasifyApp(AppNode):
         super().__init__(ident, parent)
         assert isinstance(parent, PaasifyCollection)
 
-        self.sub_path = path
+        self._path = path
         self.index = index
         self._name = name
 
@@ -119,11 +119,12 @@ class PaasifyApp(AppNode):
 class PaasifyCollection(AppNode):
     "PaasifyCollection class"
 
-    def __init__(self, ident, sub_path=None, parent=None, index=None):
+    def __init__(self, ident, name=None, path=None, parent=None, index=None):
         assert isinstance(parent, CollectionsPath)
         super().__init__(ident, parent)
 
-        self.sub_path = sub_path
+        self._name = name
+        self._path = path
         self.index = index
         self._store_apps = {}
         self.git = None
@@ -182,7 +183,6 @@ class PaasifyCollection(AppNode):
         "Walk collection and get apps"
         logger.info("Setup collection: %s", self)
 
-        # collection_path = os.path.join(self.get_path(), self.sub_path)
         collection_path = self.get_path()
         self._store_apps = self.walk_apps(collection_path)
 
@@ -228,7 +228,6 @@ class CollectionsPath(AppNode):
     def __init__(self, ident, parent=None, path=None, index=None):
         assert isinstance(parent, PaasifyCatalog)
         super().__init__(ident, parent)
-        # assert isinstance(parent, (type(None), PaasifyCollection))
 
         self._path = path
         self.index = index
@@ -259,10 +258,11 @@ class CollectionsPath(AppNode):
             if dir_name.startswith("."):
                 continue
 
-            # collection = PaasifyCollection(
+            # print ("SUBPATH", dir_name)
             collection = PaasifyCollection(
                 ident=dir_name,
-                sub_path=dir_name,
+                name=dir_name,
+                path=dir_path,
                 parent=self,
                 index=self.index,
             )

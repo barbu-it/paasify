@@ -16,7 +16,13 @@ from paasify_v4.common import (
     list_parent_dirs,
     to_json,
 )
-from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
+from paasify_v4.core import (
+    AppNode,
+    VarMgrNodeMixin,
+    WorkingDirNode,
+    setup_once,
+    requires_setup_node,
+)
 from paasify_v4.core_namespace import PaasifyNamespace
 import paasify_v4.exception as exc
 
@@ -41,7 +47,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyPod(AppNode):
+class PaasifyPod(VarMgrNodeMixin, AppNode):
     "Base class for all Paasify pods"
 
     def __init__(self, ident, parent=None, raw_config=None):
@@ -109,43 +115,59 @@ class PaasifyPod(AppNode):
 
     def get_varmgr(self):
         "Get varmgr"
-        logger.info("Process vars: %s", self)
+        varmgr = super().get_varmgr()
 
-        # Goal:
-        # - Show vars from the stack
-        # - Show vars from the namespace
-        # - Show vars from the pod
         ret = {
             "ns_vars": self.ns.get_vars(),
             "stack_vars": self.stack.get_vars(),
             "pod_vars": self.config.get("vars", {}),
         }
 
-        # varmgr = StoreManager()
-        varmgr = RenderableStoreManager()
-        varmgr.add_sources(
-            [
-                Source("ns_vars", level=900, help="Namespace variables"),
-                Source("stack_vars", level=700, help="Stack variables"),
-                Source("pod_vars", level=500, help="Pod variables"),
-            ]
-        )
-        varmgr.set_scopes(
-            {
-                "scope_ns": ["ns_vars"],
-                "scope_stack": ["stack_vars", "ns_vars"],
-                "scope_pod": ["pod_vars", "stack_vars", "ns_vars"],
-            }
-        )
-
-        # Configure layers ...
-
-        # Set layers
         varmgr.set_layer("ns_vars", ret["ns_vars"])
         varmgr.set_layer("stack_vars", ret["stack_vars"])
         varmgr.set_layer("pod_vars", ret["pod_vars"])
 
         return varmgr
+
+    # def get_varmgr(self):
+    #     "Get varmgr"
+    #     logger.info("Process vars: %s", self)
+
+    #     # Goal:
+    #     # - Show vars from the stack
+    #     # - Show vars from the namespace
+    #     # - Show vars from the pod
+    #     ret = {
+    #         "ns_vars": self.ns.get_vars(),
+    #         "stack_vars": self.stack.get_vars(),
+    #         "pod_vars": self.config.get("vars", {}),
+    #     }
+
+    #     # varmgr = StoreManager()
+    #     varmgr = RenderableStoreManager()
+    #     varmgr.add_sources(
+    #         [
+    #             Source("ns_vars", level=900, help="Namespace variables"),
+    #             Source("stack_vars", level=700, help="Stack variables"),
+    #             Source("pod_vars", level=500, help="Pod variables"),
+    #         ]
+    #     )
+    #     varmgr.set_scopes(
+    #         {
+    #             "scope_ns": ["ns_vars"],
+    #             "scope_stack": ["stack_vars", "ns_vars"],
+    #             "scope_pod": ["pod_vars", "stack_vars", "ns_vars"],
+    #         }
+    #     )
+
+    #     # Configure layers ...
+
+    #     # Set layers
+    #     varmgr.set_layer("ns_vars", ret["ns_vars"])
+    #     varmgr.set_layer("stack_vars", ret["stack_vars"])
+    #     varmgr.set_layer("pod_vars", ret["pod_vars"])
+
+    #     return varmgr
 
 
 # Stacks classes
@@ -162,6 +184,9 @@ class PaasifyStack(WorkingDirNode):
         "paasify.stack.yml",
         "paasify.stack.yaml",
     ]
+
+    node__iterate_backend = "_store_pods"
+    node__iterate_setupmarker = "setup_node"
 
     # def __init__(self, ident=None, parent=None, path=None,search_up=None):
     #     super().__init__(ident=ident, parent=parent)
@@ -235,6 +260,22 @@ class PaasifyStack(WorkingDirNode):
         "Get vars"
         return self.config.get("vars", {})
 
+    def get_varmgr(self):
+        "Get varmgr"
+        varmgr = super().get_varmgr()
+
+        ret = {
+            "ns_vars": self.ns.get_vars(),
+            "stack_vars": self.get_vars(),
+            # "pod_vars": self.config.get("vars", {}),
+        }
+
+        varmgr.set_layer("ns_vars", ret["ns_vars"])
+        varmgr.set_layer("stack_vars", ret["stack_vars"])
+        # varmgr.set_layer("pod_vars", ret["pod_vars"])
+
+        return varmgr
+
 
 # Context helper
 # ================================================
@@ -258,9 +299,16 @@ def find_closest_workdir(path=None, search_up=True, kind=None):
     logger.debug("Searching for %s in path: %s", items_names, path)
     errors = []
     for item in items:
+        print("Trying path:", path)
         assert isinstance(item, type), f"Item must be a type, not {type(item)}"
         try:
-            return item(path=path, search_up=search_up)
+            out = item(path=path, search_up=search_up)
+            logger.info("Found item: %s in %s", out, ~out.path)
+            if item is PaasifyStack:
+                print("GOT STACK:", out)
+                pprint(out.__dict__)
+                assert False, "WIP"
+            return out
         except exc.PaasifyWorkdirNotFoundError as err:
             logger.debug("Can't find %s in path '%s': %s", item.__name__, path, err)
             errors.append(err)

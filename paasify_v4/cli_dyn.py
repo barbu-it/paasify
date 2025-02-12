@@ -225,40 +225,43 @@ class DynVarsCmd(Parser):
 
         if isinstance(item, PaasifyStack):
             stack = item
+            out = item.get_varmgr().get_values()
 
-            for app in stack:
+            ListView(out).render()
 
-                if app_names and app.ident not in app_names:
-                    continue
+            # for app in stack:
 
-                app_vars = app.get_varmgr()
+            #     if app_names and app.ident not in app_names:
+            #         continue
 
-                # Render vars
-                logger.info("Rendering vars for %s", app.ident)
-                out = []
-                for scope in ["scope_ns", "scope_stack", "scope_pod"]:
-                    out.append(
-                        {
-                            "key": f"[{scope}]",
-                            "value": "",
-                        }
-                    )
-                    for key, value in app_vars.get_values(scope=scope).items():
-                        # out.append([scope, key, value])
-                        out.append(
-                            {
-                                "key": key,
-                                "value": value,
-                            }
-                        )
-                    out.append(
-                        {
-                            "key": "",
-                            "value": "",
-                        }
-                    )
+            #     app_vars = app.get_varmgr()
 
-                ListView(out).render()
+            #     # Render vars
+            #     logger.info("Rendering vars for %s", app.ident)
+            #     out = []
+            #     for scope in ["scope_ns", "scope_stack", "scope_pod"]:
+            #         out.append(
+            #             {
+            #                 "key": f"[{scope}]",
+            #                 "value": "",
+            #             }
+            #         )
+            #         for key, value in app_vars.get_values(scope=scope).items():
+            #             # out.append([scope, key, value])
+            #             out.append(
+            #                 {
+            #                     "key": key,
+            #                     "value": value,
+            #                 }
+            #             )
+            #         out.append(
+            #             {
+            #                 "key": "",
+            #                 "value": "",
+            #             }
+            #         )
+
+            #     ListView(out).render()
 
         if isinstance(item, PaasifyNamespace):
             print("Namespace vars")
@@ -274,10 +277,12 @@ class DynListCmd(Parser):
         # Temporary
         stack = find_closest_workdir(path=os.getcwd())
         logger.info("Working on: %s", stack)
-        if not isinstance(stack, (PaasifyStack)):
+        if not isinstance(stack, (PaasifyStack, PaasifyNamespace)):
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
+
+        print("GOT STACK:", stack)
 
         render = []
         for app in stack:

@@ -15,11 +15,21 @@ with controlled initialization patterns.
 import os
 import logging
 from typing import List, Optional, Union
-from pathlib import Path
-import paasify_v4.exception as exc
 
 # pylint: disable=unused-import
 from pprint import pprint
+
+# from pathlib import Path
+
+from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
+from mrjk_components.varmgr.lib.store_base import (
+    StoreManager,
+    Source,
+    UndefinedVarError,
+)
+
+
+import paasify_v4.exception as exc
 
 
 from superconf.anchors2 import PathAnchor, FileAnchor
@@ -156,15 +166,15 @@ class AppNode(HelperMethods, Node):
         #     name = name.split("/")[-1]
         return name
 
-    # @property
-    # def path2(self):
-    #     "Return source"
+    @property
+    def path(self):
+        "Return source"
 
-    #     if hasattr(self, "sub_path"):
-    #         return self.sub_path
-    #     if hasattr(self, "_path"):
-    #         return self._path
-    #     return "NO PATH"
+        # if hasattr(self, "sub_path"):
+        #     return self.sub_path
+        if hasattr(self, "_path"):
+            return self._path
+        return "NO PATH"
 
     def get_path(self):
         "Return path"
@@ -323,11 +333,52 @@ class AppNode(HelperMethods, Node):
         return True
 
 
+# VarMgr mixin
+# ================================================
+
+
+class VarMgrNodeMixin:
+    "VarMgr mixin class"
+
+    def get_varmgr(self):
+        "Get varmgr"
+        logger.info("Prepare varmgr for: %s", self)
+
+        # # Goal:
+        # # - Show vars from the stack
+        # # - Show vars from the namespace
+        # # - Show vars from the pod
+        # ret = {
+        #     "ns_vars": self.ns.get_vars(),
+        #     "stack_vars": self.stack.get_vars(),
+        #     "pod_vars": self.config.get("vars", {}),
+        # }
+
+        # varmgr = StoreManager()
+        varmgr = RenderableStoreManager()
+        varmgr.add_sources(
+            [
+                Source("ns_vars", level=900, help="Namespace variables"),
+                Source("stack_vars", level=700, help="Stack variables"),
+                Source("pod_vars", level=500, help="Pod variables"),
+            ]
+        )
+        varmgr.set_scopes(
+            {
+                "scope_ns": ["ns_vars"],
+                "scope_stack": ["stack_vars", "ns_vars"],
+                "scope_pod": ["pod_vars", "stack_vars", "ns_vars"],
+            }
+        )
+
+        return varmgr
+
+
 # Working Directory class
 # ================================================
 
 
-class WorkingDirNode(AppNode):
+class WorkingDirNode(VarMgrNodeMixin, AppNode):
     "Working directory mixin class"
 
     # node__iterate_backend = "_children"
@@ -339,12 +390,15 @@ class WorkingDirNode(AppNode):
     def __init__(self, ident=None, parent=None, path=None, search_up=None):
         super().__init__(ident=ident, parent=parent)
 
-        _root_path, _config_file = self.find_workdir(path=path, search_up=search_up)
+        _root_path, _config_file, _sub_path = self.find_workdir(
+            path=path, search_up=search_up
+        )
 
         root_path = PathAnchor(_root_path, mode="rel")
         root_config_path = FileAnchor(path=_config_file, parent=root_path)
         self._path = root_path
         self.config_path = root_config_path
+        self.sub_path = _sub_path
 
         logger.debug("Workdir %s config file: %s", self.OBJECT_NAME, ~root_config_path)
         self.config = self.load_config(~root_config_path)
@@ -418,6 +472,16 @@ class WorkingDirNode(AppNode):
             raise exc.PaasifyWorkdirNotFoundError(msg)
         assert config_file
 
+        sub_path = ""
+        if path:
+
+            # print("PATHS", path, root_path)
+            sub_path = path.replace(root_path, "")
+            # Remove leading slash
+            sub_path = sub_path.lstrip("/")
+            print("SUB PAT?H", sub_path)
+            # assert False
+
         # Create anchored paths
         # ------------------------
-        return (root_path, config_file)
+        return (root_path, config_file, sub_path)

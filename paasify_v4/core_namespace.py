@@ -55,3 +55,19 @@ class PaasifyNamespace(WorkingDirNode):
     def get_vars(self):
         "Get vars"
         return self.config.get("vars", {})
+
+    def get_varmgr(self):
+        "Get varmgr"
+        varmgr = super().get_varmgr()
+
+        ret = {
+            "ns_vars": self.get_vars(),
+            # "stack_vars": self.stack.get_vars(),
+            # "pod_vars": self.config.get("vars", {}),
+        }
+
+        varmgr.set_layer("ns_vars", ret["ns_vars"])
+        # varmgr.set_layer("stack_vars", ret["stack_vars"])
+        # varmgr.set_layer("pod_vars", ret["pod_vars"])
+
+        return varmgr
