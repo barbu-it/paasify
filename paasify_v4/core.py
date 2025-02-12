@@ -228,8 +228,9 @@ class AppNode(HelperMethods, Node):
                     backend_store_name,
                     func,
                 )
+                func()
 
-                assert False, "TO IMPLEMENT"
+                # assert False, "TO IMPLEMENT"
                 # func()
                 # logger.info("Store '%s.%s': setup marker is not set", self, backend_store_name)
                 # print("RUN SETUP", self, backend_setup_marker_attr)

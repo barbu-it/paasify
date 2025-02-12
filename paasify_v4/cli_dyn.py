@@ -242,6 +242,7 @@ class DynListCmd(Parser):
 
         render = []
         for app in stack:
+            # pprint(app)
             render.append([app.ident, app])
         return ListView(render)
 
