@@ -4,3 +4,7 @@ class PaasifyError(Exception):
 
 class PaasifyWorkdirNotFoundError(PaasifyError):
     "Error when a workdir is not found"
+
+
+class PaasifyConfigError(PaasifyError):
+    "Error when a config is invalid"

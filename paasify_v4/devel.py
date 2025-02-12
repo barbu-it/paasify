@@ -22,9 +22,6 @@ from paasify_v4.core_stack import PaasifyStack
 import paasify_v4.exception as exc
 
 
-
 # from paasify_v4.catalog import PaasifyCatalog
 
 logger = logging.getLogger(__name__)
-
-

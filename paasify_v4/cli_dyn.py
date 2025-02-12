@@ -23,7 +23,6 @@ import paasify_v4.exception as exc
 logger = logging.getLogger("paasify_v4.cli.dyn")
 
 
-
 # # Pod management
 # # ================================================
 # class PodInfoCmd(Parser):
@@ -103,7 +102,6 @@ logger = logging.getLogger("paasify_v4.cli.dyn")
 #         return ListView(out)
 
 
-
 # class StackInfoCmd(Parser):
 #     "Show stack info"
 
@@ -159,11 +157,9 @@ logger = logging.getLogger("paasify_v4.cli.dyn")
 #             ctx.data["stack"] = stack
 
 
-
-
-
 # Dynamic commands
 # ================================================
+
 
 class DynPlaceholderCmd(Parser):
     "Not implemented yet"
@@ -181,7 +177,6 @@ class DynUpCmd(Parser):
 
     app_names = Argument("APP", help="App name", nargs="*")
 
-
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
@@ -193,22 +188,11 @@ class DynUpCmd(Parser):
         logger.info("Working on: %s", item)
         # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
         if not isinstance(item, (PaasifyStack)):
-            raise exc.PaasifyWorkdirNotFoundError(f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}")
-        
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
+
         stack = item
-        
-        # pprint(stack)
-        # pprint(stack.ident)
-        # pprint(stack.get_pods())
-
-        # print("===============")
-
-        # stack.setup_node()
-        # pprint(stack.__dict__)
-        # print("CAlling for:", app_names)
-
-        # apps = stack
-
 
         for app in stack:
             # print (app.ident, app)
@@ -218,6 +202,67 @@ class DynUpCmd(Parser):
 
             logger.info("Processing %s", app)
 
+            # pprint(app.__dict__)
+            app.process_vars()
+
+
+class DynVarsCmd(Parser):
+    "Show vars"
+    app_names = Argument("APP", help="App name", nargs="*")
+
+    def cli_run(self, ctx=None, app_names=None, **_):
+        "Main command"
+
+        item = find_closest_workdir(path=os.getcwd())
+
+        # Temp failsafe
+        logger.info("Working on: %s", item)
+        # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
+        if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
+
+        if isinstance(item, PaasifyStack):
+            stack = item
+
+            for app in stack:
+
+                if app_names and app.ident not in app_names:
+                    continue
+
+                app_vars = app.get_varmgr()
+
+                # Render vars
+                logger.info("Rendering vars for %s", app.ident)
+                out = []
+                for scope in ["scope_ns", "scope_stack", "scope_pod"]:
+                    out.append(
+                        {
+                            "key": f"[{scope}]",
+                            "value": "",
+                        }
+                    )
+                    for key, value in app_vars.get_values(scope=scope).items():
+                        # out.append([scope, key, value])
+                        out.append(
+                            {
+                                "key": key,
+                                "value": value,
+                            }
+                        )
+                    out.append(
+                        {
+                            "key": "",
+                            "value": "",
+                        }
+                    )
+
+                ListView(out).render()
+
+        if isinstance(item, PaasifyNamespace):
+            print("Namespace vars")
+            pprint(item.get_varmgr().get_values())
 
 
 class DynListCmd(Parser):
@@ -230,7 +275,9 @@ class DynListCmd(Parser):
         stack = find_closest_workdir(path=os.getcwd())
         logger.info("Working on: %s", stack)
         if not isinstance(stack, (PaasifyStack)):
-            raise exc.PaasifyWorkdirNotFoundError(f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}")
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
 
         render = []
         for app in stack:
@@ -241,16 +288,17 @@ class DynListCmd(Parser):
 # Dynamic Mixin
 # ================================================
 
+
 class DynMixin(Parser):
     "Dynamic commands"
 
     # Dynamic commands
     up = Command(DynUpCmd)
     ls = Command(DynListCmd)
+    vars = Command(DynVarsCmd)
     # info = Command(DynPlaceholderCmd)
     # build = Command(DynPlaceholderCmd)
     # down = Command(DynPlaceholderCmd)
-
 
     def cli_group(self, ctx, force=None, debug=False, **_):
         "Never called when mixin inherited"

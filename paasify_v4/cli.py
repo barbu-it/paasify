@@ -208,8 +208,6 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
     stack = Command(StackGroup)  # , help="==SUPPRESS==")
     ns = Command(NamespaceGroup)  # , help="==SUPPRESS==")
 
-
-
     # Beta commands
     # command2 = Command(AppCommand2)
     # demo = Command(DemoCmd)
@@ -255,6 +253,7 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         ctx.data["dir_cwd"] = working_dir
         ctx.data["dir_mode"] = dir_mode
         ctx.data["paths_collections"] = paths_collections
+
 
 # stacks:
 #   - list

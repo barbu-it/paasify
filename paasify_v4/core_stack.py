@@ -20,7 +20,17 @@ from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_
 from paasify_v4.core_namespace import PaasifyNamespace
 import paasify_v4.exception as exc
 
+# from mrjk_components.varmgr.lib import RenderableStoreManager,
 
+# from store import StoreManager, Source
+
+
+from mrjk_components.varmgr.lib.store_base import (
+    StoreManager,
+    Source,
+    UndefinedVarError,
+)
+from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
 
 # from paasify_v4.catalog import PaasifyCatalog
 
@@ -34,13 +44,108 @@ logger = logging.getLogger(__name__)
 class PaasifyPod(AppNode):
     "Base class for all Paasify pods"
 
-
-    def __init__(self, ident, parent=None, config=None):
+    def __init__(self, ident, parent=None, raw_config=None):
         assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
 
-        self.config = config or {}
+        self.stack = parent
+        self.ns = parent.ns
 
+        # print("Pod init:", self)
+        # self.raw_config = raw_config
+        self.config = self.build_config(raw_config, ident=ident)
+
+        self.setup_node()
+
+    def build_config(self, config, ident=None):
+        "Build config"
+        # if ident:
+        #     config = config.get(ident, {})
+        out = {
+            "ident": ident,
+            "directory": None,
+            "app": None,
+            "name": None,
+            "vars": {},
+            "tags": [],
+        }
+
+        # Check type
+        if isinstance(config, str) and config:
+            # If not empty string, on it's simplest form, we exect
+            # to be the app name
+            config = {"app": str(config)}
+        elif isinstance(config, dict):
+            pass
+        elif not config:
+            config = {}
+        else:
+            raise exc.PaasifyConfigError(f"Invalid config type: {type(config)}")
+
+        out.update(config)
+        if ident:
+            out.update(
+                {
+                    "directory": ident,
+                }
+            )
+
+        return out
+
+    @setup_once("setup_node")
+    def setup_node(self):
+        "Setup the pod"
+        logger.info("Setup pod: %s", self)
+        # self.vars = self.config.get("vars", {}) or {}
+        # self.tags = self.config.get("tags", []) or []
+
+    @setup_once("setup_node")
+    def get_vars(self):
+        "Get vars"
+        return self.config.get("vars", {})
+
+    # High level methods
+    # --------------------------------
+
+    def get_varmgr(self):
+        "Get varmgr"
+        logger.info("Process vars: %s", self)
+
+        # Goal:
+        # - Show vars from the stack
+        # - Show vars from the namespace
+        # - Show vars from the pod
+        ret = {
+            "ns_vars": self.ns.get_vars(),
+            "stack_vars": self.stack.get_vars(),
+            "pod_vars": self.config.get("vars", {}),
+        }
+
+        # varmgr = StoreManager()
+        varmgr = RenderableStoreManager()
+        varmgr.add_sources(
+            [
+                Source("ns_vars", level=900, help="Namespace variables"),
+                Source("stack_vars", level=700, help="Stack variables"),
+                Source("pod_vars", level=500, help="Pod variables"),
+            ]
+        )
+        varmgr.set_scopes(
+            {
+                "scope_ns": ["ns_vars"],
+                "scope_stack": ["stack_vars", "ns_vars"],
+                "scope_pod": ["pod_vars", "stack_vars", "ns_vars"],
+            }
+        )
+
+        # Configure layers ...
+
+        # Set layers
+        varmgr.set_layer("ns_vars", ret["ns_vars"])
+        varmgr.set_layer("stack_vars", ret["stack_vars"])
+        varmgr.set_layer("pod_vars", ret["pod_vars"])
+
+        return varmgr
 
 
 # Stacks classes
@@ -66,12 +171,16 @@ class PaasifyStack(WorkingDirNode):
     ):
         super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
 
+        # Auto init namespace if not provided (when None, by default), unless
+        # namespace is set to False
         self.ns = namespace
         if self.ns is None:
             logger.debug(
                 "No namespace provided, searching for in parents of: %s", ~self._path
             )
             self.ns = self.find_namespace()
+        if self.ns:
+            assert isinstance(self.ns, PaasifyNamespace)
 
         self.setup_node()
 
@@ -94,8 +203,6 @@ class PaasifyStack(WorkingDirNode):
 
         return ret
 
-
-
     # Pod mangement
     # --------------------------------
 
@@ -111,7 +218,7 @@ class PaasifyStack(WorkingDirNode):
             pod = PaasifyPod(
                 ident=pod_ident,
                 parent=self,
-                config=pod_config,
+                raw_config=pod_config,
             )
             out[pod_ident] = pod
 
@@ -123,7 +230,10 @@ class PaasifyStack(WorkingDirNode):
         return list(self._store_pods.values())
         # return self.config.get("apps", [])
 
-
+    @requires_setup_node("setup_node")
+    def get_vars(self):
+        "Get vars"
+        return self.config.get("vars", {})
 
 
 # Context helper
@@ -156,7 +266,7 @@ def find_closest_workdir(path=None, search_up=True, kind=None):
             errors.append(err)
 
     # msg = f"Can't find any {items_names} in path: {last_error}"
-    errors = '\n  - '.join([str(x) for x in errors])
-    search = 'in parent directories' if search_up else 'in paths'
+    errors = "\n  - ".join([str(x) for x in errors])
+    search = "in parent directories" if search_up else "in paths"
     errors = f"Can't find any {items_names} {search}:\n  - {errors}"
     raise exc.PaasifyWorkdirNotFoundError(errors)

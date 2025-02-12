@@ -100,7 +100,6 @@ class StackListAppsCmd(Parser):
         return ListView(out)
 
 
-
 class StackInfoCmd(Parser):
     "Show stack info"
 
@@ -167,7 +166,26 @@ class NamespaceInfoCmd(Parser):
         "Main command"
         ns = ctx.data["namespace"]
 
-        print(f"Namespace: {ns.name}")
+        # print(f"Namespace: {ns.name}")
+        # pprint(ns.__dict__)
+
+        out = {
+            "ident": ns.ident,
+            "root_dir": ~ns._path,
+            "config_file": ~ns.config_path,
+            "config": ns.config["config"],
+            "stacks": ns.config["stacks"],
+            "collections": ns.config["collections"],
+            "": "",
+        }
+
+        for key, val in ns.get_vars().items():
+            out[f"var:{key}"] = val
+
+        # out = dict(**ns.config)
+
+        # pprint(out)
+        return ShowView(out)
 
 
 class NamespaceGroup(Parser):

@@ -81,6 +81,12 @@ def setup_once(name="setup_node"):
 
         def wrapper(self, *args, force=False, **kwargs):
             if not hasattr(self, setup_marker) or force:
+                logger.debug(
+                    "Trigger lazy loader for '%s' via: <%s>.%s()",
+                    name,
+                    self,
+                    func.__name__,
+                )
                 result = func(self, *args, **kwargs)
                 setattr(self, setup_marker, True)
                 return result
@@ -99,10 +105,11 @@ def requires_setup_node(name="setup_node"):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             if not hasattr(self, setup_marker):
-                # print("--> SETUP REQUIRE METHOD", self, name)
+                logger.debug("Setup mode '%s' init: %s", name, func.__name__)
                 setup_method = getattr(self, name)
                 setup_method()
                 setattr(self, setup_marker, True)
+            logger.debug("Setup mode '%s' forward: %s", name, func.__name__)
             return func(self, *args, **kwargs)
 
         return wrapper
@@ -136,10 +143,8 @@ class AppNode(HelperMethods, Node):
     node__iterate_backend = "_children"
     node__iterate_setupmarker = None
 
-
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name or ''})"
-    
 
     @property
     def name(self):
@@ -285,6 +290,7 @@ class AppNode(HelperMethods, Node):
 
     def __iter__(self):
         "Iterate over children"
+        logger.debug("Iterate over children: %s", self)
         return iter(self._get_store_attr())
 
     def __len__(self):
@@ -293,11 +299,13 @@ class AppNode(HelperMethods, Node):
 
     def __getitem__(self, key):
         "Get item"
-        print("==> GET ITEM", self, key)
+        logger.debug("Get item: %s.%s", self, key)
+
+        # print("==> GET ITEM", self, key)
         store = self._get_store_attr()
-        print("__get__item__", key, store)
+        # print("__get__item__", key, store)
         for item in store:
-            print("ITEM", item.ident, key)
+            # print("ITEM", item.ident, key)
             if item.ident == key:
                 return item
         return None
@@ -343,7 +351,6 @@ class WorkingDirNode(AppNode):
 
         if not self.ident:
             self._name = self._path.get_name()
-
 
         # TODO: Remove absolute path in logs
         logger.info(
