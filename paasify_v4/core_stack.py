@@ -96,6 +96,9 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
                 }
             )
 
+        out["vars"] = out["vars"] or {}
+        out["tags"] = out["tags"] or []
+
         return out
 
     @setup_once("setup_node")
@@ -105,10 +108,10 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         # self.vars = self.config.get("vars", {}) or {}
         # self.tags = self.config.get("tags", []) or []
 
-    @setup_once("setup_node")
+    # @setup_once("setup_node")
     def get_vars(self):
         "Get vars"
-        return self.config.get("vars", {})
+        return self.config.get("vars", {}) or {}
 
     # High level methods
     # --------------------------------
@@ -120,8 +123,9 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         ret = {
             "ns_vars": self.ns.get_vars(),
             "stack_vars": self.stack.get_vars(),
-            "pod_vars": self.config.get("vars", {}),
+            "pod_vars": self.get_vars(),
         }
+        # pprint(ret)
 
         varmgr.set_layer("ns_vars", ret["ns_vars"])
         varmgr.set_layer("stack_vars", ret["stack_vars"])
@@ -260,6 +264,7 @@ class PaasifyStack(WorkingDirNode):
         "Get vars"
         return self.config.get("vars", {})
 
+    @requires_setup_node("setup_node")
     def get_varmgr(self):
         "Get varmgr"
         varmgr = super().get_varmgr()
@@ -299,15 +304,18 @@ def find_closest_workdir(path=None, search_up=True, kind=None):
     logger.debug("Searching for %s in path: %s", items_names, path)
     errors = []
     for item in items:
-        print("Trying path:", path)
         assert isinstance(item, type), f"Item must be a type, not {type(item)}"
         try:
             out = item(path=path, search_up=search_up)
             logger.info("Found item: %s in %s", out, ~out.path)
             if item is PaasifyStack:
-                print("GOT STACK:", out)
-                pprint(out.__dict__)
-                assert False, "WIP"
+                # print("GOT STACK:", out)
+                # pprint(out.__dict__)
+                if out.sub_path:
+                    logger.info("%s detected, looking for app %s", item, out.sub_path)
+                    # print("SUB PATH:", out.sub_path)
+                    out = out[out.sub_path]
+                # assert False, "WIP"
             return out
         except exc.PaasifyWorkdirNotFoundError as err:
             logger.debug("Can't find %s in path '%s': %s", item.__name__, path, err)

@@ -479,7 +479,7 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
             sub_path = path.replace(root_path, "")
             # Remove leading slash
             sub_path = sub_path.lstrip("/")
-            print("SUB PAT?H", sub_path)
+            # print("SUB PAT?H", sub_path)
             # assert False
 
         # Create anchored paths

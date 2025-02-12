@@ -215,57 +215,15 @@ class DynVarsCmd(Parser):
 
         item = find_closest_workdir(path=os.getcwd())
 
-        # Temp failsafe
         logger.info("Working on: %s", item)
-        # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
-        if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
+        if not item:
+            # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
 
-        if isinstance(item, PaasifyStack):
-            stack = item
-            out = item.get_varmgr().get_values()
-
-            ListView(out).render()
-
-            # for app in stack:
-
-            #     if app_names and app.ident not in app_names:
-            #         continue
-
-            #     app_vars = app.get_varmgr()
-
-            #     # Render vars
-            #     logger.info("Rendering vars for %s", app.ident)
-            #     out = []
-            #     for scope in ["scope_ns", "scope_stack", "scope_pod"]:
-            #         out.append(
-            #             {
-            #                 "key": f"[{scope}]",
-            #                 "value": "",
-            #             }
-            #         )
-            #         for key, value in app_vars.get_values(scope=scope).items():
-            #             # out.append([scope, key, value])
-            #             out.append(
-            #                 {
-            #                     "key": key,
-            #                     "value": value,
-            #                 }
-            #             )
-            #         out.append(
-            #             {
-            #                 "key": "",
-            #                 "value": "",
-            #             }
-            #         )
-
-            #     ListView(out).render()
-
-        if isinstance(item, PaasifyNamespace):
-            print("Namespace vars")
-            pprint(item.get_varmgr().get_values())
+        out = item.get_varmgr().get_values()
+        ListView(out).render()
 
 
 class DynListCmd(Parser):
@@ -281,8 +239,6 @@ class DynListCmd(Parser):
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
-
-        print("GOT STACK:", stack)
 
         render = []
         for app in stack:
@@ -308,4 +264,4 @@ class DynMixin(Parser):
     def cli_group(self, ctx, force=None, debug=False, **_):
         "Never called when mixin inherited"
 
-        print("DynMixin")
+        # print("DynMixin")

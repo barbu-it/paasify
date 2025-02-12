@@ -109,7 +109,7 @@ class StackInfoCmd(Parser):
         # catalog = ctx.data["catalog"]
         stack = ctx.data["stack"]
 
-        pprint(stack.__dict__)
+        # pprint(stack.__dict__)
 
         out = stack.get_deployments()
         pprint(out)
