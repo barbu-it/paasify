@@ -136,14 +136,19 @@ class AppNode(HelperMethods, Node):
     node__iterate_backend = "_children"
     node__iterate_setupmarker = None
 
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.name or ''})"
+    
+
     @property
     def name(self):
         "Return collection ident"
         if hasattr(self, "_name"):
             return self._name
         name = self.ident
-        if "/" in name:
-            name = name.split("/")[-1]
+        # if name and "/" in name:
+        #     name = name.split("/")[-1]
         return name
 
     # @property
@@ -335,6 +340,10 @@ class WorkingDirNode(AppNode):
 
         logger.debug("Workdir %s config file: %s", self.OBJECT_NAME, ~root_config_path)
         self.config = self.load_config(~root_config_path)
+
+        if not self.ident:
+            self._name = self._path.get_name()
+
 
         # TODO: Remove absolute path in logs
         logger.info(

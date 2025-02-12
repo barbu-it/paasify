@@ -179,29 +179,63 @@ class DynPlaceholderCmd(Parser):
 class DynUpCmd(Parser):
     "Show dynamic up"
 
-    def cli_run(self, ctx=None, **_):
+    app_names = Argument("APP", help="App name", nargs="*")
+
+
+    def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
         print("DynUpCmd called")
 
         item = find_closest_workdir(path=os.getcwd())
 
-        # if isinstance(item, PaasifyStack):
-        #     print(f"Stack: {item}")
-        # elif isinstance(item, PaasifyNamespace):
-        #     print(f"Namespace: {item}")
-
-        if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
+        # Temp failsafe
+        logger.info("Working on: %s", item)
+        # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
+        if not isinstance(item, (PaasifyStack)):
             raise exc.PaasifyWorkdirNotFoundError(f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}")
         
-        logger.info("Working on: %s", item)
+        stack = item
         
-        
-        # if stack:
-        #     ctx.data["stack"] = stack
+        # pprint(stack)
+        # pprint(stack.ident)
+        # pprint(stack.get_pods())
+
+        # print("===============")
+
+        # stack.setup_node()
+        # pprint(stack.__dict__)
+        # print("CAlling for:", app_names)
+
+        # apps = stack
 
 
-        # kind=[PaasifyStack]
+        for app in stack:
+            # print (app.ident, app)
+
+            if app_names and app.ident not in app_names:
+                continue
+
+            logger.info("Processing %s", app)
+
+
+
+class DynListCmd(Parser):
+    "List stack apps"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        # Temporary
+        stack = find_closest_workdir(path=os.getcwd())
+        logger.info("Working on: %s", stack)
+        if not isinstance(stack, (PaasifyStack)):
+            raise exc.PaasifyWorkdirNotFoundError(f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}")
+
+        render = []
+        for app in stack:
+            render.append([app.ident, app])
+        return ListView(render)
 
 
 # Dynamic Mixin
@@ -212,9 +246,10 @@ class DynMixin(Parser):
 
     # Dynamic commands
     up = Command(DynUpCmd)
+    ls = Command(DynListCmd)
     # info = Command(DynPlaceholderCmd)
-    build = Command(DynPlaceholderCmd)
-    down = Command(DynPlaceholderCmd)
+    # build = Command(DynPlaceholderCmd)
+    # down = Command(DynPlaceholderCmd)
 
 
     def cli_group(self, ctx, force=None, debug=False, **_):

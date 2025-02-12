@@ -31,14 +31,16 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyPod(WorkingDirNode):
+class PaasifyPod(AppNode):
     "Base class for all Paasify pods"
 
-    OBJECT_NAME = "Pod"
-    ALLOWED_CONF_FILES = [
-        "paasify.pod.yml",
-        "paasify.pod.yaml",
-    ]
+
+    def __init__(self, ident, parent=None, config=None):
+        assert isinstance(parent, PaasifyStack)
+        super().__init__(ident, parent)
+
+        self.config = config or {}
+
 
 
 # Stacks classes
@@ -71,6 +73,11 @@ class PaasifyStack(WorkingDirNode):
             )
             self.ns = self.find_namespace()
 
+        self.setup_node()
+
+    # Stack intialization
+    # --------------------------------
+
     def find_namespace(self):
         "Find the closest namespace above the stack"
 
@@ -87,9 +94,34 @@ class PaasifyStack(WorkingDirNode):
 
         return ret
 
-    def get_deployments(self):
+
+
+    # Pod mangement
+    # --------------------------------
+
+    @setup_once("setup_node")
+    def setup_node(self):
+        "Setup the stack and it's apps"
+        logger.info("Setup stack: %s", self)
+
+        apps_config = self.config.get("apps", {}) or {}
+        assert isinstance(apps_config, dict)
+        out = {}
+        for pod_ident, pod_config in apps_config.items():
+            pod = PaasifyPod(
+                ident=pod_ident,
+                parent=self,
+                config=pod_config,
+            )
+            out[pod_ident] = pod
+
+        self._store_pods = out
+
+    @requires_setup_node("setup_node")
+    def get_pods(self):
         "Get all deployments for the stack"
-        return self.config.get("apps", [])
+        return list(self._store_pods.values())
+        # return self.config.get("apps", [])
 
 
 

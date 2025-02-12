@@ -236,7 +236,7 @@ class CollectionsPath(AppNode):
 
         # Auto init
         self.setup_node()
-        self._setup_done = True
+        self._setup_done = True  # TODO: This should be safe to remove now
 
     @setup_once("setup_node")
     def setup_node(self):
