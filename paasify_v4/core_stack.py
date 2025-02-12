@@ -37,6 +37,7 @@ from mrjk_components.varmgr.lib.store_base import (
     UndefinedVarError,
 )
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
+from superconf.anchors2 import PathAnchor, FileAnchor
 
 # from paasify_v4.catalog import PaasifyCatalog
 
@@ -50,12 +51,13 @@ logger = logging.getLogger(__name__)
 class PaasifyPod(VarMgrNodeMixin, AppNode):
     "Base class for all Paasify pods"
 
-    def __init__(self, ident, parent=None, raw_config=None):
+    def __init__(self, ident, parent=None, raw_config=None, path=None):
         assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
 
         self.stack = parent
         self.ns = parent.ns
+        self._path = PathAnchor(path)
 
         # print("Pod init:", self)
         # self.raw_config = raw_config
@@ -240,13 +242,16 @@ class PaasifyStack(WorkingDirNode):
         "Setup the stack and it's apps"
         logger.info("Setup stack: %s", self)
 
-        apps_config = self.config.get("apps", {}) or {}
+        config = self.config or {}
+
+        apps_config = config.get("apps", {}) or {}
         assert isinstance(apps_config, dict)
         out = {}
         for pod_ident, pod_config in apps_config.items():
             pod = PaasifyPod(
                 ident=pod_ident,
                 parent=self,
+                path=pod_ident,
                 raw_config=pod_config,
             )
             out[pod_ident] = pod

@@ -233,18 +233,22 @@ class DynListCmd(Parser):
         "Main command"
 
         # Temporary
-        stack = find_closest_workdir(path=os.getcwd())
-        logger.info("Working on: %s", stack)
-        if not isinstance(stack, (PaasifyStack, PaasifyNamespace)):
+        item = find_closest_workdir(path=os.getcwd())
+        logger.info("Working on: %s", item)
+        if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
 
         render = []
-        for app in stack:
-            # pprint(app)
-            render.append([app.ident, app])
-        return ListView(render)
+        # TODO: Fix columns in clak
+        columns = ["Name", "Value"]
+        for child in item:
+            if isinstance(child, PaasifyStack):
+                render.append([~child.path, child.ident, child])
+            else:
+                render.append([child.ident, child])
+        return ListView(render, columns=columns)
 
 
 # Dynamic Mixin

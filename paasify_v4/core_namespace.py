@@ -83,7 +83,7 @@ class PaasifyNamespace(WorkingDirNode):
             "paasify.yaml",
         ]
 
-        path_mode = "rel"
+        path_mode = "abs"
 
         path = self.path.get_path(mode=path_mode)
         stack_files = find_files_down(file_names, path, depth=3)
@@ -93,14 +93,14 @@ class PaasifyNamespace(WorkingDirNode):
         for stack_file in stack_files:
 
             fanchor = FileAnchor(stack_file, parent=self.path)
-            stack_ident = fanchor.get_dir()
+            stack_dir = fanchor.get_dir()
 
-            if stack_ident in stacks_config:
-                current = stacks_config[stack_ident]
+            if stack_dir in stacks_config:
+                current = stacks_config[stack_dir]
 
                 logger.warning(
                     "Duplicate file config for stack %s, found %s but ignoring extra %s",
-                    stack_ident,
+                    stack_dir,
                     current.get_path(mode=path_mode),
                     stack_file,
                 )
@@ -111,7 +111,13 @@ class PaasifyNamespace(WorkingDirNode):
             # pylint: disable=import-outside-toplevel
             from paasify_v4.core_stack import PaasifyStack
 
-            stack_inst = PaasifyStack(ident=stack_ident, parent=self, path=~fanchor)
+            stack_ident2 = fanchor.get_dir(
+                mode="rel", start=self.path.get_dir(), clean=True
+            )
+            stack_ident = stack_dir
+            print("STACK DIR", stack_ident, "VS", stack_ident2)
+
+            stack_inst = PaasifyStack(ident=stack_ident2, parent=self, path=~fanchor)
             stacks_config[stack_ident] = stack_inst
 
         # pprint(stacks_config)
