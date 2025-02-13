@@ -11,8 +11,11 @@ from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors2 import PathAnchor
 
-from paasify_v4.core_catalog import PaasifyCatalog
-from paasify_v4.common import truncate, to_yaml
+from paasify_v4.main import PaasifyRunner
+
+
+# from paasify_v4.core_catalog import PaasifyCatalog
+# from paasify_v4.common import truncate, to_yaml
 
 
 from paasify_v4.core_catalog_cli import AppGroup, CollectionGroup
@@ -124,11 +127,11 @@ class DebugCmd(Parser):
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        head = lambda: print("=" * 80)
+        head = "=" * 80
 
-        head()
+        print(head)
         print("Logging")
-        head()
+        print(head)
         logger.debug("Hello World - App")
         logger.info("Hello World - App")
         logger.warning("Hello World - App")
@@ -139,20 +142,20 @@ class DebugCmd(Parser):
         self.logger.error("Hello World - Self")
         # logger_root.warning("Hello World - Root")
 
-        head()
+        print(head)
         print("Arguments")
-        head()
+        print(head)
         ShowView(ctx.args.__dict__).render()
 
-        head()
+        print(head)
         print("Debug context")
-        head()
+        print(head)
         pprint(ctx.__dict__)
         # ListView(ctx.__dict__).render()
 
-        head()
+        print(head)
         print("Debug infos")
-        head()
+        print(head)
 
         cwd = ctx.data["dir_cwd"]
         print("Working dir:")
@@ -253,6 +256,32 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         ctx.data["dir_cwd"] = working_dir
         ctx.data["dir_mode"] = dir_mode
         ctx.data["paths_collections"] = paths_collections
+
+
+
+
+        # NEW
+        # ===============================
+        
+
+        # Generate default collections paths
+        collections_paths_default = [
+            os.path.expanduser("~/.paasify/collections"),
+            "/etc/paasify/collections",
+            "/usr/local/share/paasify/collections",
+        ]
+
+        # Add command line extra paths
+        collections_paths_user = ctx.args.get("collections_dirs", SUPPRESS)
+        if collections_paths_user is not SUPPRESS:
+            collections_paths_user = collections_paths_user.split(":")
+        else:
+            collections_paths_user = []
+
+        # Merge paths and start runner
+        paths_collections = collections_paths_user + collections_paths_default
+        ctx.data["runner"] = PaasifyRunner(
+            collections_paths=paths_collections)
 
 
 # stacks:

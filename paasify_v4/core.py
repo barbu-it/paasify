@@ -412,6 +412,13 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
             "Initilize %s from: %s", self.OBJECT_NAME, self._path.get_path(mode="abs")
         )
 
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.path.get_path(mode='abs') or ''})"
+
+
+
+
     def load_config(self, config: Optional[str] = None):
         "Load the namespace config from a file"
 

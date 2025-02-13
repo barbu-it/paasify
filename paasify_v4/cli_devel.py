@@ -16,7 +16,7 @@ from paasify_v4.common import (
 from paasify_v4.core_catalog import PaasifyCatalog
 
 from paasify_v4.core_namespace import PaasifyNamespace
-from paasify_v4.core_stack import PaasifyStack, find_closest_workdir
+from paasify_v4.core_stack import PaasifyStack
 
 logger = logging.getLogger(__name__)
 

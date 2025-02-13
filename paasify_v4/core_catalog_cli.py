@@ -8,7 +8,7 @@ from clak import Parser, Argument, Command
 from clak.views import ListView, ShowView
 
 from paasify_v4.common import truncate, to_yaml
-from paasify_v4.core_catalog import PaasifyCatalog
+# from paasify_v4.core_catalog import PaasifyCatalog
 
 
 # logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ class AppListCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
-        catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
         logger.info("Get apps")
 
         apps = catalog_mgr.get_apps()
@@ -58,7 +58,7 @@ class AppShowCmd(Parser):
 
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
 
         logger.info("Show app: %s", name)
         app = catalog_mgr.get_app(name)
@@ -104,7 +104,7 @@ class AppTagsCmd(Parser):
 
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
         app = catalog_mgr.get_app(name)
         assert app, f"App {name} not found"
 
@@ -149,7 +149,7 @@ class CollectionShowCmd(Parser):
 
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
         collection = catalog_mgr.get_collections(name)
         assert collection, f"Collection {name} not found"
         logger.info("Show collection %s", name)
@@ -181,19 +181,20 @@ class CollectionListCmd(Parser):
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
+        # catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
 
         collections_paths = catalog_mgr.get_collections_paths()
-        print = lambda x: x
+        # print = lambda x: x
 
         out = []
-        print("Get Catalog")
+        # print("Get Catalog")
         for collections_path in collections_paths:
-            print(f"  Get Collection path: {collections_path.ident}")
+            # print(f"  Get Collection path: {collections_path.ident}")
             collections = collections_path.get_collections()
             for collection in collections:
                 apps = collection.get_apps()
-                print(f"    Get Collection: {collection.ident} ({len(apps)} apps)")
+                # print(f"    Get Collection: {collection.ident} ({len(apps)} apps)")
 
                 out.append(
                     {
@@ -213,7 +214,7 @@ class CollectionInfoCmd(Parser):
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        catalog_mgr = ctx.data["catalog_mgr"]
+        catalog_mgr = ctx.data["runner"].catalog
 
         cwd = ctx.data["dir_cwd"]
         print(" * Working dir:")
@@ -275,7 +276,8 @@ class CollectionGroup(Parser):
     app = Command(AppGroup)
 
     def cli_group(self, ctx, force=None, debug=False, **_):
+        pass
 
-        collections_paths = ctx.data["paths_collections"]
-        mgr = PaasifyCatalog(collections_paths=collections_paths)
-        ctx.data["catalog_mgr"] = mgr
+        # collections_paths = ctx.data["paths_collections"]
+        # mgr = PaasifyCatalog(collections_paths=collections_paths)
+        # ctx.data["catalog_mgr"] = mgr

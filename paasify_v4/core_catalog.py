@@ -13,7 +13,7 @@ The module focuses on organizing and managing applications in a hierarchical cat
 with support for metadata, variables, and collection management.
 """
 
-import re
+import os
 import logging
 from typing import List, Dict
 
@@ -248,31 +248,34 @@ class CollectionsPath(AppNode):
         "Walk collections directories and return scan report"
         out = {}
         # List all directories names
-        for dir_path in Path(collections_path).iterdir():
-            # Dir_path must be a directory
-            if not dir_path.is_dir():
-                continue
+        if not os.path.exists(collections_path):
+            logger.info("Collections path does not exist: %s", collections_path)
+        else:
+            for dir_path in Path(collections_path).iterdir():
+                # Dir_path must be a directory
+                if not dir_path.is_dir():
+                    continue
 
-            # Fetch the directory name, and skip hidden directories
-            dir_name = dir_path.name
-            if dir_name.startswith("."):
-                continue
+                # Fetch the directory name, and skip hidden directories
+                dir_name = dir_path.name
+                if dir_name.startswith("."):
+                    continue
 
-            # print ("SUBPATH", dir_name)
-            collection = PaasifyCollection(
-                ident=dir_name,
-                name=dir_name,
-                path=dir_path,
-                parent=self,
-                index=self.index,
-            )
-            out[dir_name] = collection
+                # print ("SUBPATH", dir_name)
+                collection = PaasifyCollection(
+                    ident=dir_name,
+                    name=dir_name,
+                    path=dir_path,
+                    parent=self,
+                    index=self.index,
+                )
+                out[dir_name] = collection
 
-            # Future v2
-            # # List recursively on three levels all docker-compose.yml files
-            # needle = "paasify.collection.yml"
-            # for docker_compose_path in Path(collection_path.path).rglob(needle):
-            #     print(docker_compose_path)
+                # Future v2
+                # # List recursively on three levels all docker-compose.yml files
+                # needle = "paasify.collection.yml"
+                # for docker_compose_path in Path(collection_path.path).rglob(needle):
+                #     print(docker_compose_path)
 
         return out
 
@@ -307,6 +310,11 @@ class PaasifyCatalog(AppNode):
         # Auto init
         self.setup_node()
         # self._setup_done = True
+
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({len(self.collections_paths) or ''})"
+
 
     # =============
 

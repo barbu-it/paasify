@@ -1,13 +1,11 @@
 "Manage namespaces"
-import os
-import sys
 from pprint import pprint
 import logging
 
-from superconf.anchors2 import PathAnchor, FileAnchor
+from superconf.anchors2 import FileAnchor
 from paasify_v4.common import find_files_down
 from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
-import paasify_v4.exception as exc
+# import paasify_v4.exception as exc
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +34,15 @@ class PaasifyNamespace(WorkingDirNode):
         "paasify.namespace.yaml",
     ]
 
-    def __init__(self, **kwargs):
+    def __init__(self, catalog=None, **kwargs):
         super().__init__(**kwargs)
 
         self._store_stacks = {}
+
+        # Register catalog if provided
+        # if catalog:
+        #     assert isinstance(catalog, PaasifyCatalog)
+        self.catalog = catalog
 
         self.setup_node()
         # pprint(self.__dict__)

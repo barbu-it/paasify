@@ -13,10 +13,10 @@ from paasify_v4.common import (
     to_json,
     to_yaml,
 )
-from paasify_v4.core_catalog import PaasifyCatalog
+# from paasify_v4.core_catalog import PaasifyCatalog
 
 from paasify_v4.core_namespace import PaasifyNamespace
-from paasify_v4.core_stack import PaasifyStack, PaasifyPod, find_closest_workdir
+from paasify_v4.core_stack import PaasifyStack, PaasifyPod
 import paasify_v4.exception as exc
 
 # logger = logging.getLogger(__name__)
@@ -180,6 +180,27 @@ class DynUpCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
+
+        pprint(ctx.args.__dict__)
+
+
+
+        item = ctx.data["runner"].get()
+        logger.info("Working on: %s", item)
+        if not item:
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
+
+
+        if not isinstance(item, (PaasifyPod)):
+            raise NotImplementedError(f"Command for {self.name} is not implemented yet for tother things that Pods")
+
+
+        out = item.assemble()
+
+        return
+
         print("DynUpCmd called")
 
         item = find_closest_workdir(path=os.getcwd())
@@ -213,8 +234,8 @@ class DynVarsCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-        item = find_closest_workdir(path=os.getcwd())
-
+        item = ctx.data["runner"].get()
+        
         logger.info("Working on: %s", item)
         if not item:
             # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
@@ -232,8 +253,9 @@ class DynListCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
-        # Temporary
-        item = find_closest_workdir(path=os.getcwd())
+        item = ctx.data["runner"].get()
+
+        # item = find_closest_workdir(path=os.getcwd())
         logger.info("Working on: %s", item)
         if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
             raise exc.PaasifyWorkdirNotFoundError(

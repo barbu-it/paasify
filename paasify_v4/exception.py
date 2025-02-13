@@ -8,3 +8,7 @@ class PaasifyWorkdirNotFoundError(PaasifyError):
 
 class PaasifyConfigError(PaasifyError):
     "Error when a config is invalid"
+
+
+class PaasifySetupError(PaasifyError):
+    "Error when a setup is invalid"
