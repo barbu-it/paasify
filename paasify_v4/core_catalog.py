@@ -311,10 +311,8 @@ class PaasifyCatalog(AppNode):
         self.setup_node()
         # self._setup_done = True
 
-
     def __repr__(self):
         return f"{self.__class__.__name__}({len(self.collections_paths) or ''})"
-
 
     # =============
 

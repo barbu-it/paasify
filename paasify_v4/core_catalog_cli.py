@@ -198,4 +198,3 @@ class CollectionGroup(Parser):
     show = Command(CollectionShowCmd)
     # devel = Command(CollectionDevelCmd)
     app = Command(AppGroup)
-

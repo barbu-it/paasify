@@ -13,6 +13,7 @@ from paasify_v4.common import (
     to_json,
     to_yaml,
 )
+
 # from paasify_v4.core_catalog import PaasifyCatalog
 
 from paasify_v4.core_namespace import PaasifyNamespace
@@ -180,10 +181,7 @@ class DynUpCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-
         pprint(ctx.args.__dict__)
-
-
 
         item = ctx.data["runner"].get()
         logger.info("Working on: %s", item)
@@ -192,10 +190,10 @@ class DynUpCmd(Parser):
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
 
-
         if not isinstance(item, (PaasifyPod)):
-            raise NotImplementedError(f"Command for {self.name} is not implemented yet for tother things that Pods")
-
+            raise NotImplementedError(
+                f"Command for {self.name} is not implemented yet for tother things that Pods"
+            )
 
         out = item.assemble()
 

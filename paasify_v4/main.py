@@ -16,22 +16,16 @@ from paasify_v4.core_stack import PaasifyStack
 logger = logging.getLogger(__name__)
 
 
-
-
-
-
 class PaasifyRunner:
     "Main runner class"
 
     def __init__(self, start_path=None, collections_paths=None):
-
 
         self.start_path = start_path or os.getcwd()
 
         # Fetch catalog
         self.collections_paths = collections_paths
         self.catalog = PaasifyCatalog(collections_paths=collections_paths)
-
 
     def get(self, path=None):
         "Return closest item from path"
@@ -74,8 +68,6 @@ class PaasifyRunner:
 
         return ret
 
-
-
     # def find_closest_workdir(self, path=None, search_up=True, kind=None):
     #     "Find the closest workdir"
 
@@ -104,13 +96,12 @@ class PaasifyRunner:
     #                     out.ns = PaasifyNamespace(path=path, search_up=search_up)
     #                 except exc.PaasifyWorkdirNotFoundError:
     #                     pass
-                    
+
     #                 if out.sub_path:
     #                     logger.info("%s detected, looking for app %s", item, out.sub_path)
     #                     # print("SUB PATH:", out.sub_path)
     #                     out = out[out.sub_path]
     #                 # assert False, "WIP"
-
 
     #             return out
     #         except exc.PaasifyWorkdirNotFoundError as err:
@@ -122,4 +113,3 @@ class PaasifyRunner:
     #     search = "in parent directories" if search_up else "in paths"
     #     errors = f"Can't find any {items_names} {search}:\n  - {errors}"
     #     raise exc.PaasifyWorkdirNotFoundError(errors)
-

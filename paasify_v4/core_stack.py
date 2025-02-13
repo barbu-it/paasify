@@ -122,7 +122,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         "Assemble the pod"
         print("ASSEMBLE POD:", self)
 
-
         print("Get vars")
         varmgr = self.get_varmgr()
         print("Vars:")
@@ -137,15 +136,10 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         tags = self.config.get("tags", [])
         print("Tags:", tags)
 
-
         # Get the name from the Catalog App directory, and get the app object
         # instance from the Catalog
 
         assert False, "WIP pre-up, TODO: Resolve app from catalog"
-
-
-
-
 
 
 # Stacks classes
@@ -167,7 +161,11 @@ class PaasifyStack(WorkingDirNode):
     node__iterate_setupmarker = "setup_node"
 
     def __init__(
-        self, ident=None, parent=None, path=None, search_up=None, 
+        self,
+        ident=None,
+        parent=None,
+        path=None,
+        search_up=None,
         namespace=None,
         catalog=None,
     ):

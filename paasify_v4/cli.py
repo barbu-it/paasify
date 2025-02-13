@@ -14,7 +14,6 @@ from superconf.anchors2 import PathAnchor
 from paasify_v4.main import PaasifyRunner
 
 
-
 from paasify_v4.core_catalog_cli import CollectionGroup
 from paasify_v4.cli_dyn import DynMixin
 from paasify_v4.cli_devel import StackGroup, NamespaceGroup, PodGroup
@@ -26,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Beta
 # ================================================
+
 
 class Devel(Parser):
     "Developpement commands"
@@ -156,7 +156,6 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         ctx.data["dir_cwd"] = working_dir
         ctx.data["dir_mode"] = dir_mode
 
-
         # Generate default collections paths
         collections_paths_default = [
             os.path.expanduser("~/.paasify/collections"),
@@ -182,10 +181,13 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         ]
 
         # Merge paths and start runner
-        paths_collections = collections_paths_user + collections_paths_extra + collections_paths_default
+        paths_collections = (
+            collections_paths_user + collections_paths_extra + collections_paths_default
+        )
         ctx.data["runner"] = PaasifyRunner(
-            start_path= ~working_dir,
-            collections_paths=paths_collections)
+            start_path=~working_dir, collections_paths=paths_collections
+        )
+
 
 def run():
     "Return a Paasify App instance"
