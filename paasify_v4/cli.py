@@ -14,108 +14,27 @@ from superconf.anchors2 import PathAnchor
 from paasify_v4.main import PaasifyRunner
 
 
-# from paasify_v4.core_catalog import PaasifyCatalog
-# from paasify_v4.common import truncate, to_yaml
 
-
-from paasify_v4.core_catalog_cli import AppGroup, CollectionGroup
+from paasify_v4.core_catalog_cli import CollectionGroup
+from paasify_v4.cli_dyn import DynMixin
 from paasify_v4.cli_devel import StackGroup, NamespaceGroup, PodGroup
-from paasify_v4.cli_dyn import DynMixin, DynUpCmd
 import paasify_v4.exception as exc
 
 
 logger = logging.getLogger(__name__)
-# Never grab root, this break loggingMixin
-# logger_root = logging.getLogger()
 
 
 # Beta
 # ================================================
 
-
-# class AppCommand2(Parser):
-#     "Command 2, with option and positional arguments"
-#     aliases = Argument("--alias", "-a", action="append", help="Alias")  # (5)!
-#     name = Argument("NAME", help="Name")
-
-#     def cli_run(self, name=None, aliases=None, force=False, config=None, **_):  # (6)!
-#         print(f"Run command 2 World on: {name} in '{config}' file (force_mode={force})")
-#         for alias in aliases or []:
-#             print(f"Map: {alias} -> {name}")
-
-
 class Devel(Parser):
     "Developpement commands"
+
     # aliases = Argument("--alias", "-a", action="append", help="Alias")  # (5)!
     # name = Argument("NAME", help="Name")
 
     def cli_run(self, name=None, aliases=None, force=False, config=None, **_):
         print("Devel command executed")
-
-        # test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
-        # test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
-        # collections_paths = [
-        #     # test_path1,
-        #     # test_path2,
-        # ]
-
-        # out = PaasifyCatalog(collections_paths=collections_paths)
-
-        # pprint(out)
-        # pprint(out.__dict__)
-
-        # print("======================")
-        # o = out.walk_collections_paths()
-        # pprint(o)
-
-
-# class DemoCmd(Parser):
-#     "Demo viewers"
-
-#     def cli_run(self, ctx=None, **_):
-#         "Main command"
-
-#         # Tests1 - ShowView
-#         data_item_dict1 = {
-#             "name": "World",
-#             "age": 42,
-#             "city": "Paris",
-#         }
-#         data_item_list1 = [
-#             "World",
-#             42,
-#             "Paris",
-#         ]
-
-#         view = ShowView(data_item_dict1)
-#         view.render()
-
-#         view = ShowView(data_item_list1)
-#         view.render()
-
-#         # Tests2 - DictView
-
-#         data_item_dict2 = {
-#             "name": "World2",
-#             "age": 43,
-#             "city": "Berlin",
-#         }
-#         data_items_dict_of_dicts = {
-#             "item1": data_item_dict1,
-#             "item2": data_item_dict2,
-#         }
-#         view = ListView(data_items_dict_of_dicts)
-#         view.render()
-
-#         # Tests3 - ListView
-#         data_items_list_of_dicts = [
-#             data_item_dict1,
-#             data_item_dict2,
-#         ]
-#         view = ListView(data_items_list_of_dicts)
-#         view.render()
-
-#         return
 
 
 # Main Prod application
@@ -140,7 +59,6 @@ class DebugCmd(Parser):
         self.logger.info("Hello World - Self")
         self.logger.warning("Hello World - Self")
         self.logger.error("Hello World - Self")
-        # logger_root.warning("Hello World - Root")
 
         print(head)
         print("Arguments")
@@ -151,7 +69,6 @@ class DebugCmd(Parser):
         print("Debug context")
         print(head)
         pprint(ctx.__dict__)
-        # ListView(ctx.__dict__).render()
 
         print(head)
         print("Debug infos")
@@ -233,36 +150,12 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             dir_mode = "rel"
             if _working_dir and os.path.isabs(_working_dir):
                 dir_mode = "abs"
-
-        # Create Path Anchors
         working_dir = PathAnchor(working_dir, name="working_dir", mode=dir_mode)
-
-        # Prepare paths_collections
-        collections_dirs = ctx.args.get("collections_dirs", SUPPRESS)
-        if collections_dirs is not SUPPRESS:
-            paths_collections = collections_dirs.split(":")
-        else:
-            # Create a test catalog
-            test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
-            test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
-            # test_path3 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v3"
-            paths_collections = [
-                test_path2,
-                test_path1,
-                # test_path3,
-            ]
 
         # Register data
         ctx.data["dir_cwd"] = working_dir
         ctx.data["dir_mode"] = dir_mode
-        ctx.data["paths_collections"] = paths_collections
 
-
-
-
-        # NEW
-        # ===============================
-        
 
         # Generate default collections paths
         collections_paths_default = [
@@ -278,23 +171,21 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         else:
             collections_paths_user = []
 
+        # Extra temporary collections
+        test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
+        test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
+        # test_path3 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v3"
+        collections_paths_extra = [
+            test_path2,
+            test_path1,
+            # test_path3,
+        ]
+
         # Merge paths and start runner
-        paths_collections = collections_paths_user + collections_paths_default
+        paths_collections = collections_paths_user + collections_paths_extra + collections_paths_default
         ctx.data["runner"] = PaasifyRunner(
+            start_path= ~working_dir,
             collections_paths=paths_collections)
-
-
-# stacks:
-#   - list
-#   - show
-# application:
-#   - list
-#   - show
-# collection:
-#   - list
-#   - show
-#   - apps
-
 
 def run():
     "Return a Paasify App instance"

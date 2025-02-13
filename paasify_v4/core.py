@@ -391,18 +391,20 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
     def __init__(self, ident=None, parent=None, path=None, search_up=None):
         super().__init__(ident=ident, parent=parent)
 
+        self.path_mode = "abs" if os.path.isabs(path) else "rel"
+
         _root_path, _config_file, _sub_path = self.find_workdir(
             path=path, search_up=search_up
         )
 
-        root_path = PathAnchor(_root_path, mode="rel")
+        root_path = PathAnchor(_root_path, mode=self.path_mode)
         root_config_path = FileAnchor(path=_config_file, parent=root_path)
         self._path = root_path
         self.config_path = root_config_path
         self.sub_path = _sub_path
 
         logger.debug("Workdir %s config file: %s", self.OBJECT_NAME, ~root_config_path)
-        self.config = self.load_config(~root_config_path)
+        self.config = self.load_config(~root_config_path) or {}
 
         if not self.ident:
             self._name = self._path.get_name()
@@ -430,6 +432,8 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
 
     def find_workdir(self, path=None, search_up=None):
         "Find the namespace path and config file"
+
+        path = os.path.abspath(path) if path else None
 
         # Prepare discovery method
         # ------------------------

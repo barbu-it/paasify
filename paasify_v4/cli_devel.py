@@ -18,7 +18,8 @@ from paasify_v4.core_catalog import PaasifyCatalog
 from paasify_v4.core_namespace import PaasifyNamespace
 from paasify_v4.core_stack import PaasifyStack
 
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("paasify_v4.cli.devel")
 
 
 # Pod management

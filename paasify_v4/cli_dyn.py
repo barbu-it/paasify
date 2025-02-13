@@ -235,7 +235,7 @@ class DynVarsCmd(Parser):
         "Main command"
 
         item = ctx.data["runner"].get()
-        
+
         logger.info("Working on: %s", item)
         if not item:
             # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
