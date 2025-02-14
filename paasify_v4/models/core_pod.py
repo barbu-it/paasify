@@ -32,7 +32,7 @@ from paasify_v4.common import (
 )
 from paasify_v4.models.core_catalog import PaasifyCatalog
 
-# from paasify_v4.engine_docker.compose_app import ComposeApp
+from paasify_v4.engine_docker.compose_app import ComposedApp
 import paasify_v4.exception as exc
 
 from paasify_v4.lib.shexec import shexec
@@ -57,6 +57,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
         self._path = PathAnchor(path, parent=parent.path)
         self.config = self.build_config(raw_config, ident=ident)
+        self._app = None
 
         self.setup_node()
 
@@ -147,82 +148,98 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
         return varmgr
 
+
+    # @property
+    # def app(self):
+    #     "Return the app"
+    #     return self._app
+
+    # @setup_once("setup_app")
+    # def setup_app(self):
+    #     "Setup the app"
+
+    #     app_name = self.config.get("app")
+    #     if not app_name:
+    #         return None
+
+
+    #     out = self.catalog.resolve_app(app_name)
+
+    #     self._app = out
+    #     if len(out) > 1:
+    #         out_names = [app.ident for app in out]
+    #         msg = f"Multiple apps found for '{app_name}', keeping only the first one: {out_names}"
+    #         logger.info(msg)
+
+    #     app = out[0]
+
+    #     # Get app path and base docker-compose file
+    #     app_path = ~app.path
+    #     docker_files = ["docker-compose.yml", "docker-compose.yaml"]
+    #     docker_file_matches = find_file_in_path(docker_files, app_path)
+    #     if len(docker_file_matches) == 0:
+    #         raise exc.PaasifyAssembleError(
+    #             f"No docker-compose.yml file found in {app_path}"
+    #         )
+    #     elif len(docker_file_matches) > 1:
+    #         msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
+    #         raise exc.PaasifyAssembleError(msg)
+    #     logger.debug("Docker file matches: %s", docker_file_matches)
+    #     docker_file_match = docker_file_matches[0]
+
+    #     app_vars_files = ["vars.yml", "vars.yaml"]
+    #     app_vars_matches = find_file_in_path(app_vars_files, app_path)
+    #     app_vars = {}
+    #     if len(app_vars_matches) != 0:
+    #         app_vars = from_yaml(read_file(app_vars_matches[0]))
+
+
+
+
+
+    # @requires_setup_node("setup_app")
     def assemble(self, dry_run=False):
         "Assemble the pod"
 
+
+        # Resolve app name
+        app_name = self.config.get("app")
+        app_matches = self.catalog.resolve_app(app_name)
+        if len(app_matches) > 1:
+            app_idents = [app.ident for app in app_matches]
+            msg = f"Multiple apps found for '{app_name}', keeping only the first one: {app_idents}"
+            logger.info(msg)
+        app = app_matches[0]
+
+        # Fetch app files
+        tags = self.config.get("tags", [])
+        docker_file_match = app.get_compose_files()
+        app_vars = app.get_vars_files()
+        extra_docker_files = app.get_extra_docker_files(tags)
+
+
+
+
+
         varmgr = self.get_varmgr()
         # vars_dict = varmgr.get_values()
-        app_name = self.config.get("app")
-        tags = self.config.get("tags", [])
 
-        # Get the name from the Catalog App directory, and get the app object
-        # instance from the Catalog
 
-        out = self.catalog.resolve_app(app_name)
-
-        if len(out) > 1:
-            out_names = [app.ident for app in out]
-            msg = f"Multiple apps found for '{app_name}', keeping only the first one: {out_names}"
-            logger.info(msg)
-
-        app = out[0]
-
-        # Get app path and base docker-compose file
-        app_path = ~app.path
-        docker_files = ["docker-compose.yml", "docker-compose.yaml"]
-        docker_file_matches = find_file_in_path(docker_files, app_path)
-        if len(docker_file_matches) == 0:
-            raise exc.PaasifyAssembleError(
-                f"No docker-compose.yml file found in {app_path}"
-            )
-        elif len(docker_file_matches) > 1:
-            msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
-            raise exc.PaasifyAssembleError(msg)
-        logger.debug("Docker file matches: %s", docker_file_matches)
-        docker_file_match = docker_file_matches[0]
-
-        app_vars_files = ["vars.yml", "vars.yaml"]
-        app_vars_matches = find_file_in_path(app_vars_files, app_path)
-        app_vars = {}
-        if len(app_vars_matches) != 0:
-            app_vars = from_yaml(read_file(app_vars_matches[0]))
-
-        extra_docker_files = []
-        for tag in tags:
-            tag_paths = app.path / f"docker-compose.{tag}"
-            tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
-            logger.debug("Tag path: %s", tag_paths)
-
-            match = find_file_in_path(tag_paths, app_path)
-            if match:
-                # print("Match:", match, tag_paths)
-                extra_docker_files.append(match[0])
-            else:
-                logger.warning("No match for tag %s in %s", tag, tag_paths)
 
         # Create environment file
-
-        # vars_dict = varmgr.get_values()
-        # pprint(vars_dict)
-        # vars_dict = varmgr.get_values()
-        # pprint(vars_dict)
-
-        # print("============================")
-
-        # pprint(self.__dict__)
-
         default_network = "network"
         default_service = None
 
         # V1 COMPAT
+        stack_dir = +self.path
         default_vars = {
             "app_network_name": "default",
             "app_log_level": "DEBUG",
             "app_log_access": "True",
-            "app_dir_conf": self.path / "conf",
-            "app_dir_data": self.path / "data",
-            "app_dir_logs": self.path / "logs",
-            "app_dir_secrets": self.path / "secrets",
+            "app_dir_conf": os.path.join(stack_dir, "conf"),
+            "app_dir_data": os.path.join(stack_dir, "data"),
+            "app_dir_logs": os.path.join(stack_dir, "logs"),
+            "app_dir_secrets": os.path.join(stack_dir, "secrets"),
             "app_puid": 1000,
             "app_pgid": 1000,
             "app_tz": "America/Toronto",
@@ -245,11 +262,11 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             "paasify_sep_dir": os.sep,
             # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
             "paasify_sep_net": "_",
-            "_prj_path": ~self.path,
+            "_prj_path": +self.path,
             "_prj_namespace": self.ns.ident,  # deprecated because too long !
             "_prj_ns": self.ns.ident,
             # "_prj_domain": to_domain(self.ns.ident),
-            "_prj_stack_path": ~self.stack.path,
+            "_prj_stack_path": +self.stack.path,
             # Colon is used here for easier to parsing for later ...
             "_prj_stack_tags": f":{':'.join(tags)}:",
             "_stack_name": self.stack.ident,
@@ -307,18 +324,10 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             }
         )
 
-        # build_vars = vbuild.get_values()
-        # pprint(build_vars)
-        # return
 
         renderer = vbuild.get_renderer("scope_build")
         build_vars = renderer.render_values()
-        # pprint(build_vars)
-        # return
-
         dc_project_name = "_".join([self.ns.name, self.stack.name, self.name])
-        # dc_project_name = [self.ns.name, self.stack.name, self.name]
-
         compose_settings = {
             "COMPOSE_PROJECT_NAME": dc_project_name,
             "COMPOSE_FILE": "docker-compose.yml",
@@ -336,12 +345,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             # "COMPOSE_EXPERIMENTAL": "true",
         }
 
-        # pprint(compose_settings)
-
-        # return
-        # pprint(node_registry.nodes)
-        # return
-
         env_content = "# File autogenerated by paasify, do not edit\n"
         env_content += "# =====================================\n\n"
         env_content += "\n# Compose settings \n"
@@ -350,48 +353,33 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
         env_content += "\n# Variables \n"
         env_content += "# ---------- \n\n"
-        env_content += dict_to_env(build_vars) + "\n"
-        # print("ENV FILE:", env_content)
+        env_content += (dict_to_env(dict(sorted(build_vars.items())))) + "\n"
 
         if not dry_run:
             logger.info("Write env file: %s", self.path / ".env")
             write_file(self.path / ".env", env_content)
 
-        # return
-        # assert False, "WIP pre-up, TODO: Resolve app from catalog"
-        docker_file_dest = self.path / "docker-compose.yml"
 
         # Build docker files
+        docker_file_dest = self.path / "docker-compose.yml"
         compose_files = [docker_file_match] + extra_docker_files
-        compose_files = " --file ".join(compose_files)
-        # if not dry_run:
-        #     print(f"docker compose --project-directory {~self.path} --file {compose_files} config")
+        comp_app = ComposedApp(
+            name=dc_project_name,
+            project_dir=self.path.get_path(),
+            compose_files=compose_files
+        )
+        compose_content = comp_app.assemble(interpolate=False, normalize=False)
+        for varname in comp_app.get_variables2():
+            if not varname in build_vars:
+                logger.error("Missing variable: %s", varname)
+                # logger.error("  %s", conf)
 
-        final_cmd = ["docker", "compose", "--project-directory", ~self.path]
-        final_cmd += ["--file", docker_file_match]
-        final_cmd.extend(flatten([["--file", file] for file in extra_docker_files]))
-        final_cmd += ["config"]
 
-        # pprint(final_cmd)
-        # print(" ".join(final_cmd))
+        # pprint(comp_app.get_variables2())
+        # assert False
 
-        out = shexec(final_cmd)  # , logger=logger)
-        std_err = out.stderr.decode("utf-8")
-        std_out = out.stdout.decode("utf-8")
-
-        if std_err:
-            logger.warning("Warnings while running command:\n%s", std_err)
-        # if std_out:
-        #     logger.info("Output: %s", std_out)
-
-        print("-" * 80)
         if not dry_run:
-            logger.info("Write docker-compose.yml file: %s", self.path / "docker-compose.yml")
-            write_file(self.path / "docker-compose.yml", std_out)
-
-
-        std_out
-
-        # print("TEST", app.path / "docker-compose.yml")
-
-        # compose_files = app.path / "docker-compose.yml"
+            logger.info(
+                "Write docker-compose.yml file: %s", self.path / "docker-compose.yml"
+            )
+            write_file(docker_file_dest, compose_content)

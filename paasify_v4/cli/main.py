@@ -109,16 +109,17 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         log_levels = [
             ["paasify_v4.cli"],
             [
-                # "paasify_v4.cli",
-                # "paasify_v4.models",
-                # "paasify_v4.engine_docker",
-                "paasify_v4",
+                "paasify_v4.cli",
+                "paasify_v4.models",
+                "paasify_v4.engine_docker",
+                # "paasify_v4",
             ],
             # [
             #     "paasify_v4",
             #     # "clak",
             # ],
             [
+                "paasify_v4",
                 "mrjk_components",
                 "sh.command.process",
             ],

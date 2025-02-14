@@ -24,6 +24,17 @@ from difflib import get_close_matches
 from superconf.anchors2 import PathAnchor
 
 
+from paasify_v4.common import (
+    find_file_in_path,
+    dict_to_env,
+    write_file,
+    read_file,
+    from_yaml,
+    to_domain,
+    flatten,
+)
+
+
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from paasify_v4.lib.git_helpers import GitRepo
 import paasify_v4.exception as exc
@@ -115,6 +126,83 @@ class PaasifyApp(AppNode):
         return self._store_tags
 
 
+
+    # File structure support
+    # # ------------
+    # @setup_once("setup_files")
+    # def setup_files(self):
+    #     "Parse app files"
+    #     # logger.info("Setup app files: %s", self)
+    #     # self._store_files = self.walk_files()
+
+
+
+    def get_compose_files(self):
+        "Return files"
+
+        # Get app path and base docker-compose file
+        app_path = ~self.path
+        docker_files = ["docker-compose.yml", "docker-compose.yaml"]
+        docker_file_matches = find_file_in_path(docker_files, app_path)
+        if len(docker_file_matches) == 0:
+            raise exc.PaasifyAssembleError(
+                f"No docker-compose.yml file found in {app_path}"
+            )
+        elif len(docker_file_matches) > 1:
+            msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
+            raise exc.PaasifyAssembleError(msg)
+        logger.debug("Docker file matches: %s", docker_file_matches)
+        docker_file_match = docker_file_matches[0]
+
+        return docker_file_match
+
+
+    def get_vars_files(self):
+        "Return vars files"
+        app_path = ~self.path
+
+        app_vars_files = ["vars.yml", "vars.yaml"]
+        app_vars_matches = find_file_in_path(app_vars_files, app_path)
+        app_vars = {}
+        if len(app_vars_matches) != 0:
+            app_vars = from_yaml(read_file(app_vars_matches[0]))
+
+        return app_vars
+    
+
+    def get_extra_docker_files(self, tags):
+        "Return extra docker files"
+        
+        app_path = ~self.path
+
+        extra_docker_files = []
+        for tag in tags:
+            tag_paths = app.path / f"docker-compose.{tag}"
+            tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
+            logger.debug("Tag path: %s", tag_paths)
+
+            match = find_file_in_path(tag_paths, app_path)
+            if match:
+                # print("Match:", match, tag_paths)
+                extra_docker_files.append(match[0])
+            else:
+                logger.warning("No match for tag %s in %s", tag, tag_paths)
+
+        return extra_docker_files
+
+
+
+
+
+
+
+
+
+
+############################################
+
+
+
 class PaasifyCollection(AppNode):
     "PaasifyCollection class"
 
@@ -129,7 +217,7 @@ class PaasifyCollection(AppNode):
         self.git = None
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({+self.path or self.name})"
+        return f"{self.__class__.__name__}({self.path.get_name() or self.name})"
 
     # Git support
     # ------------
@@ -229,8 +317,12 @@ class CollectionsPath(AppNode):
 
     paasify_type = "catalog_path"
 
+    # def __repr__(self):
+    #     return f"{self.__class__.__name__}({+self.path or self.name})"
+
     def __repr__(self):
-        return f"{self.__class__.__name__}({+self.path or self.name})"
+        return f"{self.__class__.__name__}({self.path.get_name() or self.name})"
+
 
     def __init__(self, ident, parent=None, path=None, index=None):
         assert isinstance(parent, PaasifyCatalog)
