@@ -19,7 +19,6 @@ import paasify_v4.exception as exc
 logger = logging.getLogger(__name__)
 
 
-
 # Stacks classes
 # ================================================
 
