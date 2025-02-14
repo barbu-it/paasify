@@ -1,13 +1,14 @@
-
 import logging
 import sh
 
 
 _logger = logging.getLogger(__name__)
 
+
 def custom_log(ran, call_args, pid=None):
     # assert False
     return f"{ran}"
+
 
 def shexec(command, logger=None, **kwargs):
     "Execute any command"
@@ -47,9 +48,7 @@ def shexec(command, logger=None, **kwargs):
 
     # Execute command via sh
     try:
-        output = cmd(
-            _log_msg=custom_log, 
-                     **sh_opts)
+        output = cmd(_log_msg=custom_log, **sh_opts)
         return output
 
     except sh.ErrorReturnCode as err:

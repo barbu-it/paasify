@@ -109,8 +109,8 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         log_levels = [
             ["paasify_v4.cli"],
             [
-                # "paasify_v4.cli", 
-                # "paasify_v4.models", 
+                # "paasify_v4.cli",
+                # "paasify_v4.models",
                 # "paasify_v4.engine_docker",
                 "paasify_v4",
             ],
@@ -131,7 +131,7 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             "sh.stream_bufferer",
             "sh.streamreader",
             "sh.streamwriter",
-            "sh.command.process"
+            "sh.command.process",
         ]
 
     # Define options

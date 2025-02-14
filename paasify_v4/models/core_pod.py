@@ -31,6 +31,7 @@ from paasify_v4.common import (
     flatten,
 )
 from paasify_v4.models.core_catalog import PaasifyCatalog
+
 # from paasify_v4.engine_docker.compose_app import ComposeApp
 import paasify_v4.exception as exc
 
