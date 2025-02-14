@@ -1,0 +1,38 @@
+
+namespace: barbu
+
+config:
+  auto_discovery:
+    depth: 3
+    paths:
+
+
+collections:
+  coll1: root1...
+
+vars:  # or var__root
+  # my_top_var: Yeahh
+  # my_top_var2: Yooo
+  # my_second_var: "${my_top_var}${my_top_var}"
+
+
+  vars_from_ns1: val_from_ns1
+  vars_from_ns2: val_from_ns2
+
+vars__admin: # Can be a reference to a vars.yml path
+  admin_var: Yeahh
+
+vars__custom:
+  ip_address: 123.123.123.123
+
+
+
+
+
+stacks:
+  - core:
+  - home_domotic:
+  - home_media:
+  - personal
+  - subdir1/subdir2:
+

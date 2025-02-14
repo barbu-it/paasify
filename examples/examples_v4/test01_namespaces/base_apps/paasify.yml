@@ -1,0 +1,46 @@
+
+collections:
+  _: github.com
+
+
+vars:
+  # my_var1: Yesss
+
+
+  vars_from_stack1: val_from_stack1
+  vars_from_stack2: val_from_stack2
+  
+
+apps: # was stacks previously ... and a list, not a dict
+
+  traefik:
+    app: traefikv44
+    vars:
+      vars_from_app1: val_from_app1
+      vars_from_app2: val_from_app2
+
+
+    tags:
+      - expose_443
+
+  wordpress: wordpress
+
+  admin/app1:
+    vars:
+      # my_var: overide1
+      # my_var_override2: yoo
+
+      vars_from_app1: val_from_app1
+      vars_from_app2: val_from_app2
+
+
+    tags:
+      - traefik-svc
+
+
+  admin/app2:   # gives admin.app2 or app2-admin or admin-app2
+
+
+
+
+

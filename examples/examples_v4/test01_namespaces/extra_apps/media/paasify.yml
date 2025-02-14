@@ -1,0 +1,6 @@
+
+
+apps:
+  uptimekuma:
+  prometheus:
+  nagios:
