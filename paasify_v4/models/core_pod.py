@@ -178,7 +178,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         elif len(docker_file_matches) > 1:
             msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
             raise exc.PaasifyAssembleError(msg)
-        logger.info("Docker file matches: %s", docker_file_matches)
+        logger.debug("Docker file matches: %s", docker_file_matches)
         docker_file_match = docker_file_matches[0]
 
         app_vars_files = ["vars.yml", "vars.yaml"]
@@ -191,7 +191,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         for tag in tags:
             tag_paths = app.path / f"docker-compose.{tag}"
             tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
-            logger.info("Tag path: %s", tag_paths)
+            logger.debug("Tag path: %s", tag_paths)
 
             match = find_file_in_path(tag_paths, app_path)
             if match:
@@ -385,6 +385,12 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         #     logger.info("Output: %s", std_out)
 
         print("-" * 80)
+        if not dry_run:
+            logger.info("Write docker-compose.yml file: %s", self.path / "docker-compose.yml")
+            write_file(self.path / "docker-compose.yml", std_out)
+
+
+        std_out
 
         # print("TEST", app.path / "docker-compose.yml")
 
