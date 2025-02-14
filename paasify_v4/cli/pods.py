@@ -45,7 +45,7 @@ class PodListCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
-        current = ctx.data["runner"].current
+        current = ctx.data["runner"].get_current()
         viewer = current.kind
         out = []
         for pod in current.get_pods():

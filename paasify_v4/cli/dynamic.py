@@ -36,7 +36,7 @@ class DynUpCmd(Parser):
 
         pprint(ctx.args.__dict__)
 
-        item = ctx.data["runner"].current
+        item = ctx.data["runner"].get_current()
         logger.info("Working on: %s", item)
         if not item:
             raise exc.PaasifyWorkdirNotFoundError(
@@ -60,7 +60,7 @@ class DynVarsCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-        item = ctx.data["runner"].current
+        item = ctx.data["runner"].get_current()
 
         logger.info("Working on: %s", item)
         if not item:
@@ -79,9 +79,10 @@ class DynListCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
-        item = ctx.data["runner"].current
+        item = ctx.data["runner"].get_current()
         logger.info("Working on: %s", item)
-        if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
+        # if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
+        if not item:
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
@@ -89,11 +90,16 @@ class DynListCmd(Parser):
         render = []
         # TODO: Fix columns in clak
         columns = ["Name", "Value"]
+        print(item)
         for child in item:
-            if isinstance(child, PaasifyStack):
-                render.append([~child.path, child.ident, child])
-            else:
-                render.append([child.ident, child])
+            render.append({
+                "Path": ~child.path, 
+                "Ident": child.ident, 
+                "Object": child})
+            # if isinstance(child, PaasifyStack):
+            #     render.append([~child.path, child.ident, child])
+            # else:
+            #     render.append([child.ident, child])
         return ListView(render, columns=columns)
 
 

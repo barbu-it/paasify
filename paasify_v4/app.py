@@ -65,8 +65,7 @@ class PaasifyRunner:
         # logger.warning("You are not in a pod directory, go into a pod subdirectory to activate")
         raise exc.PaasifyWorkdirNotFoundError(f"Can't find current pod in: {stack}")
 
-    @property
-    def current(self):
+    def get_current(self):
         "Return current item"
 
         attrs = ["pod", "stack", "namespace"]
