@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)
 class PaasifyApp(AppNode):
     "PaasifyApp class"
 
+    paasify_type = "catalog_app"
+
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, ident, name=None, path=None, parent=None, index=None):
         super().__init__(ident, parent)
@@ -216,6 +218,8 @@ class PaasifyCollection(AppNode):
 class CollectionsPath(AppNode):
     "CollectionsPath class"
 
+    paasify_type = "catalog_path"
+
     def __init__(self, ident, parent=None, path=None, index=None):
         assert isinstance(parent, PaasifyCatalog)
         super().__init__(ident, parent)
@@ -284,6 +288,8 @@ class CollectionsPath(AppNode):
 class PaasifyCatalog(AppNode):
     "Catalog class, manage list of collections paths"
 
+    paasify_type = "catalog"
+
     # node__iterate_backend = "_children"
     node__iterate_setupmarker = "setup_node"
 
@@ -332,7 +338,6 @@ class PaasifyCatalog(AppNode):
             ret.append(data)
 
         return ret
-
 
     ########################## Main objects
 

@@ -136,6 +136,9 @@ class HelperMethods:
 class AppNode(HelperMethods, Node):
     "AppNode class"
 
+    # Default type
+    paasify_type = "internal"
+
     # Default config
     # node__iterate_backend = "_children"
     # node__iterate_setupmarker = "setup_node"
@@ -146,6 +149,11 @@ class AppNode(HelperMethods, Node):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name or ''})"
+
+    @property
+    def kind(self):
+        "Return kind"
+        return self.paasify_type
 
     @property
     def name(self):

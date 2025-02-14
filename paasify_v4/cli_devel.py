@@ -23,7 +23,6 @@ class PodInfoCmd(Parser):
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"
 
-
         if not name:
             pod = ctx.data["runner"].pod
         else:
@@ -45,6 +44,36 @@ class PodInfoCmd(Parser):
         return ShowView(out)
 
 
+class PodListCmd(Parser):
+    "List stack apps"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        current = ctx.data["runner"].current
+        viewer = current.kind
+        out = []
+        for pod in current.get_pods():
+            part1 = {
+                "ident": pod.ident,
+                "name": pod.name,
+                "path": pod.path.get_path(
+                    start=~ctx.data["dir_cwd"],
+                    # start=os.getcwd(),
+                    # mode="rel",
+                    mode=ctx.data["dir_mode"],
+                ),
+            }
+            part2 = {}
+            if viewer in ["namespace"]:
+                part2 = {
+                    "stack": pod.stack.ident,
+                }
+
+            out.append({**part1, **part2})
+
+        return ListView(out)
+
 
 class PodPlaceholderCmd(Parser):
     "Not implemented yet"
@@ -61,7 +90,7 @@ class PodGroup(Parser):
     "Manage pods"
 
     info = Command(PodInfoCmd)
-    # list = Command(StackListCmd)
+    list = Command(PodListCmd)
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
     up = Command(PodPlaceholderCmd)
@@ -78,7 +107,6 @@ class PodGroup(Parser):
     #     collections_paths = ctx.data["paths_collections"]
     #     catalog = PaasifyCatalog(collections_paths=collections_paths)
     #     ctx.data["catalog"] = catalog
-
 
     #     stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
     #     if stack:
@@ -97,11 +125,13 @@ class StackListAppsCmd(Parser):
         out = []
         for stack in namespace:
             print(stack)
-            out.append({
-                "ident": stack.ident,
-                "name": stack.name,
-                "path": ~stack.path,
-            })
+            out.append(
+                {
+                    "ident": stack.ident,
+                    "name": stack.name,
+                    "path": ~stack.path,
+                }
+            )
         return ListView(out)
 
 
@@ -109,7 +139,6 @@ class StackInfoCmd(Parser):
     "Show stack info"
 
     name = Argument("NAME", help="App name", nargs="?")
-
 
     def cli_run(self, ctx=None, name=None, **_):
         "Main command"

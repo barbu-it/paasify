@@ -62,9 +62,8 @@ class PaasifyRunner:
         if stack.sub_path:
             return stack[stack.sub_path]
 
-        logger.warning("You are not in a pod directory, go into a pod subdirectory to activate")
+        # logger.warning("You are not in a pod directory, go into a pod subdirectory to activate")
         raise exc.PaasifyWorkdirNotFoundError(f"Can't find current pod in: {stack}")
-
 
     @property
     def current(self):

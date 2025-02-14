@@ -25,11 +25,15 @@ logger = logging.getLogger(__name__)
 class PaasifyPod(VarMgrNodeMixin, AppNode):
     "Base class for all Paasify pods"
 
-    def __init__(self, ident, parent=None, raw_config=None, path=None):
+    paasify_type = "pod"
+
+    def __init__(self, ident, parent=None, name=None, raw_config=None, path=None):
         assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
 
-        self._path = PathAnchor(path)
+        self._name = name or ident.split("/", maxsplit=1)[0]
+
+        self._path = PathAnchor(path, parent=parent.path)
         self.config = self.build_config(raw_config, ident=ident)
 
         self.setup_node()
@@ -146,6 +150,8 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
 class PaasifyStack(WorkingDirNode):
     "Base class for all Paasify stacks"
+
+    paasify_type = "stack"
 
     OBJECT_NAME = "Stack"
     ALLOWED_CONF_FILES = [

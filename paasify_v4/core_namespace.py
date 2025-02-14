@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 class PaasifyNoNamespace(AppNode):
     "No namespace class, just implement dumb methods"
 
+    paasify_type = "namespace"
+
     OBJECT_NAME = "EmptyNamespace"
     ALLOWED_CONF_FILES = ["paasify.ns.yml"]
 
@@ -24,6 +26,8 @@ class PaasifyNoNamespace(AppNode):
 
 class PaasifyNamespace(WorkingDirNode):
     "Namespace class, manage list of stacks"
+
+    paasify_type = "namespace"
 
     node__iterate_backend = "_store_stacks"
     node__iterate_setupmarker = "setup_stacks"
@@ -146,3 +150,20 @@ class PaasifyNamespace(WorkingDirNode):
         # varmgr.set_layer("pod_vars", ret["pod_vars"])
 
         return varmgr
+
+    @requires_setup_node("setup_node")
+    def get_pods(self):
+        "Get pods"
+        out = []
+        for stack in self.get_stacks():
+            out.extend(stack.get_pods())
+        return out
+
+    @requires_setup_node("setup_node")
+    def get_stacks(self):
+        "Get stacks"
+
+        out = []
+        for stack in self:
+            out.append(stack)
+        return out
