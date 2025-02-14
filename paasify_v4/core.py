@@ -146,9 +146,10 @@ def requires_setup_node(name="setup_node"):
 # Paasify AppNode class
 # ================================================
 
+class HelperMethodsMixin:
+    "Common helper methods"
 
-class HelperMethods:
-    def read_yaml_file(self, filename="vars.yml"):
+    def read_yaml_file(self, filename):
         "Read vars.yml file"
         vars_file = os.path.join(self.get_path(), filename)
         if os.path.exists(vars_file):
@@ -158,7 +159,7 @@ class HelperMethods:
         return {}
 
 
-class AppNode(HelperMethods, Node):
+class AppNode(HelperMethodsMixin, Node):
     "AppNode class"
 
     # Default type

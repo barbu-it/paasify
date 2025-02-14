@@ -63,12 +63,6 @@ class PaasifyApp(AppNode):
         self._store_vars = {}
         self._store_tags = {}
 
-    # @setup_once("setup_node")
-    # def setup_node(self):
-    #     "Parse app metadata"
-    #     logger.info("Setup app vars: %s", self)
-
-    #     self._store_vars = self.read_yaml_file()
 
     # Vars support
     # ------------
@@ -76,7 +70,7 @@ class PaasifyApp(AppNode):
     def setup_vars(self):
         "Parse app metadata"
         logger.info("Setup app vars: %s", self)
-        self._store_vars = self.read_yaml_file()
+        self._store_vars = self.get_vars_files()
 
     @requires_setup_node("setup_vars")
     def get_vars(self):
@@ -127,14 +121,13 @@ class PaasifyApp(AppNode):
 
 
 
-    # File structure support
+    # File structure support - Shared code Apps<=>Pods
     # # ------------
     # @setup_once("setup_files")
     # def setup_files(self):
     #     "Parse app files"
     #     # logger.info("Setup app files: %s", self)
     #     # self._store_files = self.walk_files()
-
 
 
     def get_compose_files(self):
@@ -177,7 +170,7 @@ class PaasifyApp(AppNode):
 
         extra_docker_files = []
         for tag in tags:
-            tag_paths = app.path / f"docker-compose.{tag}"
+            tag_paths = app_path / f"docker-compose.{tag}"
             tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
             logger.debug("Tag path: %s", tag_paths)
 

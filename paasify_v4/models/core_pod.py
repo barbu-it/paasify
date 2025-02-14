@@ -5,6 +5,8 @@ import logging
 from pprint import pprint
 import sh
 
+from types import SimpleNamespace
+
 from superconf.anchors2 import PathAnchor
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
 from mrjk_components.varmgr.lib.store_base import (
@@ -149,58 +151,12 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         return varmgr
 
 
-    # @property
-    # def app(self):
-    #     "Return the app"
-    #     return self._app
-
-    # @setup_once("setup_app")
-    # def setup_app(self):
-    #     "Setup the app"
-
-    #     app_name = self.config.get("app")
-    #     if not app_name:
-    #         return None
-
-
-    #     out = self.catalog.resolve_app(app_name)
-
-    #     self._app = out
-    #     if len(out) > 1:
-    #         out_names = [app.ident for app in out]
-    #         msg = f"Multiple apps found for '{app_name}', keeping only the first one: {out_names}"
-    #         logger.info(msg)
-
-    #     app = out[0]
-
-    #     # Get app path and base docker-compose file
-    #     app_path = ~app.path
-    #     docker_files = ["docker-compose.yml", "docker-compose.yaml"]
-    #     docker_file_matches = find_file_in_path(docker_files, app_path)
-    #     if len(docker_file_matches) == 0:
-    #         raise exc.PaasifyAssembleError(
-    #             f"No docker-compose.yml file found in {app_path}"
-    #         )
-    #     elif len(docker_file_matches) > 1:
-    #         msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
-    #         raise exc.PaasifyAssembleError(msg)
-    #     logger.debug("Docker file matches: %s", docker_file_matches)
-    #     docker_file_match = docker_file_matches[0]
-
-    #     app_vars_files = ["vars.yml", "vars.yaml"]
-    #     app_vars_matches = find_file_in_path(app_vars_files, app_path)
-    #     app_vars = {}
-    #     if len(app_vars_matches) != 0:
-    #         app_vars = from_yaml(read_file(app_vars_matches[0]))
-
-
-
-
+    # Assembling methods
+    # --------------------------------
 
     # @requires_setup_node("setup_app")
     def assemble(self, dry_run=False):
         "Assemble the pod"
-
 
         # Resolve app name
         app_name = self.config.get("app")
@@ -217,14 +173,116 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         app_vars = app.get_vars_files()
         extra_docker_files = app.get_extra_docker_files(tags)
 
+        # Process variables
+        ctx = SimpleNamespace(
+            tags=tags,
+            app_vars=app_vars,
+            extra_docker_files=extra_docker_files,  
+        )
+        varmgr = self.get_varmgr()
+        vbuild = self.get_build_varmgr(varmgr, ctx)
+        renderer = vbuild.get_renderer("scope_build")
+        build_vars = renderer.render_values()
+
+        # Process .env file content
+        dc_project_name = "_".join([self.ns.name, self.stack.name, self.name])
+        compose_settings = {
+            "COMPOSE_PROJECT_NAME": dc_project_name,
+            "COMPOSE_FILE": "docker-compose.yml",
+            # "COMPOSE_PROFILES": "profile1,profile2",
+            # "COMPOSE_CONVERT_WINDOWS_PATHS": "false",
+            "COMPOSE_PATH_SEPARATOR": ":",  # ; on windows
+            # "COMPOSE_IGNORE_ORPHANS": "false",
+            "COMPOSE_REMOVE_ORPHANS": "true",  # False by default
+            # "COMPOSE_PARALLEL_LIMIT": "10", # Not set by default
+            # "COMPOSE_ANSI": "auto",
+            # "COMPOSE_STATUS_STDOUT": "false",
+            # COMPOSE_ENV_FILES=.env.envfile1, .env.envfile2
+            "COMPOSE_ENV_FILES": ".env .env.secrets",
+            # "COMPOSE_MENU": "true",
+            # "COMPOSE_EXPERIMENTAL": "true",
+        }
+        self.write_env_file(
+            compose_settings=compose_settings, 
+            build_vars=build_vars, dry_run=dry_run)
+
+        # Process docker-compose.yml file
+        self.write_compose_file(
+            compose_files=[docker_file_match] + extra_docker_files, 
+            name=dc_project_name, 
+            build_vars=build_vars, 
+            dry_run=dry_run)
+
+
+    def write_compose_file(self, compose_files=None, name=None, build_vars=None, dry_run=False):
+        "Write docker-compose.yml file"
+
+        compose_files = compose_files or []
+
+        # Process docker-compose.yml file
+        docker_file_dest = self.path / "docker-compose.yml"
+
+        comp_app = ComposedApp(
+            name=name,
+            project_dir=self.path.get_path(),
+            compose_files=compose_files
+        )
+
+        # TODO: To set back interpolate to false, there is an issue on
+        # volumes names VS binds
+        compose_content = comp_app.assemble(interpolate=True, normalize=False) 
+        # compose_content = comp_app.assemble(interpolate=False, normalize=False)
+        for varname in comp_app.get_variables2():
+            if not varname in build_vars:
+                logger.error("Missing variable: %s", varname)
+                # logger.error("  %s", conf)
+
+
+        if not dry_run:
+            logger.info(
+                "Write docker-compose.yml file: %s", self.path / "docker-compose.yml"
+            )
+            write_file(docker_file_dest, compose_content)
+
+
+    def write_env_file(self, compose_settings, build_vars=None, dry_run=False):
+        "Write .env file"
+
+        env_content = "# File autogenerated by paasify, do not edit\n"
+        env_content += "# =====================================\n\n"
+        if compose_settings:
+            env_content += "\n# Compose settings \n"
+            env_content += "# ---------- \n\n"
+            env_content += dict_to_env(compose_settings) + "\n"
+
+        if build_vars:
+            env_content += "\n# Variables \n"
+            env_content += "# ---------- \n\n"
+            env_content += (dict_to_env(dict(sorted(build_vars.items())))) + "\n"
+
+        if compose_settings and not build_vars:
+            logger.warning("No build vars, skipping env file creation")
+            return
+
+        if not dry_run:
+            logger.info("Write env file: %s", self.path / ".env")
+            write_file(self.path / ".env", env_content)
+        else:
+            logger.info("Dry run, not writing env file: %s", self.path / ".env")
+        return env_content
 
 
 
+
+    def get_build_varmgr(self, varmgr, ctx):
+        "Get build varmgr"
+
+        tags = ctx.tags
+        app_vars = ctx.app_vars
+        # extra_docker_files = ctx.extra_docker_files
 
         varmgr = self.get_varmgr()
         # vars_dict = varmgr.get_values()
-
-
 
         # Create environment file
         default_network = "network"
@@ -324,62 +382,8 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             }
         )
 
+        return vbuild
+    
 
-        renderer = vbuild.get_renderer("scope_build")
-        build_vars = renderer.render_values()
-        dc_project_name = "_".join([self.ns.name, self.stack.name, self.name])
-        compose_settings = {
-            "COMPOSE_PROJECT_NAME": dc_project_name,
-            "COMPOSE_FILE": "docker-compose.yml",
-            # "COMPOSE_PROFILES": "profile1,profile2",
-            # "COMPOSE_CONVERT_WINDOWS_PATHS": "false",
-            "COMPOSE_PATH_SEPARATOR": ":",  # ; on windows
-            # "COMPOSE_IGNORE_ORPHANS": "false",
-            "COMPOSE_REMOVE_ORPHANS": "true",  # False by default
-            # "COMPOSE_PARALLEL_LIMIT": "10", # Not set by default
-            # "COMPOSE_ANSI": "auto",
-            # "COMPOSE_STATUS_STDOUT": "false",
-            # COMPOSE_ENV_FILES=.env.envfile1, .env.envfile2
-            "COMPOSE_ENV_FILES": ".env .env.secrets",
-            # "COMPOSE_MENU": "true",
-            # "COMPOSE_EXPERIMENTAL": "true",
-        }
-
-        env_content = "# File autogenerated by paasify, do not edit\n"
-        env_content += "# =====================================\n\n"
-        env_content += "\n# Compose settings \n"
-        env_content += "# ---------- \n\n"
-        env_content += dict_to_env(compose_settings) + "\n"
-
-        env_content += "\n# Variables \n"
-        env_content += "# ---------- \n\n"
-        env_content += (dict_to_env(dict(sorted(build_vars.items())))) + "\n"
-
-        if not dry_run:
-            logger.info("Write env file: %s", self.path / ".env")
-            write_file(self.path / ".env", env_content)
-
-
-        # Build docker files
-        docker_file_dest = self.path / "docker-compose.yml"
-        compose_files = [docker_file_match] + extra_docker_files
-        comp_app = ComposedApp(
-            name=dc_project_name,
-            project_dir=self.path.get_path(),
-            compose_files=compose_files
-        )
-        compose_content = comp_app.assemble(interpolate=False, normalize=False)
-        for varname in comp_app.get_variables2():
-            if not varname in build_vars:
-                logger.error("Missing variable: %s", varname)
-                # logger.error("  %s", conf)
-
-
-        # pprint(comp_app.get_variables2())
-        # assert False
-
-        if not dry_run:
-            logger.info(
-                "Write docker-compose.yml file: %s", self.path / "docker-compose.yml"
-            )
-            write_file(docker_file_dest, compose_content)
+    # Other methods
+    # --------------------------------
