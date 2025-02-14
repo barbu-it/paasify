@@ -78,17 +78,9 @@ class PaasifyApp(AppNode):
         logger.info("Setup app tags: %s", self)
         self._store_tags = self.walk_tags()
 
-    # def walk_tags(self):
-    #     "Walk app tags"
-    #     path = self.get_path()
-    #     tags = self.get_tags(path)
-    #     return tags
-
     def walk_tags(self):
         "Return tags"
         path = self.get_path()
-        # print("SCAN PATH", path)
-
         needle = "docker-compose.*.yml"
         tags = {}
 
@@ -194,7 +186,6 @@ class PaasifyCollection(AppNode):
         needle = "docker-compose.yml"
 
         for match in Path(collection_path).rglob(needle):
-            # print("MATCH", match)
             # Get relative path from collection root
             rel_path = match.relative_to(collection_path)
 
@@ -261,7 +252,6 @@ class CollectionsPath(AppNode):
                 if dir_name.startswith("."):
                     continue
 
-                # print ("SUBPATH", dir_name)
                 collection = PaasifyCollection(
                     ident=dir_name,
                     name=dir_name,
@@ -343,14 +333,6 @@ class PaasifyCatalog(AppNode):
 
         return ret
 
-    # def walk_applications(self) -> Dict:
-    #     "Walk collections directories and return scan report"
-
-    #     # print("YO APPS")
-    #     for _, collection in self._store_collections.items():
-    #         collection.setup_node()
-
-    #     return "WIP"
 
     ########################## Main objects
 

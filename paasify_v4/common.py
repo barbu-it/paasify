@@ -125,7 +125,6 @@ def find_file_up(names, paths):
 def find_files_down(names, path, depth=3, ignore_dirs=None):
     "Find files in path and subdirectories down to depth"
     result = []
-    strip_prefix = f"{path}"
     ignore_dirs = ignore_dirs or [
         ".git",
         "node_modules",
@@ -143,19 +142,12 @@ def find_files_down(names, path, depth=3, ignore_dirs=None):
             log.debug("Scanning %s at depth %s/%s", current_path, current_depth, depth)
             with os.scandir(current_path) as entries:
                 for entry in entries:
-                    # relpath = entry.path[len(strip_prefix):]
-                    # relpath_level = relpath.count(os.sep)
-
-                    # print(f"Entry: {entry.path} {len(entry.path)}")
-                    # print(f"RELPATH: |{relpath}|", relpath_level)
-
                     if entry.is_file() and entry.name in names:
                         result.append(entry.path)
                     elif entry.is_dir() and entry.name not in ignore_dirs:
                         scan_dir(entry.path, current_depth + 1)
         except PermissionError as error:
             log.debug("Skip %s because of permission error: %s", current_path, error)
-            pass
 
     scan_dir(path, 0)
     return result

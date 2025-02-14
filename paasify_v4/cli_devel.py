@@ -5,16 +5,7 @@ from pprint import pprint
 from clak import Parser, Argument, Command
 from clak.views import ListView, ShowView
 
-from paasify_v4.common import (
-    read_file,
-    from_yaml,
-    find_file_up,
-    list_parent_dirs,
-    to_json,
-    to_yaml,
-)
 from paasify_v4.core_catalog import PaasifyCatalog
-
 from paasify_v4.core_namespace import PaasifyNamespace
 from paasify_v4.core_stack import PaasifyStack
 
@@ -27,14 +18,32 @@ logger = logging.getLogger("paasify_v4.cli.devel")
 class PodInfoCmd(Parser):
     "Show pod info"
 
-    def cli_run(self, ctx=None, **_):
+    name = Argument("NAME", help="App name", nargs="?")
+
+    def cli_run(self, ctx=None, name=None, **_):
         "Main command"
 
-        print("PodInfoCmd")
 
-        # stack = ctx.data["stack"]
-        # ns = ctx.data["namespace"]
-        # catalog = ctx.data["catalog"]
+        if not name:
+            pod = ctx.data["runner"].pod
+        else:
+            pod = ctx.data["runner"].stack[name]
+
+        out = {
+            "ident": pod.ident,
+            "name": pod.name,
+            "path": ~pod.path,
+            # "config": ~pod.config_path,
+            # "namespace": pod.ns,
+            # "catalog": pod.catalog,
+            # "path_mode": pod.path_mode,
+            "": "",
+        }
+        for key, val in pod.get_vars().items():
+            out[f"var:{key}"] = val
+
+        return ShowView(out)
+
 
 
 class PodPlaceholderCmd(Parser):
@@ -64,21 +73,16 @@ class PodGroup(Parser):
     # logs = Command(PodPlaceholderCmd)
     # exec = Command(PodPlaceholderCmd)
 
-    def cli_group(self, ctx, force=None, debug=False, **_):
+    # def cli_group(self, ctx, force=None, debug=False, **_):
 
-        collections_paths = ctx.data["paths_collections"]
-        catalog = PaasifyCatalog(collections_paths=collections_paths)
-        ctx.data["catalog"] = catalog
+    #     collections_paths = ctx.data["paths_collections"]
+    #     catalog = PaasifyCatalog(collections_paths=collections_paths)
+    #     ctx.data["catalog"] = catalog
 
-        # ns = PaasifyNamespace(ident="cli_init", path=os.getcwd(), search_up=True)
-        # ctx.data["namespace"] = ns
 
-        # stack = PaasifyStack(ident="cli_init", path=os.getcwd(), search_up=True)
-        # ctx.data["stack"] = stack
-
-        stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
-        if stack:
-            ctx.data["stack"] = stack
+    #     stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
+    #     if stack:
+    #         ctx.data["stack"] = stack
 
 
 # Stack management
@@ -89,31 +93,55 @@ class StackListAppsCmd(Parser):
     def cli_run(self, ctx=None, **_):
         "Main command"
 
-        # catalog = ctx.data["catalog"]
-        stack = ctx.data["stack"]
-
-        # pprint(stack.__dict__)
-
-        out = stack.get_deployments()
-        # render = []
-        # for item in out.items():
-        # pprint(out)
+        namespace = ctx.data["runner"].namespace
+        out = []
+        for stack in namespace:
+            print(stack)
+            out.append({
+                "ident": stack.ident,
+                "name": stack.name,
+                "path": ~stack.path,
+            })
         return ListView(out)
 
 
 class StackInfoCmd(Parser):
     "Show stack info"
 
-    def cli_run(self, ctx=None, **_):
+    name = Argument("NAME", help="App name", nargs="?")
+
+
+    def cli_run(self, ctx=None, name=None, **_):
         "Main command"
 
+        if not name:
+            stack = ctx.data["runner"].stack
+        else:
+            stack = ctx.data["runner"].stack[name]
+
         # catalog = ctx.data["catalog"]
-        stack = ctx.data["stack"]
 
         # pprint(stack.__dict__)
 
-        out = stack.get_deployments()
-        pprint(out)
+        out = {
+            "ident": stack.ident,
+            "name": stack.name,
+            "path": ~stack.path,
+            "config": ~stack.config_path,
+            "namespace": stack.ns,
+            "catalog": stack.catalog,
+            "path_mode": stack.path_mode,
+            "sub_path": stack.sub_path,
+            "": "",
+        }
+
+        for pod in stack:
+            out[f"pod:{pod.ident}"] = pod.ident
+
+        return ShowView(out)
+
+        # out = stack.get_deployments()
+        # pprint(out)
 
         # print(f"Stack: {stack.ident}")
 
@@ -145,15 +173,15 @@ class StackGroup(Parser):
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
 
-    def cli_group(self, ctx, force=None, debug=False, **_):
+    # def cli_group(self, ctx, force=None, debug=False, **_):
 
-        collections_paths = ctx.data["paths_collections"]
-        catalog = PaasifyCatalog(collections_paths=collections_paths)
-        ctx.data["catalog"] = catalog
+    #     collections_paths = ctx.data["paths_collections"]
+    #     catalog = PaasifyCatalog(collections_paths=collections_paths)
+    #     ctx.data["catalog"] = catalog
 
-        stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
-        if stack:
-            ctx.data["stack"] = stack
+    #     stack = find_closest_workdir(path=os.getcwd(), kind=[PaasifyStack])
+    #     if stack:
+    #         ctx.data["stack"] = stack
 
 
 # Namespace management
@@ -165,14 +193,10 @@ class NamespaceInfoCmd(Parser):
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        ns = ctx.data["namespace"]
-
-        # print(f"Namespace: {ns.name}")
-        # pprint(ns.__dict__)
-
+        ns = ctx.data["runner"].namespace
         out = {
             "ident": ns.ident,
-            "root_dir": ~ns._path,
+            "root_dir": ~ns.path,
             "config_file": ~ns.config_path,
             "config": ns.config["config"],
             "stacks": ns.config["stacks"],
@@ -182,10 +206,6 @@ class NamespaceInfoCmd(Parser):
 
         for key, val in ns.get_vars().items():
             out[f"var:{key}"] = val
-
-        # out = dict(**ns.config)
-
-        # pprint(out)
         return ShowView(out)
 
 
@@ -196,8 +216,3 @@ class NamespaceGroup(Parser):
     # list = Command(NamespaceListCmd)
     # show = Command(NamespaceShowCmd)
     # devel = Command(CollectionDevelCmd)
-
-    def cli_group(self, ctx, force=None, debug=False, **_):
-
-        ns = PaasifyNamespace(ident="cli_init", path=os.getcwd(), search_up=True)
-        ctx.data["namespace"] = ns

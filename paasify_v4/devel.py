@@ -2,12 +2,8 @@
 import logging
 from pprint import pprint
 
-# from typing import List, Dict
-# from dataclasses import dataclass
-# from types import SimpleNamespace
 import os.path
 
-# from superconf.anchors import PathAnchor
 
 from paasify_v4.common import (
     read_file,

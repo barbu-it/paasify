@@ -1,6 +1,5 @@
 "Manage stacks"
 
-# import os
 import logging
 from pprint import pprint
 
@@ -13,7 +12,6 @@ from paasify_v4.core import (
     requires_setup_node,
 )
 from paasify_v4.core_catalog import PaasifyCatalog
-from paasify_v4.core_namespace import PaasifyNamespace
 import paasify_v4.exception as exc
 
 
@@ -175,7 +173,7 @@ class PaasifyStack(WorkingDirNode):
 
         # Register namespace if provided
         if namespace:
-            assert isinstance(namespace, PaasifyNamespace)
+            assert isinstance(namespace, AppNode)
         self.ns = namespace
 
         # Register catalog if provided

@@ -14,12 +14,10 @@ with controlled initialization patterns.
 
 import os
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 # pylint: disable=unused-import
 from pprint import pprint
-
-# from pathlib import Path
 
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
 from mrjk_components.varmgr.lib.store_base import (
@@ -70,13 +68,6 @@ class Node:
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.ident or ''})"
-
-
-# # @dataclass
-# class DataProtocol:
-#     "DataProtocol class, generic data protocols for inter class communication"
-
-#     ident: str
 
 
 SETUP_PREFIX = "__node__setup__"
@@ -162,8 +153,7 @@ class AppNode(HelperMethods, Node):
         if hasattr(self, "_name"):
             return self._name
         name = self.ident
-        # if name and "/" in name:
-        #     name = name.split("/")[-1]
+
         return name
 
     @property
@@ -201,7 +191,6 @@ class AppNode(HelperMethods, Node):
         # Check if store is inited
         backend_setup_marker_name = self.node__iterate_setupmarker
         if backend_setup_marker_name is None:
-            # logger.info("Store '%s' does not need to setup backend: %s", self, backend_store_name)
             logger.info(
                 "Store: Store: %s.%s: does not specify setup marker",
                 self,
@@ -230,12 +219,6 @@ class AppNode(HelperMethods, Node):
                 )
                 func()
 
-                # assert False, "TO IMPLEMENT"
-                # func()
-                # logger.info("Store '%s.%s': setup marker is not set", self, backend_store_name)
-                # print("RUN SETUP", self, backend_setup_marker_attr)
-                # assert False, "TO IMPLEMENT"
-
         # Then fetch the store name
         backend_store_attr = f"{backend_store_name}"
         backend_store = getattr(self, backend_store_attr, None)
@@ -254,51 +237,6 @@ class AppNode(HelperMethods, Node):
         assert isinstance(backend_store, list), f"Store is not a list: {backend_store}"
         return backend_store
 
-        # assert False, "STOP"
-
-        # attr = getattr(self, self.node__iterate_backend)
-        # print("\n\nGET STORE ATTR", self, attr)
-
-        # iterate_setup_name = getattr(self, "node__iterate_setupmarker", None)
-        # if iterate_setup_name:
-        #     iterate_setup_marker = getattr(self, iterate_setup_name, None)
-        #     print("ITERATE SETUP:", iterate_setup_name, iterate_setup_marker)
-
-        #     setup_marker = f"_setup_{iterate_setup_name}"
-        #     print("SETUP MARKER:", setup_marker)
-        #     pprint(self.__dict__)
-
-        #     # Check if setup marker is not set to true
-        #     if not hasattr(self, setup_marker):
-        #         print("RUN SETUP", self, setup_marker)
-        #         func = iterate_setup_marker
-        #         func(self)
-        #         setattr(self, setup_marker, True)
-
-        # # marker_name = getattr(self, self.node__iterate_setupmarker)
-
-        # # setup_marker = f"_setup_{attr}"
-
-        # # print("GET STORE ATTR", self,  self.node__iterate_backend, attr)
-
-        # if self.node__iterate_backend.startswith("_store_"):
-        #     if hasattr(self, "setup_node"):
-        #         print("AUTOSTART SETUP NODE", self)
-        #         # Then setup the node
-        #         self.setup_node()
-
-        # # setup_marker = f"_setup_{marker_name}"
-        # # if not hasattr(self, setup_marker):
-        # #     func = getattr(self, marker_name)
-        # #     print("ITERATOR RUN SETUP", self, func)
-        # #     func(self)
-        # #     setattr(self, setup_marker, True)
-        # #     # return result
-
-        # if isinstance(attr, dict):
-        #     return list(attr.values())
-        # return attr
-
     def __iter__(self):
         "Iterate over children"
         logger.debug("Iterate over children: %s", self)
@@ -312,11 +250,8 @@ class AppNode(HelperMethods, Node):
         "Get item"
         logger.debug("Get item: %s.%s", self, key)
 
-        # print("==> GET ITEM", self, key)
         store = self._get_store_attr()
-        # print("__get__item__", key, store)
         for item in store:
-            # print("ITEM", item.ident, key)
             if item.ident == key:
                 return item
         return None
@@ -324,10 +259,6 @@ class AppNode(HelperMethods, Node):
     def __contains__(self, key):
         "Check if item is in store"
         return key in self._get_store_attr()
-
-    # def __getattr__(self, name):
-    #     "Get attribute"
-    #     return getattr(self._get_store_attr(), name)
 
     def __bool__(self):
         "Check if node is empty"
@@ -345,10 +276,10 @@ class VarMgrNodeMixin:
         "Get varmgr"
         logger.info("Prepare varmgr for: %s", self)
 
-        # # Goal:
-        # # - Show vars from the stack
-        # # - Show vars from the namespace
-        # # - Show vars from the pod
+        # Goal:
+        # - Show vars from the stack
+        # - Show vars from the namespace
+        # - Show vars from the pod
         # ret = {
         #     "ns_vars": self.ns.get_vars(),
         #     "stack_vars": self.stack.get_vars(),
@@ -382,9 +313,6 @@ class VarMgrNodeMixin:
 class WorkingDirNode(VarMgrNodeMixin, AppNode):
     "Working directory mixin class"
 
-    # node__iterate_backend = "_children"
-    # node__iterate_setupmarker = "setup_node"
-
     ALLOWED_CONF_FILES = []
     OBJECT_NAME = "working_dir"
 
@@ -415,7 +343,7 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
         )
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.path.get_path(mode='abs') or ''})"
+        return f"{self.__class__.__name__}({self.path.get_path(mode='rel') or ''})"
 
     def load_config(self, config: Optional[str] = None):
         "Load the namespace config from a file"
@@ -482,13 +410,9 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
 
         sub_path = ""
         if path:
-
-            # print("PATHS", path, root_path)
             sub_path = path.replace(root_path, "")
             # Remove leading slash
             sub_path = sub_path.lstrip("/")
-            # print("SUB PAT?H", sub_path)
-            # assert False
 
         # Create anchored paths
         # ------------------------

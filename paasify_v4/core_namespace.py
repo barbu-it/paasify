@@ -5,6 +5,7 @@ import logging
 from superconf.anchors2 import FileAnchor
 from paasify_v4.common import find_files_down
 from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
+from paasify_v4.core_stack import PaasifyStack
 
 # import paasify_v4.exception as exc
 
@@ -39,14 +40,9 @@ class PaasifyNamespace(WorkingDirNode):
         super().__init__(**kwargs)
 
         self._store_stacks = {}
-
         # Register catalog if provided
-        # if catalog:
-        #     assert isinstance(catalog, PaasifyCatalog)
         self.catalog = catalog
-
         self.setup_node()
-        # pprint(self.__dict__)
 
     @setup_once("setup_node")
     def setup_node(self):
@@ -72,8 +68,6 @@ class PaasifyNamespace(WorkingDirNode):
         # - Scan all subdirectories with depth=3 and search for paasify.stack.yml file.
         # - For each files, create a PaasifyStack object and add it to the stacks list.
         # - Return the stacks list.
-
-        # print("SETUP STACKS from", ~self.path)
 
         # Get auto discovery config
         auto_discovery = self.config.get("config", {}).get("auto_discovery", {})
@@ -113,40 +107,17 @@ class PaasifyNamespace(WorkingDirNode):
             logger.debug("Found stack file: %s", stack_file)
             # We import locally PaasifyStack to avoid circular import
             # pylint: disable=import-outside-toplevel
-            from paasify_v4.core_stack import PaasifyStack
+            # from paasify_v4.core_stack import PaasifyStack
 
             stack_ident2 = fanchor.get_dir(
                 mode="rel", start=self.path.get_dir(), clean=True
             )
             stack_ident = stack_dir
-            print("STACK DIR", stack_ident, "VS", stack_ident2)
 
             stack_inst = PaasifyStack(ident=stack_ident2, parent=self, path=~fanchor)
             stacks_config[stack_ident] = stack_inst
 
-        # pprint(stacks_config)
-
         self._store_stacks = stacks_config
-        # sys.exit(0)
-
-        # Find all paasify stack files under namespace path
-        #
-        # stack_files = []
-        # for root, dirs, files in os.walk(path):
-        #     # Calculate current depth
-        #     depth = root[len(path):].count(os.sep)
-        #     if depth > max_depth:
-        #         # Skip deeper directories
-        #         dirs[:] = []
-        #         continue
-
-        #     for file in files:
-        #         if file in ["paasify.yml", "paasify.yaml"]:
-        #             stack_path = os.path.join(root, file)
-        #             logger.debug("Found stack file: %s", stack_path)
-        #             stack_files.append(stack_path)
-
-        # pprint(stack_files)
 
         logger.info(
             "Found %d stack files under %s (max depth=%d)",
@@ -154,19 +125,6 @@ class PaasifyNamespace(WorkingDirNode):
             path,
             max_depth,
         )
-
-        # ################################
-
-        # pprint(self.__dict__)
-        # stacks = self.config.get("stacks", [])
-        # for stack in stacks:
-        #     print("SETUP STACK", stack)
-
-        #     # stack.setup_node()
-        # # self.config["stacks"] = [
-        # #     PaasifyStack(path=os.path.join(self._path, stack))
-        # #     for stack in self.config.get("stacks", [])
-        # # ]
 
     @requires_setup_node("setup_node")
     def get_vars(self):
