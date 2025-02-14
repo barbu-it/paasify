@@ -44,6 +44,28 @@ from paasify_v4.common import (
 logger = logging.getLogger(__name__)
 
 
+# Node registry class
+# ================================================
+class NodeRegistry:
+    "Node registry class"
+
+    def __init__(self):
+        self.nodes = []
+
+    def register_node(self, node):
+        "Register a node"
+        self.nodes.append(node)
+
+    def get_node(self, ident):
+        "Get a node"
+        for node in self.nodes:
+            if node.ident == ident:
+                return node
+        return None
+
+
+node_registry = NodeRegistry()
+
 # Parent Node class
 # ================================================
 
@@ -60,6 +82,9 @@ class Node:
         self.ident = ident
         self.parent = parent
         self._children = {}
+
+        # Register the node (Temp?)
+        node_registry.register_node(self)
 
         # Make the node relationship
         if parent is not None:
@@ -161,7 +186,6 @@ class AppNode(HelperMethods, Node):
         if hasattr(self, "_name"):
             return self._name
         name = self.ident
-
         return name
 
     @property
@@ -298,16 +322,31 @@ class VarMgrNodeMixin:
         varmgr = RenderableStoreManager()
         varmgr.add_sources(
             [
-                Source("ns_vars", level=900, help="Namespace variables"),
-                Source("stack_vars", level=700, help="Stack variables"),
+                Source("runtime_vars", level=1000, help="Runtime variables"),
                 Source("pod_vars", level=500, help="Pod variables"),
+                Source("stack_vars", level=700, help="Stack variables"),
+                Source("ns_vars", level=900, help="Namespace variables"),
+                Source("app_vars", level=1000, help="App variables"),
+                Source("default_vars", level=9999, help="Default variables"),
             ]
         )
         varmgr.set_scopes(
             {
-                "scope_ns": ["ns_vars"],
-                "scope_stack": ["stack_vars", "ns_vars"],
-                "scope_pod": ["pod_vars", "stack_vars", "ns_vars"],
+                "scope_ns": ["runtime_vars", "ns_vars", "default_vars"],
+                "scope_stack": [
+                    "runtime_vars",
+                    "stack_vars",
+                    "ns_vars",
+                    "default_vars",
+                ],
+                "scope_pod": [
+                    "runtime_vars",
+                    "pod_vars",
+                    "stack_vars",
+                    "ns_vars",
+                    "app_vars",
+                    "default_vars",
+                ],
             }
         )
 

@@ -106,6 +106,34 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             exc.PaasifyError,
         ]
 
+        log_levels = [
+            ["paasify_v4.cli"],
+            [
+                # "paasify_v4.cli", 
+                # "paasify_v4.models", 
+                # "paasify_v4.engine_docker",
+                "paasify_v4",
+            ],
+            # [
+            #     "paasify_v4",
+            #     # "clak",
+            # ],
+            [
+                "mrjk_components",
+                "sh.command.process",
+            ],
+            [""],
+        ]
+
+        log_silent = [
+            "sh.command.process.streamreader",
+            "sh.command.process.streamwriter",
+            "sh.stream_bufferer",
+            "sh.streamreader",
+            "sh.streamwriter",
+            "sh.command.process"
+        ]
+
     # Define options
     # ----------------------
 

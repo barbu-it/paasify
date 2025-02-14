@@ -13,6 +13,7 @@ This module provides common utility functions used throughout Paasify:
 import os
 import json
 import logging
+import re
 
 # import os
 
@@ -33,6 +34,35 @@ def truncate(data, max=72, txt=" ..."):
     if len(data) > max:
         return data[: max + len(txt)] + txt
     return data
+
+
+# TODO: Add tests on this one
+def to_domain(string, sep=".", alt="-"):
+    "Transform any string to valid domain name"
+
+    assert isinstance(string, str), f"String must be a string, not: {type(string)}"
+
+    domain = string.split(sep)
+    result = []
+    for part in domain:
+        part = re.sub("[^a-zA-Z0-9]", alt, part)
+        part.strip(alt)
+        result.append(part)
+
+    return ".".join(result)
+
+
+# Python types helpers
+# ================================================
+
+
+def flatten(array):
+    "Flatten any arrays nested arrays"
+    if array == []:
+        return array
+    if isinstance(array[0], list):
+        return flatten(array[0]) + flatten(array[1:])
+    return array[:1] + flatten(array[1:])
 
 
 # Data utils
@@ -81,14 +111,45 @@ def to_yaml(obj, strip_last=False):
     # return output_str
 
 
+def dict_to_env(dict):
+    "Convert dict to env"
+    return "\n".join([f"{k}={v}" for k, v in dict.items()])
+
+
 def read_file(file):
     "Read file content"
     with open(file, encoding="utf-8") as _file:
         return "".join(_file.readlines())
 
 
+def write_file(file, content):
+    "Write content to file"
+
+    file_folder = os.path.dirname(file)
+    if not os.path.exists(file_folder):
+        os.makedirs(file_folder)
+
+    with open(file, "w", encoding="utf-8") as _file:
+        _file.write(content)
+
+
 # File utils
 # ================================================
+
+
+def find_file_in_path(names, path):
+    """
+    Find every files that exists in a path
+    """
+    assert isinstance(names, list), f"Names must be array, not: {type(names)}"
+
+    result = []
+    for name in names:
+        file_path = os.path.join(path, name)
+        if os.access(file_path, os.R_OK):
+            result.append(file_path)
+
+    return result
 
 
 def list_parent_dirs(path):

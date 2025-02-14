@@ -16,12 +16,17 @@ with support for metadata, variables, and collection management.
 import os
 import logging
 from typing import List, Dict
+from pprint import pprint
 
 # from pprint import pprint
 from pathlib import Path
+from difflib import get_close_matches
+from superconf.anchors2 import PathAnchor
+
 
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from paasify_v4.lib.git_helpers import GitRepo
+import paasify_v4.exception as exc
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +45,7 @@ class PaasifyApp(AppNode):
         super().__init__(ident, parent)
         assert isinstance(parent, PaasifyCollection)
 
-        self._path = path
+        self._path = PathAnchor(path, parent=parent.path)
         self.index = index
         self._name = name
 
@@ -118,10 +123,13 @@ class PaasifyCollection(AppNode):
         super().__init__(ident, parent)
 
         self._name = name
-        self._path = path
+        self._path = PathAnchor(path)
         self.index = index
         self._store_apps = {}
         self.git = None
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({+self.path or self.name})"
 
     # Git support
     # ------------
@@ -177,7 +185,8 @@ class PaasifyCollection(AppNode):
         "Walk collection and get apps"
         logger.info("Setup collection: %s", self)
 
-        collection_path = self.get_path()
+        # collection_path = self.get_path()
+        collection_path = ~self.path
         self._store_apps = self.walk_apps(collection_path)
 
     def walk_apps(self, collection_path) -> Dict:
@@ -220,11 +229,14 @@ class CollectionsPath(AppNode):
 
     paasify_type = "catalog_path"
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({+self.path or self.name})"
+
     def __init__(self, ident, parent=None, path=None, index=None):
         assert isinstance(parent, PaasifyCatalog)
         super().__init__(ident, parent)
 
-        self._path = path
+        self._path = PathAnchor(path, mode="abs")
         self.index = index
         self._store_collections = {}
 
@@ -236,8 +248,7 @@ class CollectionsPath(AppNode):
     def setup_node(self):
         "Setup collections path"
         logger.info("Setup collections path: %s", self)
-        path = self._path
-        self._store_collections = self.walk_collections(path)
+        self._store_collections = self.walk_collections(~self._path)
 
     def walk_collections(self, collections_path) -> Dict:
         "Walk collections directories and return scan report"
@@ -387,3 +398,25 @@ class PaasifyCatalog(AppNode):
         if len(out) == 0:
             raise ValueError(f"App '{name}' not found")
         return out[0]
+
+    @requires_setup_node("setup_node")
+    def resolve_app(self, hint, raise_on_empty=False):
+        "Return app by path"
+
+        out = []
+        app_list = []
+        for collection in self.get_collections():
+            for app in collection.get_apps():
+                app_list.append(app)
+                if hint in [app.name, app.ident]:
+                    # print("APP:", app)
+                    out.append(app)
+
+        if len(out) > 0 or not raise_on_empty:
+            return out
+
+        hints = [app.name for app in app_list] + [app.ident for app in app_list]
+        hints = list(set(hints))
+        close_matches = " ".join(get_close_matches(hint, hints))
+        msg = f"App '{hint}' not found, do you mean: {close_matches} ?"
+        raise exc.PaasifyAppNotFoundError(msg, hints=close_matches)

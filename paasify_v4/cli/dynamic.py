@@ -34,7 +34,7 @@ class DynUpCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-        pprint(ctx.args.__dict__)
+        # pprint(ctx.args.__dict__)
 
         item = ctx.data["runner"].get_current()
         logger.info("Working on: %s", item)
