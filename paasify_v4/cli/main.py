@@ -11,12 +11,18 @@ from clak import Parser, Argument, Command, LoggingOptMixin
 from clak.views import ListView, ShowView
 from superconf.anchors2 import PathAnchor
 
-from paasify_v4.main import PaasifyRunner
+
+from paasify_v4.cli.catalog import CollectionGroup
+from paasify_v4.cli.namespaces import NamespaceGroup
+from paasify_v4.cli.pods import PodGroup
+from paasify_v4.cli.stacks import StackGroup
+from paasify_v4.cli.dynamic import DynMixin
+
+from paasify_v4.app import PaasifyRunner
 
 
-from paasify_v4.cli.core_catalog_cli import CollectionGroup
-from paasify_v4.cli.cli_dyn import DynMixin
-from paasify_v4.cli.cli_devel import StackGroup, NamespaceGroup, PodGroup
+# from paasify_v4.cli.devel import StackGroup, PodGroup
+
 import paasify_v4.exception as exc
 
 
@@ -187,13 +193,3 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         ctx.data["runner"] = PaasifyRunner(
             start_path=~working_dir, collections_paths=paths_collections
         )
-
-
-def run():
-    "Return a Paasify App instance"
-
-    _ = AppMain()
-
-
-if __name__ == "__main__":
-    run()
