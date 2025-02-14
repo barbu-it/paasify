@@ -5,7 +5,7 @@ import logging
 from superconf.anchors2 import FileAnchor
 from paasify_v4.common import find_files_down
 from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
-from paasify_v4.core_stack import PaasifyStack
+from paasify_v4.models.core_stack import PaasifyStack
 
 # import paasify_v4.exception as exc
 

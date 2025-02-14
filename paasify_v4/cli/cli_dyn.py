@@ -6,8 +6,8 @@ from clak import Parser, Argument, Command
 from clak.views import ListView, ShowView
 
 
-from paasify_v4.core_namespace import PaasifyNamespace
-from paasify_v4.core_stack import PaasifyStack, PaasifyPod
+from paasify_v4.models.core_namespace import PaasifyNamespace
+from paasify_v4.models.core_stack import PaasifyStack, PaasifyPod
 import paasify_v4.exception as exc
 
 logger = logging.getLogger("paasify_v4.cli.dyn")

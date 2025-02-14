@@ -11,7 +11,7 @@ from paasify_v4.core import (
     setup_once,
     requires_setup_node,
 )
-from paasify_v4.core_catalog import PaasifyCatalog
+from paasify_v4.models.core_catalog import PaasifyCatalog
 import paasify_v4.exception as exc
 
 

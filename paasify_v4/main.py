@@ -5,9 +5,9 @@ from pprint import pprint
 import os
 
 import paasify_v4.exception as exc
-from paasify_v4.core_catalog import PaasifyCatalog
-from paasify_v4.core_namespace import PaasifyNamespace
-from paasify_v4.core_stack import PaasifyStack
+from paasify_v4.models.core_catalog import PaasifyCatalog
+from paasify_v4.models.core_namespace import PaasifyNamespace
+from paasify_v4.models.core_stack import PaasifyStack
 
 
 logger = logging.getLogger(__name__)

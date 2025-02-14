@@ -14,9 +14,9 @@ from superconf.anchors2 import PathAnchor
 from paasify_v4.main import PaasifyRunner
 
 
-from paasify_v4.core_catalog_cli import CollectionGroup
-from paasify_v4.cli_dyn import DynMixin
-from paasify_v4.cli_devel import StackGroup, NamespaceGroup, PodGroup
+from paasify_v4.cli.core_catalog_cli import CollectionGroup
+from paasify_v4.cli.cli_dyn import DynMixin
+from paasify_v4.cli.cli_devel import StackGroup, NamespaceGroup, PodGroup
 import paasify_v4.exception as exc
 
 
