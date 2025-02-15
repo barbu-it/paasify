@@ -33,8 +33,8 @@ class AppListCmd(Parser):
                 {
                     "ident": app.ident,
                     "description": truncate(app.get_description()),
-                    "name": app.name,
-                    "collection": app.parent.name,
+                    # "name": app.name,
+                    # "collection": app.parent.name,
                 }
             )
 
@@ -73,8 +73,16 @@ class AppShowCmd(Parser):
         }
 
         extra.update(app_vars)
-        return ShowView(extra)
+        # return 
+        ShowView(extra).render()
 
+        print("++++++++++++++++++++++++++++++")
+
+        # out = app.get_var_tags()
+        pprint(app.__dict__)
+        pprint(app)
+        out = app.parent.get_jsonnet_files()
+        pprint(out)
 
 class AppTagsCmd(Parser):
     "Show app tags"

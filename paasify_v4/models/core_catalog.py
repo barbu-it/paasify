@@ -47,7 +47,21 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyApp(AppNode):
+class PaasifyAppV1SupportMixin():
+    "Support for paasify v1 apps"
+
+    def get_var_tags(self):
+        "Return var tags"
+
+        # Actually, there is no use case, I never used
+        # it .. i think ...
+        # app_path = ~self.path
+    
+        return []
+
+
+
+class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
     "PaasifyApp class"
 
     paasify_type = "catalog_app"
@@ -182,8 +196,21 @@ class PaasifyApp(AppNode):
 
 ############################################
 
+class PaasifyCollectionV1SupportMixin():
+    "Support for paasify v1 collections"
 
-class PaasifyCollection(AppNode):
+    def get_jsonnet_files(self):
+        "Return var tags"
+        collection_path = self.path
+        search_path = collection_path / "__paasify__/tags/"
+        jsonnet_files = []
+        print("Search path:", search_path)
+        for match in Path(search_path).rglob("*.jsonnet"):
+            jsonnet_files.append(match)
+        return jsonnet_files
+
+
+class PaasifyCollection(PaasifyCollectionV1SupportMixin,AppNode):
     "PaasifyCollection class"
 
     def __init__(self, ident, name=None, path=None, parent=None, index=None):
