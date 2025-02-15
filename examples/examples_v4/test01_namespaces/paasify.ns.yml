@@ -19,6 +19,8 @@ vars:  # or var__root
   vars_from_ns1: val_from_ns1
   vars_from_ns2: val_from_ns2
 
+  psf_namespace: barbu
+
 vars__admin: # Can be a reference to a vars.yml path
   admin_var: Yeahh
 

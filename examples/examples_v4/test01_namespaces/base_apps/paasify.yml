@@ -9,19 +9,23 @@ vars:
 
   vars_from_stack1: val_from_stack1
   vars_from_stack2: val_from_stack2
-  
+  psf_stack: principal
+  psf_space: "${psf_namespace}_${psf_stack}"
 
 apps: # was stacks previously ... and a list, not a dict
 
   traefik:
-    app: traefikv44
+    app: traefik
     vars:
       vars_from_app1: val_from_app1
       vars_from_app2: val_from_app2
 
+      psf_domain: "${app_name}.${psf_stack}.${psf_namespace}.com"
 
-    tags:
-      - expose_443
+    # tags:
+    #   - expose_http
+    #   - expose_https
+      # - tls-self
 
   wordpress: wordpress
 
@@ -32,6 +36,7 @@ apps: # was stacks previously ... and a list, not a dict
 
       vars_from_app1: val_from_app1
       vars_from_app2: val_from_app2
+
 
 
     tags:
