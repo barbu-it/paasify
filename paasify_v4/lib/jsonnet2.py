@@ -1,6 +1,3 @@
-
-
-
 import os
 from pprint import pprint, pformat  # noqa: F401
 
@@ -12,14 +9,13 @@ from types import SimpleNamespace
 logger = logging.getLogger(__name__)
 _logger = logger
 
+
 class JsonnetError(Exception):
     "Jsonnet error"
 
 
 class JsonnetBuildFailed(JsonnetError):
     "Jsonnet build failed"
-
-
 
 
 def try_path(dir_, rel):
@@ -47,17 +43,12 @@ def try_path(dir_, rel):
         return full_path, file_.read()
 
 
-
 class JsonnetProcessor:
-
-
     def __init__(self):
         "Init jsonnet processor"
         # logger = _logger or logger
 
-
         # print("INIT Jsonnet Porcessor")
-
 
     def process_jsonnet_exec(self, file, action, data, import_dirs=None):
         "Process jsonnet file"
@@ -89,7 +80,6 @@ class JsonnetProcessor:
             # pprint(val)
             ext_vars[key] = json.dumps(val)
 
-
         # Jsonnet import callback
         def import_callback(dir_, rel):
             "Helper function to load a jsonnet libraries in lookup paths"
@@ -105,7 +95,6 @@ class JsonnetProcessor:
             raise RuntimeError(
                 f"Jsonnet file not found '{rel}' in any of these paths: {test_dirs}"
             )
-
 
         # Process jsonnet tag
         logger.info("Process jsonnet: %s (action=%s)", file, action)
@@ -129,8 +118,6 @@ class JsonnetProcessor:
         # Return python object from json output
         result = json.loads(result)
         return result
-
-
 
     # def process_jsonnet_exec(self, file, action, data, import_dirs=None):
     #     "Process jsonnet file"

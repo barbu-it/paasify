@@ -37,7 +37,12 @@ from paasify_v4.common import (
 
 
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
-from paasify_v4.models.core_common import PaasifyAppV1SupportMixin, PaasifyCollectionV1SupportMixin, JsonnetTagV1, ComposeTagV1
+from paasify_v4.models.core_common import (
+    PaasifyAppV1SupportMixin,
+    PaasifyCollectionV1SupportMixin,
+    JsonnetTagV1,
+    ComposeTagV1,
+)
 from paasify_v4.lib.git_helpers import GitRepo
 import paasify_v4.exception as exc
 
@@ -46,9 +51,6 @@ logger = logging.getLogger(__name__)
 
 # Catalog
 # ================================================
-
-
-
 
 
 class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
@@ -152,7 +154,6 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
         return docker_file_match
 
-
     def get_compose_files(self):
         "Return files"
 
@@ -168,7 +169,6 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
         return ret
 
-
         docker_files = ["docker-compose.yml", "docker-compose.yaml"]
         docker_file_matches = find_file_in_path(docker_files, app_path)
         if len(docker_file_matches) == 0:
@@ -182,8 +182,6 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
         docker_file_match = docker_file_matches[0]
 
         return docker_file_match
-
-
 
     def get_vars_files(self):
         "Return vars files"
@@ -216,7 +214,7 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
     #             ident = match.stem.replace("docker-compose.", "")
     #             # print("Match:", match, tag_paths)
     #             # extra_docker_files.append(match[0])
-                
+
     #             ret.append(ComposeTagV1(ident=tag, path=match[0], parent=self))
     #         else:
     #             logger.warning("No match for tag %s in %s", tag, tag_paths)
@@ -228,12 +226,10 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 ############################################ V1 support
 
 
-
-
 ############################################
 
 
-class PaasifyCollection(PaasifyCollectionV1SupportMixin,AppNode):
+class PaasifyCollection(PaasifyCollectionV1SupportMixin, AppNode):
     "PaasifyCollection class"
 
     def __init__(self, ident, name=None, path=None, parent=None, index=None):

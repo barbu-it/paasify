@@ -33,7 +33,6 @@ class DynBuildCmd(Parser):
 
     app_names = Argument("APP", help="App name", nargs="*")
 
-
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
@@ -43,7 +42,7 @@ class DynBuildCmd(Parser):
             raise exc.PaasifyWorkdirNotFoundError(
                 f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
             )
-        
+
         # TODO: This is temporary
         out = item.assemble_tests()
 
@@ -116,10 +115,9 @@ class DynEditCmd(Parser):
         config_path = ~item.config_path
         cmd_name = os.environ.get("EDITOR", "vim")
         cmd = sh.Command(cmd_name)
-        cmd( config_path, _fg=True)
+        cmd(config_path, _fg=True)
 
         return config_path
-
 
 
 class DynListCmd(Parser):
@@ -168,7 +166,7 @@ class DynMixin(Parser):
     up = Command(DynUpCmd)
     ls = Command(DynListCmd)
     edit = Command(DynEditCmd)
-    
+
     vars = Command(DynVarsCmd)
     # info = Command(DynPlaceholderCmd)
     # build = Command(DynPlaceholderCmd)

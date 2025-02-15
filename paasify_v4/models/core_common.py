@@ -1,5 +1,3 @@
-
-
 import logging
 from pathlib import Path
 from pprint import pprint
@@ -9,8 +7,6 @@ from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from superconf.anchors2 import PathAnchor
 
 logger = logging.getLogger(__name__)
-
-
 
 
 class Var:
@@ -30,7 +26,7 @@ class Var:
     def __str__(self):
         "Return string representation - Required for var templating"
         return f"{self.value}"
-    
+
     @property
     def value(self):
         "Return value"
@@ -44,10 +40,11 @@ class Var:
 
 #######################################
 
+
 class PaasifyTagV1(AppNode):
     "Paasify tag class - V1 support"
 
-    def __init__(self, ident=None, path=None, parent=None): 
+    def __init__(self, ident=None, path=None, parent=None):
         assert "docker-compose" not in ident, f"ident={ident}"
         assert "yml" not in ident, f"ident={ident}"
         assert "jsonnet" not in ident, f"ident={ident}"
@@ -62,18 +59,18 @@ class PaasifyTagV1(AppNode):
         kind = self.__class__.__name__
         kind_source = self.source.__class__.__name__
         return f"{kind}.{kind_source} ({self.source.ident}.{self.ident})"
-    
+
 
 #######################################
+
 
 class JsonnetTagV1(PaasifyTagV1):
     "Jsonnet tag class - V1 support"
 
-    # def __init__(self, ident=None, path=None, parent=None): 
+    # def __init__(self, ident=None, path=None, parent=None):
     #     super().__init__(ident=ident, parent=parent)
     #     self._path = PathAnchor(path, parent=parent.path)
     #     self.source = parent
-
 
     def process_jsonnet_vars(self, vars=None):
         "Process jsonnet vars"
@@ -82,18 +79,21 @@ class JsonnetTagV1(PaasifyTagV1):
 
         jproc = JsonnetProcessor()
         try:
-            out = jproc.process_jsonnet_exec(jsonnet_path, "plugin_vars", {
-                "args": vars,
-                # "args": {
-                #     "app_name": self.source.ident,
-                #     "app_service": self.source.ident,
-                #     "app_description": self.source.ident,
-                #     "app_product": self.source.ident,
-
-                #     "app_prot": "http",
-                #     "app_fqdn": "localhost",
-                # }
-            })
+            out = jproc.process_jsonnet_exec(
+                jsonnet_path,
+                "plugin_vars",
+                {
+                    "args": vars,
+                    # "args": {
+                    #     "app_name": self.source.ident,
+                    #     "app_service": self.source.ident,
+                    #     "app_description": self.source.ident,
+                    #     "app_product": self.source.ident,
+                    #     "app_prot": "http",
+                    #     "app_fqdn": "localhost",
+                    # }
+                },
+            )
             # print("======== OUT")
             # pprint(out)
             # print("======== OUT")
@@ -101,7 +101,6 @@ class JsonnetTagV1(PaasifyTagV1):
             # logger.critical(f"Can't parse jsonnet file: {jsonnet_path}")
             msg = f"Can't parse jsonnet file: {jsonnet_path}, got error:\n\n{err}"
             raise exc.PaasifyAssembleError(msg) from None
-
 
         return out
 
@@ -113,22 +112,18 @@ class JsonnetTagV1(PaasifyTagV1):
 class ComposeTagV1(PaasifyTagV1):
     "Compose tag class - V1 support"
 
-    # def __init__(self, ident=None, path=None, parent=None): 
+    # def __init__(self, ident=None, path=None, parent=None):
     #     super().__init__(ident=ident, parent=parent)
     #     self._path = PathAnchor(path, parent=parent.path)
     #     self.source = parent
 
 
-
-
-class PaasifyAppV1SupportMixin():
-
+class PaasifyAppV1SupportMixin:
     def get_var_tags(self):
         "Return var tags"
 
         return []
 
-    
     def get_jsonnet_files(self):
         "Return jsonnet files"
 
@@ -140,10 +135,9 @@ class PaasifyAppV1SupportMixin():
             jsonnet_file = JsonnetTagV1(ident=match.stem, path=match, parent=self)
             ret.append(jsonnet_file)
         return ret
-    
+
     def get_compose_files(self):
         "Return files"
-
 
         # Get app path and base docker-compose file
         app_path = ~self.path
@@ -163,7 +157,8 @@ class PaasifyAppV1SupportMixin():
 
         return ret
 
-class PaasifyCollectionV1SupportMixin():
+
+class PaasifyCollectionV1SupportMixin:
     "Support for paasify v1 collections"
 
     def get_jsonnet_files(self):
@@ -179,7 +174,6 @@ class PaasifyCollectionV1SupportMixin():
             tag = JsonnetTagV1(ident=match.stem, path=match, parent=self)
             tags.append(tag)
         return tags
-
 
     def get_compose_files(self):
         "Return compose files - V1 support"

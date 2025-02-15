@@ -34,8 +34,14 @@ from paasify_v4.common import (
     flatten,
     truncate,
 )
+
 # from paasify_v4.models.core_catalog import PaasifyCatalog
-from paasify_v4.models.core_common import PaasifyAppV1SupportMixin, JsonnetTagV1, ComposeTagV1, Var
+from paasify_v4.models.core_common import (
+    PaasifyAppV1SupportMixin,
+    JsonnetTagV1,
+    ComposeTagV1,
+    Var,
+)
 
 from paasify_v4.engine_docker.compose_app import ComposedApp
 import paasify_v4.exception as exc
@@ -47,7 +53,6 @@ logger = logging.getLogger(__name__)
 
 # Vars management
 # ================================================
-
 
 
 # Pod classes
@@ -183,15 +188,11 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
     # Assembling methods
     # --------------------------------
 
-
     def assemble_tests(self):
         "Assemble tests"
         print("YOOO")
 
-
         pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
-
-
 
     def _build_resolve_app_name(self, app_name):
         "Resolve app name from catalog"
@@ -203,7 +204,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         if len(app_matches) > 0:
             return app_matches[0]
         return None
-        
 
     def _build_filter_tags(self, app, tags):
         "Filter tags"
@@ -218,7 +218,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             if tag.name in tags:
                 matches.append(tag)
         return matches
-    
 
     # @requires_setup_node("setup_app")
     def assemble(self, dry_run=False):
@@ -235,21 +234,21 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # docker_app_tag_files = app.get_extra_docker_files(tags)
 
         # Resolve tag files
-        # jsonnet_app_tag_files = 
+        # jsonnet_app_tag_files =
 
         # out = self.ns.get_compose_files()
         # pprint(out)
         # assert False, "WIP"
 
         # Prepare tag database
-        tags_db ={
+        tags_db = {
             "jsonnet_collection_tag_files": app.collection.get_jsonnet_files(),
             "jsonnet_ns_tag_files": self.ns.get_jsonnet_files(),
             "jsonnet_app_tag_files": app.get_jsonnet_files(),
             "jsonnet_local_tag_files": self.get_jsonnet_files(),
             # "docker_ns_tag_files": app.namespace.
             "docker_app_tag_files": app.get_compose_files(),
-            "docker_local_tag_files": self.get_compose_files(), # TODO: Add local tag files
+            "docker_local_tag_files": self.get_compose_files(),  # TODO: Add local tag files
         }
 
         tags_db_flat = []
@@ -267,13 +266,11 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
 
         # tags_db_flat = flatten([value for value in tags_db.values()])
         tags_db_flat = {x.ident: x for x in tags_db_flat}
-        
+
         # print("TAG PAYLOAD")
         # pprint(SimpleNamespace(**tags_db))
         # print("TAG PAYLOAD FLAT")
         # pprint(tags_db_flat)
-
-
 
         # Resolve and validatetags processing order
         tags_array = []
@@ -284,9 +281,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
                 tags_array.append(tags_db_flat[tag])
         jsonnet_tags_array = [x for x in tags_array if isinstance(x, JsonnetTagV1)]
         docker_tags_array = [x for x in tags_array if isinstance(x, ComposeTagV1)]
-
-
-
 
         # Process pod variables
         varmgr = self.get_varmgr()
@@ -306,7 +300,7 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             jsonnet_vars.update(final)
             jsonnet_result.update(final)
         # pprint(jsonnet_result)
-            # jsonnet_vars.update(out)
+        # jsonnet_vars.update(out)
 
         # Reparse vars with varmgr once jsonnet tags are parsed
         vbuild.set_layer("build_default_vars", jsonnet_result)
@@ -315,8 +309,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # pprint(build_vars)
 
         # assert False, "WIP TAG DB, tag assert"
-
-
 
         # tags_payload ={
         #     "jsonnet_app_tag_files": self._build_filter_tags(app, tags),
@@ -327,9 +319,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # print("TAG PAYLOAD")
         # pprint(SimpleNamespace(**tags_payload))
         # # assert False, "WIP"
-
-
-
 
         # varmgr = self.get_varmgr()
         # vbuild = self.get_build_varmgr(varmgr, ctx)
@@ -357,7 +346,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         self.write_env_file(
             compose_settings=compose_settings, build_vars=build_vars, dry_run=dry_run
         )
-
 
         # tmp = SimpleNamespace(
         #     # compose_files=([docker_file_match] + docker_app_tag_files),
@@ -515,7 +503,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         vbuild.add_sources(
             [
                 Source("runtime_vars", level=200, help="Runtime variables"),
-
                 Source("pod_vars", level=500, help="Pod variables"),
                 Source("stack_vars", level=700, help="Stack variables"),
                 Source("ns_vars", level=900, help="Namespace variables"),

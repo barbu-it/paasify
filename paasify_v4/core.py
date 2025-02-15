@@ -379,8 +379,10 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
         _path_config_name = f"{_short_name}_config_path"
 
         root_path = PathAnchor(_root_path, name=_path_name, mode=self.path_mode)
-        root_config_path = FileAnchor(path=_config_file, name=_path_config_name, parent=root_path)
-        
+        root_config_path = FileAnchor(
+            path=_config_file, name=_path_config_name, parent=root_path
+        )
+
         self._path = root_path
         self.config_path = root_config_path
         self.sub_path = _sub_path
