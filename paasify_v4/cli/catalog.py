@@ -105,7 +105,7 @@ class AppTagsCmd(Parser):
 class AppGroup(Parser):
     "Manage collections"
 
-    list = Command(AppListCmd)
+    ls = Command(AppListCmd)
     show = Command(AppShowCmd)
     tags = Command(AppTagsCmd)
 
@@ -194,7 +194,7 @@ class CollectionGroup(Parser):
     "Manage collections"
 
     info = Command(CollectionInfoCmd)
-    list = Command(CollectionListCmd)
+    ls = Command(CollectionListCmd)
     show = Command(CollectionShowCmd)
     # devel = Command(CollectionDevelCmd)
     # app = Command(AppGroup)

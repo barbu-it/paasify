@@ -15,7 +15,7 @@ from superconf.anchors2 import PathAnchor
 from paasify_v4.cli.catalog import CollectionGroup, AppGroup
 from paasify_v4.cli.namespaces import NamespaceGroup
 from paasify_v4.cli.pods import PodGroup
-from paasify_v4.cli.stacks import StackGroup
+from paasify_v4.cli.stacks import StackGroup, StackTreeCmd
 from paasify_v4.cli.dynamic import DynMixin
 
 from paasify_v4.app import PaasifyRunner
@@ -160,9 +160,12 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
     # Component commands
     app = Command(AppGroup, help="==SUPPRESS==")
     collection = Command(CollectionGroup, help="==SUPPRESS==")
-    pod = Command(PodGroup)  # , help="==SUPPRESS==")
-    stack = Command(StackGroup)  # , help="==SUPPRESS==")
-    ns = Command(NamespaceGroup)  # , help="==SUPPRESS==")
+    pod = Command(PodGroup, help="==SUPPRESS==")
+    stack = Command(StackGroup, help="==SUPPRESS==")
+    ns = Command(NamespaceGroup, help="==SUPPRESS==")
+
+    # Quick commands
+    tree = Command(StackTreeCmd)
 
     # Beta commands
     # command2 = Command(AppCommand2)

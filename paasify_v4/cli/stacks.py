@@ -3,13 +3,45 @@
 import logging
 from clak import Parser, Argument, Command
 from clak.views import ShowView, ListView
-
-
+from paasify_v4.lib.shexec import shexec
+import paasify_v4.exception as exc
 logger = logging.getLogger(__name__)
-
-
+import sh
+from pprint import pprint
 # Stack management
 # ================================================
+
+
+class StackTreeCmd(Parser):
+    "Show stack tree"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+        
+        ns = ctx.data["runner"].namespace
+        cmd = ["tree", 
+               "-L", "3",
+               "-P", "paasify.yml",
+               "--info",
+               "--noreport",
+               "--prune",
+                 ~ns.path]
+        
+        # out = shexec(cmd)
+        try:
+            out = shexec(cmd)
+            print(out)
+        except AttributeError as err:
+            msg = f"Command not found: {err}"
+            raise exc.PaasifyCliError(msg) from None
+        except Exception as err:
+            pprint(type(err))
+            pprint(type(err).__mro__)
+            pprint(err.__dict__)
+            msg = f"Command '{' '.join(cmd)}' returned an error: {err}"
+            raise exc.PaasifyCliError(msg) from None
+
+
 class StackListAppsCmd(Parser):
     "List stack apps"
 
@@ -93,7 +125,8 @@ class StackGroup(Parser):
     "Manage stacks"
 
     info = Command(StackInfoCmd)
-    list = Command(StackListAppsCmd)
+    ls = Command(StackListAppsCmd)
+    tree = Command(StackTreeCmd)
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
 

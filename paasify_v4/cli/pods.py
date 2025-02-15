@@ -88,7 +88,7 @@ class PodGroup(Parser):
     "Manage pods"
 
     info = Command(PodInfoCmd)
-    list = Command(PodListCmd)
+    ls = Command(PodListCmd)
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
     up = Command(PodPlaceholderCmd)
