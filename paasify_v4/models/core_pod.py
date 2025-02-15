@@ -31,6 +31,7 @@ from paasify_v4.common import (
     from_yaml,
     to_domain,
     flatten,
+    truncate,
 )
 from paasify_v4.models.core_catalog import PaasifyCatalog
 
@@ -42,6 +43,23 @@ from paasify_v4.lib.shexec import shexec
 logger = logging.getLogger(__name__)
 
 
+# Vars management
+# ================================================
+
+class Var():
+    "Represent a variable"
+
+    def __init__(self, name, value, **kwargs):
+        self.ident = name
+        self.name = name
+        self.value = value
+        self.kwargs = kwargs
+        self.path = "nopath"
+
+    def __repr__(self):
+        keyval = f"{self.name}={self.value}"
+        return f"Var({truncate(keyval, max=24)})"
+
 # Pod classes
 # ================================================
 
@@ -50,6 +68,8 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
+    node__iterate_backend = "_store_vars"
+    node__iterate_setupmarker = "setup_vars"
 
     def __init__(self, ident, parent=None, name=None, raw_config=None, path=None):
         # assert isinstance(parent, PaasifyStack)
@@ -60,6 +80,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         self._path = PathAnchor(path, parent=parent.path)
         self.config = self.build_config(raw_config, ident=ident)
         self._app = None
+        self._store_vars = {}
 
         self.setup_node()
 
@@ -77,6 +98,35 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
     def catalog(self):
         "Return catalog"
         return self.parent.catalog
+
+
+    # Vars management
+    # --------------------------------
+
+    @setup_once("setup_vars")
+    def setup_vars(self):
+        "Setup vars"
+
+        app_vars = self.config.get("vars", {}) or {}
+        for var_name, var_value in app_vars.items():
+            var = Var(var_name, var_value)
+            self._store_vars[var_name] = var
+
+
+        # self._store_vars = self.config.get("vars", {}) or {}
+
+    @requires_setup_node("setup_vars")
+    def get_vars(self): # V2
+        "Get vars"
+        return self._store_vars
+
+    # @setup_once("setup_node")
+    # def get_vars(self): # V1
+    #     "Get vars"
+    #     return self.config.get("vars", {}) or {}
+    
+
+
 
     # Config build
     # --------------------------------
@@ -126,10 +176,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         # self.vars = self.config.get("vars", {}) or {}
         # self.tags = self.config.get("tags", []) or []
 
-    # @setup_once("setup_node")
-    def get_vars(self):
-        "Get vars"
-        return self.config.get("vars", {}) or {}
+
 
     # High level methods
     # --------------------------------

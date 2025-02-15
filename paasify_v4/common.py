@@ -26,14 +26,27 @@ log = logging.getLogger(__name__)
 
 
 # pylint: disable=redefined-builtin
-def truncate(data, max=72, txt=" ..."):
-    "Truncate a text to max lenght and replace by txt"
+def truncate(data, max=72, txt="..."):
+    """Truncate a text to a maximum length.
+    
+    Args:
+        data: The text to truncate
+        max: Maximum length of the output text. If positive, truncates from end.
+             If negative, truncates from start. If 0, returns original text.
+        txt: Text to append/prepend to indicate truncation
+        
+    Returns:
+        The truncated text string with txt added to indicate truncation
+    """
     data = str(data)
-    if max < 0:
+    if max == 0:
         return data
     if len(data) > max:
-        return data[: max + len(txt)] + txt
+        if max > 0:
+            return data[: max + len(txt)] + txt
+        return txt + data[(max - len(txt)):]
     return data
+
 
 
 # TODO: Add tests on this one

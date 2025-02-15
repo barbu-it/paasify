@@ -32,6 +32,7 @@ from paasify_v4.common import (
     from_yaml,
     to_domain,
     flatten,
+    truncate,
 )
 
 
@@ -220,7 +221,7 @@ class PaasifyCollection(AppNode):
     def init_git(self):
         "Init git"
         logger.info("Init git: %s", self)
-        self.git = GitRepo(self.get_path())
+        self.git = GitRepo(~self.path)
 
     @requires_setup_node("init_git")
     def get_git_remote(self):
@@ -311,11 +312,15 @@ class CollectionsPath(AppNode):
 
     paasify_type = "catalog_path"
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({truncate((+self.path or self.name), max=-12)})"
+
+
     # def __repr__(self):
     #     return f"{self.__class__.__name__}({+self.path or self.name})"
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.path.get_name() or self.name})"
+    # def __repr__(self):
+    #     return f"{self.__class__.__name__}({self.path.get_name() or self.name})"
 
 
     def __init__(self, ident, parent=None, path=None, index=None):
