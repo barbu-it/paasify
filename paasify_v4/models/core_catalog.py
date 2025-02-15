@@ -37,6 +37,7 @@ from paasify_v4.common import (
 
 
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
+from paasify_v4.models.core_common import PaasifyAppV1SupportMixin, PaasifyCollectionV1SupportMixin, JsonnetTagV1, ComposeTagV1
 from paasify_v4.lib.git_helpers import GitRepo
 import paasify_v4.exception as exc
 
@@ -47,21 +48,10 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyAppV1SupportMixin():
-    "Support for paasify v1 apps"
-
-    def get_var_tags(self):
-        "Return var tags"
-
-        # Actually, there is no use case, I never used
-        # it .. i think ...
-        # app_path = ~self.path
-    
-        return []
 
 
 
-class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
+class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
     "PaasifyApp class"
 
     paasify_type = "catalog_app"
@@ -71,7 +61,8 @@ class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
         super().__init__(ident, parent)
         assert isinstance(parent, PaasifyCollection)
 
-        self._path = PathAnchor(path, parent=parent.path)
+        self.collection = parent
+        self._path = PathAnchor(path, name="app_path", parent=parent.path)
         self.index = index
         self._name = name
 
@@ -142,7 +133,7 @@ class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
     #     # logger.info("Setup app files: %s", self)
     #     # self._store_files = self.walk_files()
 
-    def get_compose_files(self):
+    def get_compose_file(self):
         "Return files"
 
         # Get app path and base docker-compose file
@@ -161,6 +152,39 @@ class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
 
         return docker_file_match
 
+
+    def get_compose_files(self):
+        "Return files"
+
+        # Get app path and base docker-compose file
+        app_path = ~self.path
+
+        needle = "docker-compose.*.yml"
+        ret = []
+        for match in Path(app_path).rglob(needle):
+            ident = match.stem.replace("docker-compose.", "")
+            compose_file = ComposeTagV1(ident=ident, path=match, parent=self)
+            ret.append(compose_file)
+
+        return ret
+
+
+        docker_files = ["docker-compose.yml", "docker-compose.yaml"]
+        docker_file_matches = find_file_in_path(docker_files, app_path)
+        if len(docker_file_matches) == 0:
+            raise exc.PaasifyAssembleError(
+                f"No docker-compose.yml file found in {app_path}"
+            )
+        elif len(docker_file_matches) > 1:
+            msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
+            raise exc.PaasifyAssembleError(msg)
+        logger.debug("Docker file matches: %s", docker_file_matches)
+        docker_file_match = docker_file_matches[0]
+
+        return docker_file_match
+
+
+
     def get_vars_files(self):
         "Return vars files"
         app_path = ~self.path
@@ -173,41 +197,40 @@ class PaasifyApp(PaasifyAppV1SupportMixin,AppNode):
 
         return app_vars
 
-    def get_extra_docker_files(self, tags):
-        "Return extra docker files"
+    # Depreacated, replaced by: get_compose_files
+    # def get_extra_docker_files(self, tags):
+    #     "Return extra docker files"
 
-        app_path = ~self.path
+    #     app_path = self.path
 
-        extra_docker_files = []
-        for tag in tags:
-            tag_paths = app_path / f"docker-compose.{tag}"
-            tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
-            logger.debug("Tag path: %s", tag_paths)
+    #     # extra_docker_files = []
+    #     ret = []
+    #     for tag in tags:
+    #         tag_paths = app_path / f"docker-compose.{tag}"
+    #         tag_paths = [f"{tag_paths}.{ext}" for ext in ["yml", "yaml"]]
+    #         logger.debug("Tag path: %s", tag_paths)
 
-            match = find_file_in_path(tag_paths, app_path)
-            if match:
-                # print("Match:", match, tag_paths)
-                extra_docker_files.append(match[0])
-            else:
-                logger.warning("No match for tag %s in %s", tag, tag_paths)
+    #         match = find_file_in_path(tag_paths, ~app_path)
+    #         if match:
+    #             match = match[0]
+    #             ident = match.stem.replace("docker-compose.", "")
+    #             # print("Match:", match, tag_paths)
+    #             # extra_docker_files.append(match[0])
+                
+    #             ret.append(ComposeTagV1(ident=tag, path=match[0], parent=self))
+    #         else:
+    #             logger.warning("No match for tag %s in %s", tag, tag_paths)
 
-        return extra_docker_files
+    #     return ret
+    #     # return extra_docker_files
+
+
+############################################ V1 support
+
+
 
 
 ############################################
-
-class PaasifyCollectionV1SupportMixin():
-    "Support for paasify v1 collections"
-
-    def get_jsonnet_files(self):
-        "Return var tags"
-        collection_path = self.path
-        search_path = collection_path / "__paasify__/tags/"
-        jsonnet_files = []
-        print("Search path:", search_path)
-        for match in Path(search_path).rglob("*.jsonnet"):
-            jsonnet_files.append(match)
-        return jsonnet_files
 
 
 class PaasifyCollection(PaasifyCollectionV1SupportMixin,AppNode):
@@ -218,7 +241,7 @@ class PaasifyCollection(PaasifyCollectionV1SupportMixin,AppNode):
         super().__init__(ident, parent)
 
         self._name = name
-        self._path = PathAnchor(path)
+        self._path = PathAnchor(path, name="collection_path")
         self.index = index
         self._store_apps = {}
         self.git = None
@@ -339,7 +362,7 @@ class CollectionsPath(AppNode):
         assert isinstance(parent, PaasifyCatalog)
         super().__init__(ident, parent)
 
-        self._path = PathAnchor(path, mode="abs")
+        self._path = PathAnchor(path, name="collections_path", mode="abs")
         self.index = index
         self._store_collections = {}
 

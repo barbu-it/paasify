@@ -73,16 +73,8 @@ class AppShowCmd(Parser):
         }
 
         extra.update(app_vars)
-        # return 
-        ShowView(extra).render()
+        return ShowView(extra)
 
-        print("++++++++++++++++++++++++++++++")
-
-        # out = app.get_var_tags()
-        pprint(app.__dict__)
-        pprint(app)
-        out = app.parent.get_jsonnet_files()
-        pprint(out)
 
 class AppTagsCmd(Parser):
     "Show app tags"

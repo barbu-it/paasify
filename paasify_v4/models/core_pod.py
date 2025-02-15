@@ -5,6 +5,7 @@ import logging
 from pprint import pprint
 import sh
 
+from pathlib import Path
 from types import SimpleNamespace
 
 from superconf.anchors2 import PathAnchor
@@ -33,7 +34,8 @@ from paasify_v4.common import (
     flatten,
     truncate,
 )
-from paasify_v4.models.core_catalog import PaasifyCatalog
+# from paasify_v4.models.core_catalog import PaasifyCatalog
+from paasify_v4.models.core_common import PaasifyAppV1SupportMixin, JsonnetTagV1, ComposeTagV1, Var
 
 from paasify_v4.engine_docker.compose_app import ComposedApp
 import paasify_v4.exception as exc
@@ -47,29 +49,12 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class Var:
-    "Represent a variable"
-
-    def __init__(self, name, value, **kwargs):
-        self.ident = name
-        self.name = name
-        self.value = value
-        self.kwargs = kwargs
-        self.path = "nopath"
-
-    def __repr__(self):
-        keyval = f"{self.name}={self.value}"
-        return f"Var({truncate(keyval, max=24)})"
-
-    def __str__(self):
-        "Return string representation - Required for var templating"
-        return f"{self.value}"
 
 # Pod classes
 # ================================================
 
 
-class PaasifyPod(VarMgrNodeMixin, AppNode):
+class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
@@ -82,7 +67,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
         self._name = name or ident.split("/", maxsplit=1)[0]
 
-        self._path = PathAnchor(path, parent=parent.path)
+        self._path = PathAnchor(path, name="pod_path", parent=parent.path)
         self.config = self.build_config(raw_config, ident=ident)
         self._app = None
         self._store_vars = {}
@@ -121,7 +106,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
     @requires_setup_node("setup_vars")
     def get_vars(self):  # V2
         "Get vars"
-        return self._store_vars
+        return {key: val.value for key, val in self._store_vars.items()}
 
     # @setup_once("setup_node")
     # def get_vars(self): # V1
@@ -198,36 +183,158 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
     # Assembling methods
     # --------------------------------
 
-    # @requires_setup_node("setup_app")
-    def assemble(self, dry_run=False):
-        "Assemble the pod"
 
-        # Resolve app name
-        app_name = self.config.get("app")
+    def assemble_tests(self):
+        "Assemble tests"
+        print("YOOO")
+
+
+        pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
+
+
+
+    def _build_resolve_app_name(self, app_name):
+        "Resolve app name from catalog"
         app_matches = self.catalog.resolve_app(app_name)
         if len(app_matches) > 1:
             app_idents = [app.ident for app in app_matches]
             msg = f"Multiple apps found for '{app_name}', keeping only the first one: {app_idents}"
             logger.info(msg)
-        app = app_matches[0]
+        if len(app_matches) > 0:
+            return app_matches[0]
+        return None
+        
+
+    def _build_filter_tags(self, app, tags):
+        "Filter tags"
+        # app_name = self.config.get("app")
+        # app = self._build_resolve_app_name(app_name)
+
+        # TODO: This is wrong, all collections should be asked
+        all_jsonnet_tags = app.parent.get_jsonnet_files()
+
+        matches = []
+        for tag in all_jsonnet_tags:
+            if tag.name in tags:
+                matches.append(tag)
+        return matches
+    
+
+    # @requires_setup_node("setup_app")
+    def assemble(self, dry_run=False):
+        "Assemble the pod - V1 support"
+
+        # Resolve app name
+        app_name = self.config.get("app")
+        app = self._build_resolve_app_name(app_name)
 
         # Fetch app files
         tags = self.config.get("tags", [])
-        docker_file_match = app.get_compose_files()
+        docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
-        extra_docker_files = app.get_extra_docker_files(tags)
+        # docker_app_tag_files = app.get_extra_docker_files(tags)
 
-        # Process variables
-        ctx = SimpleNamespace(
-            tags=tags,
-            app_vars=app_vars,
-            extra_docker_files=extra_docker_files,
-            app=app,
-        )
+        # Resolve tag files
+        # jsonnet_app_tag_files = 
+
+        # out = self.ns.get_compose_files()
+        # pprint(out)
+        # assert False, "WIP"
+
+        # Prepare tag database
+        tags_db ={
+            "jsonnet_collection_tag_files": app.collection.get_jsonnet_files(),
+            "jsonnet_ns_tag_files": self.ns.get_jsonnet_files(),
+            "jsonnet_app_tag_files": app.get_jsonnet_files(),
+            "jsonnet_local_tag_files": self.get_jsonnet_files(),
+            # "docker_ns_tag_files": app.namespace.
+            "docker_app_tag_files": app.get_compose_files(),
+            "docker_local_tag_files": self.get_compose_files(), # TODO: Add local tag files
+        }
+
+        tags_db_flat = []
+        tag_processing_order = [
+            "jsonnet_collection_tag_files",
+            "jsonnet_ns_tag_files",
+            "jsonnet_app_tag_files",
+            "jsonnet_local_tag_files",
+            "docker_app_tag_files",
+            "docker_local_tag_files",
+        ]
+        for tag_type in tag_processing_order:
+            tag_list = tags_db[tag_type]
+            tags_db_flat.extend(tag_list)
+
+        # tags_db_flat = flatten([value for value in tags_db.values()])
+        tags_db_flat = {x.ident: x for x in tags_db_flat}
+        
+        # print("TAG PAYLOAD")
+        # pprint(SimpleNamespace(**tags_db))
+        # print("TAG PAYLOAD FLAT")
+        # pprint(tags_db_flat)
+
+
+
+        # Resolve and validatetags processing order
+        tags_array = []
+        for tag in tags:
+            if not tag in tags_db_flat:
+                logger.warning("Tag %s not found in tags_db_flat", tag)
+            else:
+                tags_array.append(tags_db_flat[tag])
+        jsonnet_tags_array = [x for x in tags_array if isinstance(x, JsonnetTagV1)]
+        docker_tags_array = [x for x in tags_array if isinstance(x, ComposeTagV1)]
+
+
+
+
+        # Process pod variables
         varmgr = self.get_varmgr()
-        vbuild = self.get_build_varmgr(varmgr, ctx)
+        vbuild = self.get_build_varmgr(varmgr, app=app, app_vars=app_vars, tags=tags)
         renderer = vbuild.get_renderer("scope_build")
         build_vars = renderer.render_values()
+
+        # Process jsonnet vars
+        jsonnet_vars = dict(build_vars)
+        jsonnet_result = {}
+        for tag in jsonnet_tags_array:
+            # print("PROCESSING TAG", tag)
+            out = tag.process_jsonnet_vars(vars=jsonnet_vars)
+            final = {}
+            final.update(out["def"])
+            final.update(out["dyn"])
+            jsonnet_vars.update(final)
+            jsonnet_result.update(final)
+        # pprint(jsonnet_result)
+            # jsonnet_vars.update(out)
+
+        # Reparse vars with varmgr once jsonnet tags are parsed
+        vbuild.set_layer("build_default_vars", jsonnet_result)
+        build_vars = vbuild.get_renderer("scope_build").render_values()
+
+        # pprint(build_vars)
+
+        # assert False, "WIP TAG DB, tag assert"
+
+
+
+        # tags_payload ={
+        #     "jsonnet_app_tag_files": self._build_filter_tags(app, tags),
+        #     "docker_app_tag_files": app.get_extra_docker_files(tags),
+        #     "jsonnet_local_tag_files": None,
+        #     "docker_local_tag_files": None, # TODO: Add local tag files
+        # }
+        # print("TAG PAYLOAD")
+        # pprint(SimpleNamespace(**tags_payload))
+        # # assert False, "WIP"
+
+
+
+
+        # varmgr = self.get_varmgr()
+        # vbuild = self.get_build_varmgr(varmgr, ctx)
+        # renderer = vbuild.get_renderer("scope_build")
+        # build_vars = renderer.render_values()
 
         # Process .env file content
         dc_project_name = "_".join([self.ns.name, self.stack.name, self.name])
@@ -251,9 +358,24 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             compose_settings=compose_settings, build_vars=build_vars, dry_run=dry_run
         )
 
+
+        # tmp = SimpleNamespace(
+        #     # compose_files=([docker_file_match] + docker_app_tag_files),
+        #     compose_files=([docker_file_match] + ctx.extra_docker_files),
+        #     name=dc_project_name,
+        #     build_vars=build_vars,
+        #     dry_run=dry_run,
+        # )
+        # pprint(tmp)
+        docker_app_tag_files = [+x.path for x in docker_tags_array]
+        compose_files = [docker_file_match] + docker_app_tag_files
+        # pprint(compose_files)
+        # assert False, "WIP"
+
         # Process docker-compose.yml file
         self.write_compose_file(
-            compose_files=[docker_file_match] + extra_docker_files,
+            # compose_files=[docker_file_match] + docker_app_tag_files,
+            compose_files=compose_files,
             name=dc_project_name,
             build_vars=build_vars,
             dry_run=dry_run,
@@ -314,12 +436,12 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             logger.info("Dry run, not writing env file: %s", self.path / ".env")
         return env_content
 
-    def get_build_varmgr(self, varmgr, ctx):
-        "Get build varmgr"
+    def get_build_varmgr(self, varmgr, app=None, app_vars=None, tags=None):
+        "Get build varmgr - V1 support"
 
-        tags = ctx.tags
-        app_vars = ctx.app_vars
-        app = ctx.app
+        # tags = ctx.tags
+        # app_vars = ctx.app_vars
+        # app = ctx.app
 
         varmgr = self.get_varmgr()
 
@@ -331,28 +453,31 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         stack_dir = +self.path
         default_vars = {
             "app_network_name": "default",
-            "app_log_level": "DEBUG",
-            "app_log_access": "True",
-            "app_dir_conf": os.path.join(stack_dir, "conf"),
-            "app_dir_data": os.path.join(stack_dir, "data"),
-            "app_dir_logs": os.path.join(stack_dir, "logs"),
-            "app_dir_secrets": os.path.join(stack_dir, "secrets"),
-            "app_puid": 1000,
-            "app_pgid": 1000,
-            "app_tz": "America/Toronto",
-            "net_proxy": "net_proxy",
-            "prj_ns": self.ns.ident,
-            "app_fqdn": "TOFIX_app_fqdn",
             "app_domain": "TOFIX_app_domain",
-            "app_expose_ip": "0.0.0.0",
-            "app_expose_port": 80,
-            "app_expose_proto": "http",
-            "app_expose_host": None,
-            "app_expose_path": None,
-            "app_expose_tls": False,
-            "stack_app_path": self.stack.path.get_path(mode="abs"),
             "app_name": app.name,
-            "app_ident": app.ident,
+            # "app_log_level": "DEBUG",
+            # "app_log_access": "True",
+            # "app_dir_conf": os.path.join(stack_dir, "conf"),
+            # "app_dir_data": os.path.join(stack_dir, "data"),
+            # "app_dir_logs": os.path.join(stack_dir, "logs"),
+            # "app_dir_secrets": os.path.join(stack_dir, "secrets"),
+            # "app_puid": 1000,
+            # "app_pgid": 1000,
+            # "app_tz": "America/Toronto",
+            # "net_proxy": "net_proxy",
+            # "prj_ns": self.ns.ident,
+            # "app_fqdn": "TOFIX_app_fqdn",
+            # "app_service": default_service,
+            # "app_prot": "http",
+            # "app_description": "NO DESCRIPTION",
+            # "app_expose_ip": "0.0.0.0",
+            # "app_expose_port": 80,
+            # "app_expose_proto": "http",
+            # "app_expose_host": None,
+            # "app_expose_path": None,
+            # "app_expose_tls": False,
+            # "stack_app_path": self.stack.path.get_path(mode="abs"),
+            # "app_ident": app.ident,
         }
 
         # print("============================")
@@ -369,7 +494,8 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             # Colon is used here for easier to parsing for later ...
             "_prj_stack_tags": f":{':'.join(tags)}:",
             "_stack_name": self.stack.ident,
-            "_stack_path_abs": self.stack.path.get_path(mode="abs"),
+            "_stack_path_abs": self.path.get_path(mode="abs"),
+            "_stack_path_abs2": self.stack.path.get_path(mode="abs"),
             "_stack_network": default_network,
             "_stack_service": default_service,
             # To report below as well
@@ -389,10 +515,12 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         vbuild.add_sources(
             [
                 Source("runtime_vars", level=200, help="Runtime variables"),
+
                 Source("pod_vars", level=500, help="Pod variables"),
                 Source("stack_vars", level=700, help="Stack variables"),
                 Source("ns_vars", level=900, help="Namespace variables"),
                 Source("app_vars", level=1000, help="App variables"),
+                Source("build_default_vars", level=2000, help="Pod variables"),
                 Source("default_vars", level=9999, help="Default variables"),
             ]
         )
@@ -418,6 +546,7 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
                     "stack_vars",
                     "ns_vars",
                     "app_vars",
+                    "build_default_vars",
                     "default_vars",
                 ],
             }

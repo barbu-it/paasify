@@ -6,6 +6,7 @@ from superconf.anchors2 import FileAnchor
 from paasify_v4.common import find_files_down
 from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
 from paasify_v4.models.core_stack import PaasifyStack
+from paasify_v4.models.core_common import PaasifyCollectionV1SupportMixin
 
 # import paasify_v4.exception as exc
 
@@ -24,7 +25,7 @@ class PaasifyNoNamespace(AppNode):
         super().__init__(**kwargs)
 
 
-class PaasifyNamespace(WorkingDirNode):
+class PaasifyNamespace(PaasifyCollectionV1SupportMixin, WorkingDirNode):
     "Namespace class, manage list of stacks"
 
     paasify_type = "namespace"

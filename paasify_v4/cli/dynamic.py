@@ -1,4 +1,5 @@
 import os
+import sh
 import logging
 from pprint import pprint
 
@@ -9,6 +10,7 @@ from clak.views import ListView, ShowView
 from paasify_v4.models.core_namespace import PaasifyNamespace
 from paasify_v4.models.core_stack import PaasifyStack, PaasifyPod
 import paasify_v4.exception as exc
+from paasify_v4.lib.shexec import shexec
 
 logger = logging.getLogger("paasify_v4.cli.dyn")
 
@@ -24,6 +26,26 @@ class DynPlaceholderCmd(Parser):
 
         print("DynPlaceholderCmd")
         raise NotImplementedError(f"Command for {self.name} is not implemented yet")
+
+
+class DynBuildCmd(Parser):
+    "Build dynamic (testing for now)"
+
+    app_names = Argument("APP", help="App name", nargs="*")
+
+
+    def cli_run(self, ctx=None, app_names=None, **_):
+        "Main command"
+
+        item = ctx.data["runner"].get_current()
+        logger.info("Working on: %s", item)
+        if not item:
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
+        
+        # TODO: This is temporary
+        out = item.assemble_tests()
 
 
 class DynUpCmd(Parser):
@@ -73,6 +95,33 @@ class DynVarsCmd(Parser):
         ListView(out).render()
 
 
+class DynEditCmd(Parser):
+    "Edit config file"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        item = ctx.data["runner"].get_current()
+        logger.info("Working on: %s", item)
+        # if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
+        if not item:
+            raise exc.PaasifyWorkdirNotFoundError(
+                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
+            )
+
+        if isinstance(item, PaasifyPod):
+            item = item.stack
+
+        # Start editor with config file
+        config_path = ~item.config_path
+        cmd_name = os.environ.get("EDITOR", "vim")
+        cmd = sh.Command(cmd_name)
+        cmd( config_path, _fg=True)
+
+        return config_path
+
+
+
 class DynListCmd(Parser):
     "List stack apps"
 
@@ -115,8 +164,11 @@ class DynMixin(Parser):
     "Dynamic commands"
 
     # Dynamic commands
+    build = Command(DynBuildCmd)
     up = Command(DynUpCmd)
     ls = Command(DynListCmd)
+    edit = Command(DynEditCmd)
+    
     vars = Command(DynVarsCmd)
     # info = Command(DynPlaceholderCmd)
     # build = Command(DynPlaceholderCmd)

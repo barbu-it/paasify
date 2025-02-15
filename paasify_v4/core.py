@@ -374,8 +374,13 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
             path=path, search_up=search_up
         )
 
-        root_path = PathAnchor(_root_path, mode=self.path_mode)
-        root_config_path = FileAnchor(path=_config_file, parent=root_path)
+        _short_name = self.__class__.__name__.lower().replace("paasify", "")
+        _path_name = f"{_short_name}_path"
+        _path_config_name = f"{_short_name}_config_path"
+
+        root_path = PathAnchor(_root_path, name=_path_name, mode=self.path_mode)
+        root_config_path = FileAnchor(path=_config_file, name=_path_config_name, parent=root_path)
+        
         self._path = root_path
         self.config_path = root_config_path
         self.sub_path = _sub_path
