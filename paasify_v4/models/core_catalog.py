@@ -92,7 +92,8 @@ class PaasifyApp(AppNode):
 
     def walk_tags(self):
         "Return tags"
-        path = self.get_path()
+        # path = self.get_path()
+        path = +self.path
         needle = "docker-compose.*.yml"
         tags = {}
 

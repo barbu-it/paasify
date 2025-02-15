@@ -12,7 +12,7 @@ from clak.views import ListView, ShowView
 from superconf.anchors2 import PathAnchor
 
 
-from paasify_v4.cli.catalog import CollectionGroup
+from paasify_v4.cli.catalog import CollectionGroup, AppGroup
 from paasify_v4.cli.namespaces import NamespaceGroup
 from paasify_v4.cli.pods import PodGroup
 from paasify_v4.cli.stacks import StackGroup
@@ -158,6 +158,7 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
     # ----------------------
 
     # Component commands
+    app = Command(AppGroup, help="==SUPPRESS==")
     collection = Command(CollectionGroup, help="==SUPPRESS==")
     pod = Command(PodGroup)  # , help="==SUPPRESS==")
     stack = Command(StackGroup)  # , help="==SUPPRESS==")
@@ -208,11 +209,11 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         # Extra temporary collections
         test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
         test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
-        # test_path3 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v3"
+        v4_path = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v4"
         collections_paths_extra = [
-            test_path2,
-            test_path1,
-            # test_path3,
+            # test_path2,
+            # test_path1,
+            v4_path,
         ]
 
         # Merge paths and start runner

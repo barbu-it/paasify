@@ -177,7 +177,8 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         ctx = SimpleNamespace(
             tags=tags,
             app_vars=app_vars,
-            extra_docker_files=extra_docker_files,  
+            extra_docker_files=extra_docker_files,
+            app=app,
         )
         varmgr = self.get_varmgr()
         vbuild = self.get_build_varmgr(varmgr, ctx)
@@ -279,10 +280,9 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
 
         tags = ctx.tags
         app_vars = ctx.app_vars
-        # extra_docker_files = ctx.extra_docker_files
+        app = ctx.app
 
         varmgr = self.get_varmgr()
-        # vars_dict = varmgr.get_values()
 
         # Create environment file
         default_network = "network"
@@ -312,6 +312,9 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             "app_expose_path": None,
             "app_expose_tls": False,
             "stack_app_path": self.stack.path.get_path(mode="abs"),
+
+            "app_name": app.name,
+            "app_ident": app.ident,
         }
 
         # print("============================")

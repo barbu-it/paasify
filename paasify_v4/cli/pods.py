@@ -3,7 +3,7 @@
 import logging
 from clak import Parser, Argument, Command
 from clak.views import ShowView, ListView
-
+from paasify_v4.models.core_pod import PaasifyPod
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,9 @@ class PodListCmd(Parser):
         current = ctx.data["runner"].get_current()
         viewer = current.kind
         out = []
+        print(current)
+        if isinstance(current, PaasifyPod):
+            current = current.stack
         for pod in current.get_pods():
             part1 = {
                 "ident": pod.ident,

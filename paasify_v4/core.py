@@ -151,7 +151,7 @@ class HelperMethodsMixin:
 
     def read_yaml_file(self, filename):
         "Read vars.yml file"
-        vars_file = os.path.join(self.get_path(), filename)
+        vars_file = os.path.join(~self.path, filename)
         if os.path.exists(vars_file):
             data = read_file(vars_file)
             data = from_yaml(data)
@@ -199,21 +199,21 @@ class AppNode(HelperMethodsMixin, Node):
             return self._path
         return "NO PATH"
 
-    def get_path(self):
-        "Return path"
+    # def get_path(self):
+    #     "Return path"
 
-        # If path is hardcoded, return it
-        if hasattr(self, "_path"):
-            return self._path
+    #     # If path is hardcoded, return it
+    #     if hasattr(self, "_path"):
+    #         return self._path
 
-        if hasattr(self, "sub_path"):
-            sub_path = self.sub_path
+    #     if hasattr(self, "sub_path"):
+    #         sub_path = self.sub_path
 
-            # If there is no path, then look recurisveley in each parent
-            # until we find a path attribute
-            if self.parent is not None:
-                return os.path.join(self.parent.get_path(), sub_path)
-        return "NO PATH"
+    #         # If there is no path, then look recurisveley in each parent
+    #         # until we find a path attribute
+    #         if self.parent is not None:
+    #             return os.path.join(self.parent.get_path(), sub_path)
+    #     return "NO PATH"
 
     # Special methods
     def _get_store_attr(self):

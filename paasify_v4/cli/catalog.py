@@ -67,7 +67,7 @@ class AppShowCmd(Parser):
             "source": app.parent.name,
             "index": app.index,
             # "apps_count": len(app.get_apps()),
-            "path": app.get_path(),
+            "path": ~app.path,
             "tags": " ".join(tags),
             "": "",
         }
@@ -132,7 +132,7 @@ class CollectionShowCmd(Parser):
             "source": collection.parent,
             "index": collection.index,
             "apps_count": len(collection.get_apps()),
-            "path": collection.get_path(),
+            "path": ~collection.path,
             "remote": collection.get_git_remote(),
             "branch": collection.get_git_branch(),
             "clean": is_clean,
@@ -180,14 +180,14 @@ class CollectionInfoCmd(Parser):
 
         cwd = ctx.data["dir_cwd"]
         print(" * Working dir:")
-        print(f"    get_path: {cwd.get_path()}")
+        print(f"    get_path: {~cwd.path}")
         print(f"    get_dir : {cwd.get_dir()}")
         print(f"    get_dir (abs): {cwd.get_dir(mode='abs')}")
         print(f"    get_dir (rel): {cwd.get_dir(mode='rel')}")
         print(" * Collections paths:")
 
         for col_path in catalog_mgr.get_collections_paths():
-            print(f"    {col_path.index}: {col_path.ident}: {col_path.get_path()}")
+            print(f"    {col_path.index}: {col_path.ident}: {~col_path.path}")
 
 
 class CollectionGroup(Parser):
@@ -197,4 +197,4 @@ class CollectionGroup(Parser):
     list = Command(CollectionListCmd)
     show = Command(CollectionShowCmd)
     # devel = Command(CollectionDevelCmd)
-    app = Command(AppGroup)
+    # app = Command(AppGroup)
