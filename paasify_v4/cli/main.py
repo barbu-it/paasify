@@ -210,13 +210,13 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             collections_paths_user = []
 
         # Extra temporary collections
-        test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v1"
-        test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v2"
-        v4_path = "/home/jez/volumes/data/prj/mrjk/bench_paasify/python-paasify__work__v4/pocs/v4_collections/SOURCE_v4"
+        test_path1 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/work__v4/paasify_v4/SOURCE_v1"
+        test_path2 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/work__v4/paasify_v4/SOURCE_v2"
+        test_path4 = "/home/jez/volumes/data/prj/mrjk/bench_paasify/work__v4/paasify_v4/SOURCE_v4"
         collections_paths_extra = [
             # test_path2,
             # test_path1,
-            v4_path,
+            test_path4,
         ]
 
         # Merge paths and start runner

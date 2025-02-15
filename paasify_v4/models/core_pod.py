@@ -61,6 +61,9 @@ class Var:
         keyval = f"{self.name}={self.value}"
         return f"Var({truncate(keyval, max=24)})"
 
+    def __str__(self):
+        "Return string representation - Required for var templating"
+        return f"{self.value}"
 
 # Pod classes
 # ================================================
