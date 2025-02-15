@@ -51,10 +51,10 @@ paasify = "paasify_v4.cli:run"
 # ==================
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 
 sh = "^1.14.3"
-anyconfig = "^0.13.0"
+#anyconfig = "^0.13.0"
 ruamel-yaml = "^0.17.21"
 jsonschema = "^4.17.0"
 jsonnet = "^0.19.1"
@@ -62,9 +62,8 @@ giturlparse = "^0.10.0"
 semver = "^2.13.0"
 single-version = "^1.5.1"
 pyaml = "^21.10.1"
-typer = "^0.7.0"
-json-schema-for-humans = "^0.44"
-rich = "^13.3.1"
+#json-schema-for-humans = "^0.44"
+#rich = "^13.3.1"
 gitpython = "^3.1.44"
 
 [tool.poetry.group.dev.dependencies]
