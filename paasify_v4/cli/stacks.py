@@ -5,9 +5,11 @@ from clak import Parser, Argument, Command
 from clak.views import ShowView, ListView
 from paasify_v4.lib.shexec import shexec
 import paasify_v4.exception as exc
+
 logger = logging.getLogger(__name__)
 import sh
 from pprint import pprint
+
 # Stack management
 # ================================================
 
@@ -17,16 +19,20 @@ class StackTreeCmd(Parser):
 
     def cli_run(self, ctx=None, **_):
         "Main command"
-        
+
         ns = ctx.data["runner"].namespace
-        cmd = ["tree", 
-               "-L", "3",
-               "-P", "paasify.yml",
-               "--info",
-               "--noreport",
-               "--prune",
-                 ~ns.path]
-        
+        cmd = [
+            "tree",
+            "-L",
+            "3",
+            "-P",
+            "paasify.yml",
+            "--info",
+            "--noreport",
+            "--prune",
+            ~ns.path,
+        ]
+
         # out = shexec(cmd)
         try:
             out = shexec(cmd)

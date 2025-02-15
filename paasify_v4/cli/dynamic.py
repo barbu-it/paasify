@@ -93,11 +93,13 @@ class DynListCmd(Parser):
         print(item)
         for child in item:
             print(type(child), child)
-            render.append({
-                # "Path": ~child.path,
-                "Ident": child.ident,
-                "Object": child,
-            })
+            render.append(
+                {
+                    # "Path": ~child.path,
+                    "Ident": child.ident,
+                    "Object": child,
+                }
+            )
             # if isinstance(child, PaasifyStack):
             #     render.append([~child.path, child.ident, child])
             # else:

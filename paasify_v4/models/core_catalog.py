@@ -64,7 +64,6 @@ class PaasifyApp(AppNode):
         self._store_vars = {}
         self._store_tags = {}
 
-
     # Vars support
     # ------------
     @setup_once("setup_vars")
@@ -121,8 +120,6 @@ class PaasifyApp(AppNode):
         "Return tags"
         return self._store_tags
 
-
-
     # File structure support - Shared code Apps<=>Pods
     # # ------------
     # @setup_once("setup_files")
@@ -130,7 +127,6 @@ class PaasifyApp(AppNode):
     #     "Parse app files"
     #     # logger.info("Setup app files: %s", self)
     #     # self._store_files = self.walk_files()
-
 
     def get_compose_files(self):
         "Return files"
@@ -151,7 +147,6 @@ class PaasifyApp(AppNode):
 
         return docker_file_match
 
-
     def get_vars_files(self):
         "Return vars files"
         app_path = ~self.path
@@ -163,11 +158,10 @@ class PaasifyApp(AppNode):
             app_vars = from_yaml(read_file(app_vars_matches[0]))
 
         return app_vars
-    
 
     def get_extra_docker_files(self, tags):
         "Return extra docker files"
-        
+
         app_path = ~self.path
 
         extra_docker_files = []
@@ -186,16 +180,7 @@ class PaasifyApp(AppNode):
         return extra_docker_files
 
 
-
-
-
-
-
-
-
-
 ############################################
-
 
 
 class PaasifyCollection(AppNode):
@@ -313,15 +298,15 @@ class CollectionsPath(AppNode):
     paasify_type = "catalog_path"
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({truncate((+self.path or self.name), max=-12)})"
-
+        return (
+            f"{self.__class__.__name__}({truncate((+self.path or self.name), max=-12)})"
+        )
 
     # def __repr__(self):
     #     return f"{self.__class__.__name__}({+self.path or self.name})"
 
     # def __repr__(self):
     #     return f"{self.__class__.__name__}({self.path.get_name() or self.name})"
-
 
     def __init__(self, ident, parent=None, path=None, index=None):
         assert isinstance(parent, PaasifyCatalog)

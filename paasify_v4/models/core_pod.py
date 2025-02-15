@@ -46,7 +46,8 @@ logger = logging.getLogger(__name__)
 # Vars management
 # ================================================
 
-class Var():
+
+class Var:
     "Represent a variable"
 
     def __init__(self, name, value, **kwargs):
@@ -59,6 +60,7 @@ class Var():
     def __repr__(self):
         keyval = f"{self.name}={self.value}"
         return f"Var({truncate(keyval, max=24)})"
+
 
 # Pod classes
 # ================================================
@@ -99,7 +101,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         "Return catalog"
         return self.parent.catalog
 
-
     # Vars management
     # --------------------------------
 
@@ -112,11 +113,10 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             var = Var(var_name, var_value)
             self._store_vars[var_name] = var
 
-
         # self._store_vars = self.config.get("vars", {}) or {}
 
     @requires_setup_node("setup_vars")
-    def get_vars(self): # V2
+    def get_vars(self):  # V2
         "Get vars"
         return self._store_vars
 
@@ -124,9 +124,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
     # def get_vars(self): # V1
     #     "Get vars"
     #     return self.config.get("vars", {}) or {}
-    
-
-
 
     # Config build
     # --------------------------------
@@ -176,8 +173,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         # self.vars = self.config.get("vars", {}) or {}
         # self.tags = self.config.get("tags", []) or []
 
-
-
     # High level methods
     # --------------------------------
 
@@ -196,7 +191,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         varmgr.set_layer("pod_vars", ret["pod_vars"])
 
         return varmgr
-
 
     # Assembling methods
     # --------------------------------
@@ -251,18 +245,20 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             # "COMPOSE_EXPERIMENTAL": "true",
         }
         self.write_env_file(
-            compose_settings=compose_settings, 
-            build_vars=build_vars, dry_run=dry_run)
+            compose_settings=compose_settings, build_vars=build_vars, dry_run=dry_run
+        )
 
         # Process docker-compose.yml file
         self.write_compose_file(
-            compose_files=[docker_file_match] + extra_docker_files, 
-            name=dc_project_name, 
-            build_vars=build_vars, 
-            dry_run=dry_run)
+            compose_files=[docker_file_match] + extra_docker_files,
+            name=dc_project_name,
+            build_vars=build_vars,
+            dry_run=dry_run,
+        )
 
-
-    def write_compose_file(self, compose_files=None, name=None, build_vars=None, dry_run=False):
+    def write_compose_file(
+        self, compose_files=None, name=None, build_vars=None, dry_run=False
+    ):
         "Write docker-compose.yml file"
 
         compose_files = compose_files or []
@@ -271,27 +267,23 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         docker_file_dest = self.path / "docker-compose.yml"
 
         comp_app = ComposedApp(
-            name=name,
-            project_dir=self.path.get_path(),
-            compose_files=compose_files
+            name=name, project_dir=self.path.get_path(), compose_files=compose_files
         )
 
         # TODO: To set back interpolate to false, there is an issue on
         # volumes names VS binds
-        compose_content = comp_app.assemble(interpolate=True, normalize=False) 
+        compose_content = comp_app.assemble(interpolate=True, normalize=False)
         # compose_content = comp_app.assemble(interpolate=False, normalize=False)
         for varname in comp_app.get_variables2():
             if not varname in build_vars:
                 logger.error("Missing variable: %s", varname)
                 # logger.error("  %s", conf)
 
-
         if not dry_run:
             logger.info(
                 "Write docker-compose.yml file: %s", self.path / "docker-compose.yml"
             )
             write_file(docker_file_dest, compose_content)
-
 
     def write_env_file(self, compose_settings, build_vars=None, dry_run=False):
         "Write .env file"
@@ -318,9 +310,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         else:
             logger.info("Dry run, not writing env file: %s", self.path / ".env")
         return env_content
-
-
-
 
     def get_build_varmgr(self, varmgr, ctx):
         "Get build varmgr"
@@ -359,7 +348,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
             "app_expose_path": None,
             "app_expose_tls": False,
             "stack_app_path": self.stack.path.get_path(mode="abs"),
-
             "app_name": app.name,
             "app_ident": app.ident,
         }
@@ -433,7 +421,6 @@ class PaasifyPod(VarMgrNodeMixin, AppNode):
         )
 
         return vbuild
-    
 
     # Other methods
     # --------------------------------

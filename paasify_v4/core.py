@@ -146,6 +146,7 @@ def requires_setup_node(name="setup_node"):
 # Paasify AppNode class
 # ================================================
 
+
 class HelperMethodsMixin:
     "Common helper methods"
 

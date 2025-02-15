@@ -286,8 +286,6 @@ class ComposedApp:
         varnames = StringTemplate(out).get_identifiers()
         return varnames
 
-
-
     # Stack assembling
     # ===============
 
