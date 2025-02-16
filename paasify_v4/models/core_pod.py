@@ -7,6 +7,7 @@ import sh
 
 from pathlib import Path
 from types import SimpleNamespace
+import json
 
 from superconf.anchors2 import PathAnchor
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
@@ -30,6 +31,7 @@ from paasify_v4.common import (
     write_file,
     read_file,
     from_yaml,
+    to_yaml,
     to_domain,
     flatten,
     truncate,
@@ -41,6 +43,7 @@ from paasify_v4.models.core_common import (
     JsonnetTagV1,
     ComposeTagV1,
     Var,
+    TagConfigV1,
 )
 
 from paasify_v4.engine_docker.compose_app import ComposedApp
@@ -192,7 +195,7 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         "Assemble tests"
         print("YOOO")
 
-        pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
+        # pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
 
     def _build_resolve_app_name(self, app_name):
         "Resolve app name from catalog"
@@ -205,19 +208,19 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             return app_matches[0]
         return None
 
-    def _build_filter_tags(self, app, tags):
-        "Filter tags"
-        # app_name = self.config.get("app")
-        # app = self._build_resolve_app_name(app_name)
+    # def _build_filter_tags(self, app, tags):
+    #     "Filter tags"
+    #     # app_name = self.config.get("app")
+    #     # app = self._build_resolve_app_name(app_name)
 
-        # TODO: This is wrong, all collections should be asked
-        all_jsonnet_tags = app.parent.get_jsonnet_files()
+    #     # TODO: This is wrong, all collections should be asked
+    #     all_jsonnet_tags = app.parent.get_jsonnet_files()
 
-        matches = []
-        for tag in all_jsonnet_tags:
-            if tag.name in tags:
-                matches.append(tag)
-        return matches
+    #     matches = []
+    #     for tag in all_jsonnet_tags:
+    #         if tag.name in tags:
+    #             matches.append(tag)
+    #     return matches
 
     # @requires_setup_node("setup_app")
     def assemble(self, dry_run=False):
@@ -226,11 +229,24 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # Resolve app name
         app_name = self.config.get("app")
         app = self._build_resolve_app_name(app_name)
+        print("RESOLVED APP", app_name, app)
 
         # Fetch app files
         tags = self.config.get("tags", [])
         docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
+
+        pprint(tags)
+
+        new_tags = [TagConfigV1(config="_paasify", parent=self)]
+        for tag in tags:
+            ret_tag = TagConfigV1(config=tag, parent=self)
+            pprint(ret_tag.__dict__)
+            new_tags.append(ret_tag)
+
+        # tags = new_tags
+        # pprint(tags)
+        # assert False, "WIP"
         # docker_app_tag_files = app.get_extra_docker_files(tags)
 
         # Resolve tag files
@@ -243,7 +259,7 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # Prepare tag database
         tags_db = {
             "jsonnet_collection_tag_files": app.collection.get_jsonnet_files(),
-            "jsonnet_ns_tag_files": self.ns.get_jsonnet_files(),
+            "jsonnet_ns_tag_files": self.ns.get_jsonnet_files() if self.ns else [],
             "jsonnet_app_tag_files": app.get_jsonnet_files(),
             "jsonnet_local_tag_files": self.get_jsonnet_files(),
             # "docker_ns_tag_files": app.namespace.
@@ -274,26 +290,34 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
 
         # Resolve and validatetags processing order
         tags_array = []
-        for tag in tags:
-            if not tag in tags_db_flat:
+        for tag in new_tags:
+            if not tag.ident in tags_db_flat:
                 logger.warning("Tag %s not found in tags_db_flat", tag)
             else:
-                tags_array.append(tags_db_flat[tag])
-        jsonnet_tags_array = [x for x in tags_array if isinstance(x, JsonnetTagV1)]
-        docker_tags_array = [x for x in tags_array if isinstance(x, ComposeTagV1)]
+                ret = SimpleNamespace(tag=tags_db_flat[tag.ident], conf=tag.config)
+                tags_array.append(ret)
+
+        # print("TAG ARRAY")
+        # pprint(tags_array)
+        jsonnet_tags_array = [x for x in tags_array if isinstance(x.tag, JsonnetTagV1)]
+        docker_tags_array = [
+            x.tag for x in tags_array if isinstance(x.tag, ComposeTagV1)
+        ]
+
+        # print("JSONNET TAG ARRY")
+        # pprint(jsonnet_tags_array)
 
         # Process pod variables
         varmgr = self.get_varmgr()
-        vbuild = self.get_build_varmgr(varmgr, app=app, app_vars=app_vars, tags=tags)
+        vbuild = self.get_build_varmgr(varmgr, app=app, app_vars=app_vars)
         renderer = vbuild.get_renderer("scope_build")
         build_vars = renderer.render_values()
 
-        # Process jsonnet vars
+        # Process jsonnet global vars
         jsonnet_vars = dict(build_vars)
         jsonnet_result = {}
         for tag in jsonnet_tags_array:
-            # print("PROCESSING TAG", tag)
-            out = tag.process_jsonnet_vars(vars=jsonnet_vars)
+            out = tag.tag.process_jsonnet_vars(vars=jsonnet_vars)
             final = {}
             final.update(out["def"])
             final.update(out["dyn"])
@@ -326,7 +350,9 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # build_vars = renderer.render_values()
 
         # Process .env file content
-        dc_project_name = "_".join([self.ns.name, self.stack.name, self.name])
+        dc_project_name = "_".join([self.stack.name, self.name])
+        if self.ns:
+            dc_project_name = "_".join([self.ns.name, dc_project_name])
         compose_settings = {
             "COMPOSE_PROJECT_NAME": dc_project_name,
             "COMPOSE_FILE": "docker-compose.yml",
@@ -361,42 +387,73 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
         # assert False, "WIP"
 
         # Process docker-compose.yml file
-        self.write_compose_file(
+        compose_content = self.gen_compose_file(
             # compose_files=[docker_file_match] + docker_app_tag_files,
             compose_files=compose_files,
             name=dc_project_name,
             build_vars=build_vars,
-            dry_run=dry_run,
+            output="json",
         )
+        compose_content_json = json.loads(compose_content)
 
-    def write_compose_file(
-        self, compose_files=None, name=None, build_vars=None, dry_run=False
+        # print("COMPOSE CONTENT")
+        # print(compose_content)
+
+        # Process jsonnet plugins instances
+        jsonnet_vars = dict(build_vars)
+        jsonnet_result = {}
+        loop_out = compose_content_json
+        for tag in jsonnet_tags_array:
+            conf = tag.conf
+            tag = tag.tag
+            print("PROCESSING PLUGIN", tag.ident, conf)
+
+            _config = dict(build_vars)
+            _config.update(conf)
+            out = tag.process_jsonnet_plugin(config=_config, docker_data=loop_out)
+            # pprint(out)
+            loop_out = out
+            # pprint(tag.__dict__)
+
+            # final = {}
+            # final.update(out["def"])
+            # final.update(out["dyn"])
+
+        # print("FINAL")
+        # pprint(loop_out)
+        compose_content = to_yaml(loop_out)
+
+        assert compose_content
+
+        if not dry_run:
+            docker_file_dest = self.path / "docker-compose.yml"
+            logger.info("Write docker-compose.yml file: %s", docker_file_dest)
+            write_file(docker_file_dest, compose_content)
+
+    def gen_compose_file(
+        self, compose_files=None, name=None, build_vars=None, output="json"
     ):
         "Write docker-compose.yml file"
 
-        compose_files = compose_files or []
-
         # Process docker-compose.yml file
-        docker_file_dest = self.path / "docker-compose.yml"
-
+        compose_files = compose_files or []
+        assert compose_files, "Missing compose files"
         comp_app = ComposedApp(
             name=name, project_dir=self.path.get_path(), compose_files=compose_files
         )
 
         # TODO: To set back interpolate to false, there is an issue on
         # volumes names VS binds
-        compose_content = comp_app.assemble(interpolate=True, normalize=False)
+        compose_content = comp_app.assemble(
+            interpolate=True, normalize=False, output="json"
+        )
         # compose_content = comp_app.assemble(interpolate=False, normalize=False)
         for varname in comp_app.get_variables2():
             if not varname in build_vars:
                 logger.error("Missing variable: %s", varname)
                 # logger.error("  %s", conf)
 
-        if not dry_run:
-            logger.info(
-                "Write docker-compose.yml file: %s", self.path / "docker-compose.yml"
-            )
-            write_file(docker_file_dest, compose_content)
+        return compose_content
 
     def write_env_file(self, compose_settings, build_vars=None, dry_run=False):
         "Write .env file"
@@ -424,7 +481,7 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             logger.info("Dry run, not writing env file: %s", self.path / ".env")
         return env_content
 
-    def get_build_varmgr(self, varmgr, app=None, app_vars=None, tags=None):
+    def get_build_varmgr(self, varmgr, app=None, app_vars=None):
         "Get build varmgr - V1 support"
 
         # tags = ctx.tags
@@ -468,6 +525,8 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             # "app_ident": app.ident,
         }
 
+        tags = ["DISABLED_TEMP"]
+
         # print("============================")
         runtime_vars = {
             "paasify_sep": "-",
@@ -475,8 +534,6 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
             "paasify_sep_net": "_",
             "_prj_path": +self.path,
-            "_prj_namespace": self.ns.ident,  # deprecated because too long !
-            "_prj_ns": self.ns.ident,
             # "_prj_domain": to_domain(self.ns.ident),
             "_prj_stack_path": +self.stack.path,
             # Colon is used here for easier to parsing for later ...
@@ -495,7 +552,18 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
             # "_stack_app_name": os.path.basename(app.app_name),
             # "_stack_app_dir": app.app_name,
             # "_stack_app_path": app.get_app_path(),
+            # Project namespace (DEFAULT CAN BE OVERRIDED BY NAMESPACE)
+            "_prj_namespace": self.ident,  # deprecated because too long !
+            "_prj_ns": self.ident,
         }
+        if self.ns:
+            runtime_vars.update(
+                {
+                    "_prj_namespace": self.ns.ident,  # deprecated because too long !
+                    "_prj_ns": self.ns.ident,
+                }
+            )
+
         # runtime_vars.update(vars_dict)
         # pprint(runtime_vars)
 

@@ -30,6 +30,7 @@ class PaasifyStack(WorkingDirNode):
 
     OBJECT_NAME = "Stack"
     ALLOWED_CONF_FILES = [
+        "paasify2.yml",
         "paasify.yml",
         "paasify.yaml",
         "paasify.stack.yml",

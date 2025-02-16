@@ -38,6 +38,36 @@ class Var:
         return self._name
 
 
+class TagConfigV1(AppNode):
+    "Stack tag config class - V1 support"
+
+    def __init__(self, ident=None, config=None, parent=None):
+
+        tag_config = {}
+        tag_ident = None
+        if config:
+            if isinstance(config, str):
+                tag_ident = config
+                tag_config = {}
+            elif isinstance(config, dict):
+                conf_keys = list(config.keys())
+                assert len(conf_keys) == 1, f"Expected 1 key, got {len(conf_keys)}"
+                tag_ident = conf_keys[0]
+                tag_config = config[tag_ident]
+                if not isinstance(tag_config, dict):
+                    msg = f"Invalid tag config type for {parent}/{tag_ident}, expected dict, got {type(tag_config)}: {tag_config}"
+                    raise exc.PaasifyConfigError(msg)
+            else:
+                msg = f"Invalid tag config type for {parent}/{tag_ident}, expected dict or string, got {type(config)}: {config}"
+                raise exc.PaasifyConfigError(msg)
+
+        assert tag_ident
+        self.config = tag_config
+        assert isinstance(self.config, dict)
+
+        super().__init__(ident=tag_ident, parent=parent)
+
+
 #######################################
 
 
@@ -84,14 +114,6 @@ class JsonnetTagV1(PaasifyTagV1):
                 "plugin_vars",
                 {
                     "args": vars,
-                    # "args": {
-                    #     "app_name": self.source.ident,
-                    #     "app_service": self.source.ident,
-                    #     "app_description": self.source.ident,
-                    #     "app_product": self.source.ident,
-                    #     "app_prot": "http",
-                    #     "app_fqdn": "localhost",
-                    # }
                 },
             )
             # print("======== OUT")
@@ -104,9 +126,30 @@ class JsonnetTagV1(PaasifyTagV1):
 
         return out
 
-        # jsonnet_file = jsonnet_path.read_text()
-        # jsonnet_vars = jsonnet.evaluate_file(jsonnet_file)
-        # return jsonnet_vars
+    def process_jsonnet_plugin(self, config=None, docker_data=None):
+        "Process jsonnet plugin"
+        jsonnet_path = ~self.path
+        docker_data = docker_data or {}
+
+        jproc = JsonnetProcessor()
+        try:
+            out = jproc.process_jsonnet_exec(
+                jsonnet_path,
+                "docker_transform",
+                {
+                    "args": config,
+                    "docker_data": docker_data,
+                },
+            )
+            # print("======== OUT")
+            # pprint(out)
+            # print("======== OUT")
+        except JsonnetError as err:
+            # logger.critical(f"Can't parse jsonnet file: {jsonnet_path}")
+            msg = f"Can't parse jsonnet file: {jsonnet_path}, got error:\n\n{err}"
+            raise exc.PaasifyAssembleError(msg) from None
+
+        return out
 
 
 class ComposeTagV1(PaasifyTagV1):

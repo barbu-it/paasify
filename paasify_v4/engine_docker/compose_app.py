@@ -296,6 +296,7 @@ class ComposedApp:
         normalize=False,
         interpolate=False,
         path_resolution=False,
+        output="yaml",
     ):
         "Assemble docker compose config"
 
@@ -308,7 +309,7 @@ class ComposedApp:
             cmd.append(",".join(profiles))
             # cmd.append("'%s'" % ",".join(profiles))
 
-        cmd.append("config")
+        cmd.extend(["config", "--format", output])
 
         # Add options
         if interpolate is False:
