@@ -14,6 +14,7 @@ from paasify_v4.core import (
 from paasify_v4.models.core_catalog import PaasifyCatalog
 from paasify_v4.models.core_pod import PaasifyPod
 import paasify_v4.exception as exc
+from paasify_v4.core_abc import PodManagementMixin
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyStack(WorkingDirNode):
+class PaasifyStack(PodManagementMixin,WorkingDirNode):
     "Base class for all Paasify stacks"
 
     paasify_type = "stack"

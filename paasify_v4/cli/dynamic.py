@@ -36,15 +36,60 @@ class DynBuildCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-        item = ctx.data["runner"].get_current()
-        logger.info("Working on: %s", item)
-        if not item:
-            raise exc.PaasifyWorkdirNotFoundError(
-                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
-            )
 
-        # TODO: This is temporary
-        out = item.assemble_tests()
+
+        # Algorithm with ABC class is: V1
+        # if app_names is None: - Direct mode
+        #   - If pod, just pod.build()
+        #   - Get the list of current pod context.
+        #     - For ns and stack, get_pods()
+        # else app_names is not none: - Arg mode
+        #   - If pod, use closest stack
+        #   - Get the list of current stack/ns context.
+        #     - For ns and stack, .get_pods() and check all app_names exists, or raise error
+        #     - For ns and stack, .get_pods()
+        #        - For each pod, check if name match, and build it pod.build()
+
+
+        # Algorithm with ABC class is: V2 ---- THIS ONE
+        # if app_names is None: - Direct mode
+        #   - If pod, just pod.pod_build()
+        #   - Get the list of current pod context.
+        #     - For ns or stack, .pod_build()
+        # else app_names is not none: - Arg mode
+        #   - If pod, use closest pod.stack   # pod.pod_build(selector=NOARGS) or raise error
+        #   - Get the list of pods in current stack/ns context:
+        #     - stack.pod_build(selector=app_names)
+
+        # So write me an ABC Mixin class with methods:
+        # - pod_build(self, selector=None)
+        # - get_closest_parent
+        
+        # V2
+        # item = item.get_closest_parent()
+        # item.pod_build(selector=app_names)
+
+        # V3
+        # print("APP NAMES", app_names)
+
+        item = ctx.data["runner"].get_current()
+        logger.debug("For %s.pod_build(), build pods: %s", item, ', '.join(app_names or ["All or One"]))
+    
+        if app_names:
+            ctl = item.get_closest_parent()
+            logger.info("Use %s to build selection of pods: %s", ctl, ', '.join(app_names))
+            # print("Use ctl", ctl)
+            ctl.pod_build(selector=app_names)
+        else:
+            if item.kind == "pod":  
+                logger.info("Use %s to build itself", item)
+            else:
+                logger.info("Use %s to build all children pods", item)
+            item.pod_build()
+
+
+
+
 
 
 class DynUpCmd(Parser):
@@ -59,15 +104,12 @@ class DynUpCmd(Parser):
 
         item = ctx.data["runner"].get_current()
         logger.info("Working on: %s", item)
-        if not item:
-            raise exc.PaasifyWorkdirNotFoundError(
-                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
-            )
 
-        if not isinstance(item, (PaasifyPod)):
-            raise NotImplementedError(
-                f"Command for {self.name} is not implemented yet for tother things that Pods"
-            )
+
+        # if not isinstance(item, (PaasifyPod)):
+        #     raise NotImplementedError(
+        #         f"Command for {self.name} is not implemented yet for tother things that Pods"
+        #     )
 
         out = item.assemble()
 
@@ -84,12 +126,6 @@ class DynVarsCmd(Parser):
         item = ctx.data["runner"].get_current()
 
         logger.info("Working on: %s", item)
-        if not item:
-            # if not isinstance(item, (PaasifyStack, PaasifyNamespace, PaasifyPod)):
-            raise exc.PaasifyWorkdirNotFoundError(
-                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
-            )
-
         out = item.get_varmgr().get_values()
         ListView(out).render()
 
@@ -103,11 +139,6 @@ class DynEditCmd(Parser):
         item = ctx.data["runner"].get_current()
         logger.info("Working on: %s", item)
         # if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
-        if not item:
-            raise exc.PaasifyWorkdirNotFoundError(
-                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
-            )
-
         if isinstance(item, PaasifyPod):
             item = item.stack
 
@@ -127,23 +158,20 @@ class DynListCmd(Parser):
         "Main command"
 
         item = ctx.data["runner"].get_current()
+        item = item.get_closest_parent()
         logger.info("Working on: %s", item)
-        # if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
-        if not item:
-            raise exc.PaasifyWorkdirNotFoundError(
-                f"Can't find any PaasifyStack or PaasifyNamespace in path: {os.getcwd()}"
-            )
 
         render = []
         # TODO: Fix columns in clak
         columns = ["Name", "Value"]
-        print(item)
-        for child in item:
-            print(type(child), child)
+        # print(item)
+        for child in item.get_pods():
+            # print(type(child), child)
             render.append(
                 {
                     # "Path": ~child.path,
-                    "Ident": child.ident,
+                    "Path": ~child.path,
+                    # "Ident": child.ident,
                     "Object": child,
                 }
             )
@@ -152,6 +180,27 @@ class DynListCmd(Parser):
             # else:
             #     render.append([child.ident, child])
         return ListView(render, columns=columns)
+
+
+
+# class DynListCmd(Parser):
+#     "List stack apps"
+
+#     def cli_run(self, ctx=None, **_):
+#         "Main command"
+
+
+#         item = ctx.data["runner"].get_current()
+#         logger.debug("For %s.pod_build(), build pods: %s", item, ', '.join(app_names or ["All or One"]))
+    
+
+#             if item.kind == "pod":  
+#                 logger.info("Use %s to build itself", item)
+#             else:
+#                 logger.info("Use %s to build all children pods", item)
+#             item.get_pods()
+
+
 
 
 # Dynamic Mixin

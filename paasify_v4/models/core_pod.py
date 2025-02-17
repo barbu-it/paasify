@@ -50,6 +50,8 @@ from paasify_v4.engine_docker.compose_app import ComposedApp
 import paasify_v4.exception as exc
 
 from paasify_v4.lib.shexec import shexec
+from paasify_v4.core_abc import PodManagedMixin
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +64,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
+class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
@@ -123,6 +125,7 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
 
     # Config build
     # --------------------------------
+
 
     def build_config(self, config, ident=None):
         "Build config"
@@ -188,12 +191,37 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
 
         return varmgr
 
+    # Apps methods
+    # --------------------------------
+
+    @property
+    @requires_setup_node("setup_app")
+    def app(self):
+        "Return app"
+        return self._app
+
+    @setup_once("setup_app")
+    def setup_app(self):
+        "Setup app"
+
+        # Resolve app name
+        app = None
+        app_name = self.config.get("app")
+        if app_name:
+            app = self._build_resolve_app_name(app_name)
+
+        self._app = app
+
+
     # Assembling methods
     # --------------------------------
 
-    def assemble_tests(self):
+
+    def pod_build(self, selector=None):
         "Assemble tests"
-        print("YOOO")
+        assert selector is None, "Selector not supported for pod"
+
+        print("Build pod", self.name, ~self.path)
 
         # pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
 
@@ -226,10 +254,9 @@ class PaasifyPod(VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
     def assemble(self, dry_run=False):
         "Assemble the pod - V1 support"
 
-        # Resolve app name
-        app_name = self.config.get("app")
-        app = self._build_resolve_app_name(app_name)
-        print("RESOLVED APP", app_name, app)
+
+
+        app = self.app
 
         # Fetch app files
         tags = self.config.get("tags", [])

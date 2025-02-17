@@ -7,13 +7,14 @@ from paasify_v4.common import find_files_down
 from paasify_v4.core import AppNode, WorkingDirNode, setup_once, requires_setup_node
 from paasify_v4.models.core_stack import PaasifyStack
 from paasify_v4.models.core_common import PaasifyCollectionV1SupportMixin
+from paasify_v4.core_abc import PodManagementMixin
 
 # import paasify_v4.exception as exc
 
 logger = logging.getLogger(__name__)
 
 
-class PaasifyNoNamespace(AppNode):
+class PaasifyNoNamespace(PodManagementMixin,AppNode):
     "No namespace class, just implement dumb methods"
 
     paasify_type = "namespace"
@@ -25,7 +26,7 @@ class PaasifyNoNamespace(AppNode):
         super().__init__(**kwargs)
 
 
-class PaasifyNamespace(PaasifyCollectionV1SupportMixin, WorkingDirNode):
+class PaasifyNamespace(PaasifyCollectionV1SupportMixin, PodManagementMixin,WorkingDirNode):
     "Namespace class, manage list of stacks"
 
     paasify_type = "namespace"
@@ -95,7 +96,7 @@ class PaasifyNamespace(PaasifyCollectionV1SupportMixin, WorkingDirNode):
 
         for stack_file in stack_files:
 
-            fanchor = FileAnchor(stack_file, parent=self.path)
+            fanchor = FileAnchor(stack_file, name="stack_app", parent=self.path)
             stack_dir = fanchor.get_dir()
 
             if stack_dir in stacks_config:

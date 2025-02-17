@@ -4,6 +4,8 @@ import logging
 from clak import Parser, Argument, Command
 from clak.views import ShowView, ListView
 from paasify_v4.models.core_pod import PaasifyPod
+from paasify_v4.common import to_yaml
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +29,18 @@ class PodInfoCmd(Parser):
             "ident": pod.ident,
             "name": pod.name,
             "path": ~pod.path,
+            "app": None,
             # "config": ~pod.config_path,
             # "namespace": pod.ns,
             # "catalog": pod.catalog,
             # "path_mode": pod.path_mode,
             "": "",
         }
+        if pod.app:
+            app_vars = to_yaml(pod.app.get_vars())
+            out["app"] = pod.app
+            out["app_path"] = ~pod.app.path
+            out["app_vars"] = app_vars
         for key, val in pod.get_vars().items():
             out[f"var:{key}"] = val
 

@@ -64,3 +64,7 @@ class PaasifySetupError(PaasifyError):
 
 class PaasifyAppNotFoundError(PaasifyError):
     "Error when an app is not found"
+
+
+class PaasifyPodNotFoundError(PaasifyError):
+    "Error when a pod is not found"
