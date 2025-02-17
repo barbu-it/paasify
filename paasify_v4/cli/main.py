@@ -106,34 +106,69 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             exc.PaasifyError,
         ]
 
+        # log_levels = [
+        #     ["paasify_v4.cli"],
+        #     [
+        #         "paasify_v4.cli",
+        #         "paasify_v4.models",
+        #         "paasify_v4.engine_docker",
+        #         # "paasify_v4",
+        #     ],
+        #     # [
+        #     #     "paasify_v4",
+        #     #     # "clak",
+        #     # ],
+        #     [
+        #         "paasify_v4",
+        #         "mrjk_components",
+        #         "sh.command.process",
+        #     ],
+        #     [""],
+        # ]
+
+        # log_silent = [
+        #     "sh.command.process.streamreader",
+        #     "sh.command.process.streamwriter",
+        #     "sh.stream_bufferer",
+        #     "sh.streamreader",
+        #     "sh.streamwriter",
+        #     "sh.command.process",
+        # ]
+
+
         log_levels = [
-            ["paasify_v4.cli"],
             [
-                "paasify_v4.cli",
-                "paasify_v4.models",
-                "paasify_v4.engine_docker",
-                # "paasify_v4",
+                "INFO|paasify_v4.cli",
+                "WARNING|sh.command.process.streamreader",
+                "WARNING|sh.command.process.streamwriter",
+                "WARNING|sh.stream_bufferer",
+                "WARNING|sh.streamreader",
+                "WARNING|sh.streamwriter",
+                "WARNING|sh.command.process",
             ],
-            # [
-            #     "paasify_v4",
-            #     # "clak",
-            # ],
+            ["DEBUG|paasify_v4.cli"],
             [
-                "paasify_v4",
-                "mrjk_components",
-                "sh.command.process",
+                "INFO|paasify_v4.models",
+                "INFO|paasify_v4.engine_docker",
             ],
-            [""],
+            [
+                "DEBUG|paasify_v4.models",
+                "DEBUG|paasify_v4.engine_docker",
+            ],
+            [
+                "INFO|paasify_v4",
+                "INFO|mrjk_components",
+                "INFO|sh.command.process",
+            ],
+            [
+                "DEBUG|paasify_v4",
+                "DEBUG|mrjk_components",
+            ],
+            ["INFO|"],
+            ["DEBUG|"],
         ]
 
-        log_silent = [
-            "sh.command.process.streamreader",
-            "sh.command.process.streamwriter",
-            "sh.stream_bufferer",
-            "sh.streamreader",
-            "sh.streamwriter",
-            "sh.command.process",
-        ]
+
 
     # Define options
     # ----------------------

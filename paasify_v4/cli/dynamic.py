@@ -29,7 +29,7 @@ class DynPlaceholderCmd(Parser):
 
 
 class DynBuildCmd(Parser):
-    "Build dynamic (testing for now)"
+    "Build pods"
 
     app_names = Argument("APP", help="App name", nargs="*")
 
@@ -89,11 +89,8 @@ class DynBuildCmd(Parser):
 
 
 
-
-
-
 class DynUpCmd(Parser):
-    "Show dynamic up"
+    "Up pods"
 
     app_names = Argument("APP", help="App name", nargs="*")
 
@@ -103,31 +100,10 @@ class DynUpCmd(Parser):
         # pprint(ctx.args.__dict__)
 
         item = ctx.data["runner"].get_current()
-        logger.info("Working on: %s", item)
-
-
-        # if not isinstance(item, (PaasifyPod)):
-        #     raise NotImplementedError(
-        #         f"Command for {self.name} is not implemented yet for tother things that Pods"
-        #     )
-
+        logger.debug("Working on: %s", item)
         out = item.assemble()
-
         return out
 
-
-class DynVarsCmd(Parser):
-    "Show vars"
-    app_names = Argument("APP", help="App name", nargs="*")
-
-    def cli_run(self, ctx=None, app_names=None, **_):
-        "Main command"
-
-        item = ctx.data["runner"].get_current()
-
-        logger.info("Working on: %s", item)
-        out = item.get_varmgr().get_values()
-        ListView(out).render()
 
 
 class DynEditCmd(Parser):
@@ -137,7 +113,7 @@ class DynEditCmd(Parser):
         "Main command"
 
         item = ctx.data["runner"].get_current()
-        logger.info("Working on: %s", item)
+        logger.debug("Working on: %s", item)
         # if not isinstance(item, (PaasifyStack, PaasifyNamespace)):
         if isinstance(item, PaasifyPod):
             item = item.stack
@@ -151,15 +127,34 @@ class DynEditCmd(Parser):
         return config_path
 
 
+class DynVarsCmd(Parser):
+    "Show vars"
+    app_names = Argument("APP", help="App name", nargs="*")
+    all = Argument("--all", "-a", help="Show all vars", action="store_true")
+
+    def cli_run(self, ctx=None, app_names=None, all=False, **_):
+        "Main command"
+
+        item = ctx.data["runner"].get_current()
+
+        logger.debug("Working on: %s", item)
+        # out = item.get_varmgr().get_values()
+        if all:
+            out = item.get_varmgr().get_values()
+        else:
+            out = item.get_vars()
+
+        ListView(out).render()
+
 class DynListCmd(Parser):
-    "List stack apps"
+    "List pods"
 
     def cli_run(self, ctx=None, **_):
         "Main command"
 
         item = ctx.data["runner"].get_current()
         item = item.get_closest_parent()
-        logger.info("Working on: %s", item)
+        logger.debug("Working on: %s", item)
 
         render = []
         # TODO: Fix columns in clak
@@ -181,6 +176,17 @@ class DynListCmd(Parser):
             #     render.append([child.ident, child])
         return ListView(render, columns=columns)
 
+
+class DynInfoCmd(Parser):
+    "Show info"
+
+    def cli_run(self, ctx=None, **_):
+        "Main command"
+
+        item = ctx.data["runner"].get_current()
+        logger.debug("Working on: %s", item)
+        out = item.get_infos()
+        ShowView(out).render()
 
 
 # class DynListCmd(Parser):
@@ -213,10 +219,11 @@ class DynMixin(Parser):
     # Dynamic commands
     build = Command(DynBuildCmd)
     up = Command(DynUpCmd)
-    ls = Command(DynListCmd)
+    list = Command(DynListCmd, aliases=["ls"])
     edit = Command(DynEditCmd)
 
     vars = Command(DynVarsCmd)
+    info = Command(DynInfoCmd)
     # info = Command(DynPlaceholderCmd)
     # build = Command(DynPlaceholderCmd)
     # down = Command(DynPlaceholderCmd)

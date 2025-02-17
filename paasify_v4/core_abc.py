@@ -16,6 +16,30 @@ class PaasifyEntityMixin():
         return self
 
 
+    def get_vars(self):
+        "Get vars"
+        raise NotImplementedError(f"Vars are not implemented for {self}")
+
+
+    def get_infos(self):
+        "Get infos"
+
+        out = {
+            "kind": self.kind,
+            "name": self.name,
+            "path": +self.path,
+            # "config": self.config,
+                # "vars": self.get_vars(),
+        }
+        # for var_name, var_value in self.config.items():
+        #     out[f"config:{var_name}"] = var_value
+
+        for var_name, var_value in self.get_vars().items():
+            out[f"var:{var_name}"] = var_value
+        return out
+
+
+
 
 class PodManagementMixin(PaasifyEntityMixin):
     "Pod management mixin"

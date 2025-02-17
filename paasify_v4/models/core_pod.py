@@ -263,12 +263,11 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
         docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
 
-        pprint(tags)
 
         new_tags = [TagConfigV1(config="_paasify", parent=self)]
         for tag in tags:
             ret_tag = TagConfigV1(config=tag, parent=self)
-            pprint(ret_tag.__dict__)
+            # pprint(ret_tag.__dict__)
             new_tags.append(ret_tag)
 
         # tags = new_tags
@@ -433,7 +432,7 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
         for tag in jsonnet_tags_array:
             conf = tag.conf
             tag = tag.tag
-            print("PROCESSING PLUGIN", tag.ident, conf)
+            # print("PROCESSING PLUGIN", tag.ident, conf)
 
             _config = dict(build_vars)
             _config.update(conf)
