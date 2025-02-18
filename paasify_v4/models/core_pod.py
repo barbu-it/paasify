@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
+class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
@@ -99,6 +99,36 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
         "Return catalog"
         return self.parent.catalog
 
+    # Infos
+    # --------------------------------
+
+    def get_infos(self):
+        "Get infos"
+        base = super().get_infos()
+        # base["---"] = "---"
+
+        if self.app:
+            app_fields = [
+                "self",
+                # "kind",
+                # "name",
+                "ident",
+                "path",
+                "vars",
+                # "tags",
+                "compose_files",
+                "jsonnet_files",
+            ]
+            app_vars = self.app.get_infos()
+            # app_vars1 = {f"app_{key}": val for key, val in app_vars.items()}
+            app_vars2 = {
+                f"app_{key}": val for key, val in app_vars.items() if key in app_fields
+            }
+            # base.update(app_vars1)
+            base.update(app_vars2)
+
+        return base
+
     # Vars management
     # --------------------------------
 
@@ -125,7 +155,6 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
 
     # Config build
     # --------------------------------
-
 
     def build_config(self, config, ident=None):
         "Build config"
@@ -212,16 +241,16 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
 
         self._app = app
 
-
     # Assembling methods
     # --------------------------------
-
 
     def pod_build(self, selector=None):
         "Assemble tests"
         assert selector is None, "Selector not supported for pod"
 
         print("Build pod", self.name, ~self.path)
+
+        self.assemble()
 
         # pprint(self._build_filter_tags(["homepage", "traefik-svc"]))
 
@@ -254,15 +283,12 @@ class PaasifyPod(PodManagedMixin,VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppN
     def assemble(self, dry_run=False):
         "Assemble the pod - V1 support"
 
-
-
         app = self.app
 
         # Fetch app files
         tags = self.config.get("tags", [])
         docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
-
 
         new_tags = [TagConfigV1(config="_paasify", parent=self)]
         for tag in tags:

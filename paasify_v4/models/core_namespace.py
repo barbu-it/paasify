@@ -14,7 +14,7 @@ from paasify_v4.core_abc import PodManagementMixin
 logger = logging.getLogger(__name__)
 
 
-class PaasifyNoNamespace(PodManagementMixin,AppNode):
+class PaasifyNoNamespace(PodManagementMixin, AppNode):
     "No namespace class, just implement dumb methods"
 
     paasify_type = "namespace"
@@ -26,7 +26,9 @@ class PaasifyNoNamespace(PodManagementMixin,AppNode):
         super().__init__(**kwargs)
 
 
-class PaasifyNamespace(PaasifyCollectionV1SupportMixin, PodManagementMixin,WorkingDirNode):
+class PaasifyNamespace(
+    PaasifyCollectionV1SupportMixin, PodManagementMixin, WorkingDirNode
+):
     "Namespace class, manage list of stacks"
 
     paasify_type = "namespace"

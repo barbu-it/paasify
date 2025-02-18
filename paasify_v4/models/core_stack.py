@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyStack(PodManagementMixin,WorkingDirNode):
+class PaasifyStack(PodManagementMixin, WorkingDirNode):
     "Base class for all Paasify stacks"
 
     paasify_type = "stack"

@@ -96,7 +96,7 @@ class DebugCmd(Parser):
 
 
 class AppMain(LoggingOptMixin, DynMixin, Parser):
-    """Demo application with options and two subcommands."""
+    """Paasify, manage your dockerized apps with claass and compose."""
 
     class Meta:
         "Main app config"
@@ -135,7 +135,6 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
         #     "sh.command.process",
         # ]
 
-
         log_levels = [
             [
                 "INFO|paasify_v4.cli",
@@ -167,8 +166,6 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
             ["INFO|"],
             ["DEBUG|"],
         ]
-
-
 
     # Define options
     # ----------------------

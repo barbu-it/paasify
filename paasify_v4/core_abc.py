@@ -1,4 +1,3 @@
-
 import logging
 from pprint import pprint
 
@@ -7,7 +6,7 @@ import paasify_v4.exception as exc
 logger = logging.getLogger(__name__)
 
 
-class PaasifyEntityMixin():
+class PaasifyEntityMixin:
     "Paasify entity mixin"
 
     def get_closest_parent(self):
@@ -15,12 +14,15 @@ class PaasifyEntityMixin():
         # Excepted for pods that returns closest stack
         return self
 
-
     def get_vars(self):
         "Get vars"
         raise NotImplementedError(f"Vars are not implemented for {self}")
 
 
+class PodManagementMixin(PaasifyEntityMixin):
+    "Pod management mixin"
+
+    # IS IT A DUPLICATE OF ?
     def get_infos(self):
         "Get infos"
 
@@ -29,7 +31,7 @@ class PaasifyEntityMixin():
             "name": self.name,
             "path": +self.path,
             # "config": self.config,
-                # "vars": self.get_vars(),
+            # "vars": self.get_vars(),
         }
         # for var_name, var_value in self.config.items():
         #     out[f"config:{var_name}"] = var_value
@@ -38,17 +40,9 @@ class PaasifyEntityMixin():
             out[f"var:{var_name}"] = var_value
         return out
 
-
-
-
-class PodManagementMixin(PaasifyEntityMixin):
-    "Pod management mixin"
-
-
     def get_pods(self):
         "Return all pods in a list"
         raise NotImplementedError(f"Pod list is not implemented for {self}")
-
 
     def select_pods(self, selector=None):
         "Select a list of pods"
@@ -56,7 +50,9 @@ class PodManagementMixin(PaasifyEntityMixin):
         all_pods = list(self.get_pods())
         pod_list = all_pods
         if selector:
-            assert isinstance(selector, list), f"Selector must be a list or None, got: {selector}"
+            assert isinstance(
+                selector, list
+            ), f"Selector must be a list or None, got: {selector}"
             pod_list = []
             for pod in all_pods:
                 if pod.name in selector:
@@ -69,11 +65,14 @@ class PodManagementMixin(PaasifyEntityMixin):
                 # pprint(pod_list)
                 # print("UNMATCHES", unmatches)
                 # print("MATCHES  ", matches)
-                hints = ', '.join([x.name for x in all_pods])
-                raise exc.PaasifyPodNotFoundError(f"Pod not found: '{', '.join(unmatches)}', try instead: {hints}", unmatches=unmatches, hints=hints)
+                hints = ", ".join([x.name for x in all_pods])
+                raise exc.PaasifyPodNotFoundError(
+                    f"Pod not found: '{', '.join(unmatches)}', try instead: {hints}",
+                    unmatches=unmatches,
+                    hints=hints,
+                )
 
         return pod_list
-
 
     def pod_build(self, selector=None):
         "Build pod"
@@ -93,23 +92,21 @@ class PodManagementMixin(PaasifyEntityMixin):
         pod_list = self.select_pods(selector=selector)
         for pod in pod_list:
             pod.pod_down()
-    
 
-class PodManagedMixin(PodManagementMixin):  
+
+class PodManagedMixin(PodManagementMixin):
     "Pod managed mixin"
 
     def get_closest_parent(self):
         "Get closest parent"
         # Excepted for pods that returns closest stack, otheres returns self
         return self.stack
-    
+
     def get_pods(self):
         "List pods"
         return [self]
-    
+
     def pod_build(self, selector=None):
         "Build pod"
 
         raise NotImplementedError(f"Pod build is not implemented for {self}")
-    
-    

@@ -36,8 +36,6 @@ class DynBuildCmd(Parser):
     def cli_run(self, ctx=None, app_names=None, **_):
         "Main command"
 
-
-
         # Algorithm with ABC class is: V1
         # if app_names is None: - Direct mode
         #   - If pod, just pod.build()
@@ -49,7 +47,6 @@ class DynBuildCmd(Parser):
         #     - For ns and stack, .get_pods() and check all app_names exists, or raise error
         #     - For ns and stack, .get_pods()
         #        - For each pod, check if name match, and build it pod.build()
-
 
         # Algorithm with ABC class is: V2 ---- THIS ONE
         # if app_names is None: - Direct mode
@@ -64,7 +61,7 @@ class DynBuildCmd(Parser):
         # So write me an ABC Mixin class with methods:
         # - pod_build(self, selector=None)
         # - get_closest_parent
-        
+
         # V2
         # item = item.get_closest_parent()
         # item.pod_build(selector=app_names)
@@ -73,20 +70,25 @@ class DynBuildCmd(Parser):
         # print("APP NAMES", app_names)
 
         item = ctx.data["runner"].get_current()
-        logger.debug("For %s.pod_build(), build pods: %s", item, ', '.join(app_names or ["All or One"]))
-    
+        logger.debug(
+            "For %s.pod_build(), build pods: %s",
+            item,
+            ", ".join(app_names or ["All or One"]),
+        )
+
         if app_names:
             ctl = item.get_closest_parent()
-            logger.info("Use %s to build selection of pods: %s", ctl, ', '.join(app_names))
+            logger.info(
+                "Use %s to build selection of pods: %s", ctl, ", ".join(app_names)
+            )
             # print("Use ctl", ctl)
             ctl.pod_build(selector=app_names)
         else:
-            if item.kind == "pod":  
+            if item.kind == "pod":
                 logger.info("Use %s to build itself", item)
             else:
                 logger.info("Use %s to build all children pods", item)
             item.pod_build()
-
 
 
 class DynUpCmd(Parser):
@@ -103,7 +105,6 @@ class DynUpCmd(Parser):
         logger.debug("Working on: %s", item)
         out = item.assemble()
         return out
-
 
 
 class DynEditCmd(Parser):
@@ -145,6 +146,7 @@ class DynVarsCmd(Parser):
             out = item.get_vars()
 
         ListView(out).render()
+
 
 class DynListCmd(Parser):
     "List pods"
@@ -198,15 +200,13 @@ class DynInfoCmd(Parser):
 
 #         item = ctx.data["runner"].get_current()
 #         logger.debug("For %s.pod_build(), build pods: %s", item, ', '.join(app_names or ["All or One"]))
-    
 
-#             if item.kind == "pod":  
+
+#             if item.kind == "pod":
 #                 logger.info("Use %s to build itself", item)
 #             else:
 #                 logger.info("Use %s to build all children pods", item)
 #             item.get_pods()
-
-
 
 
 # Dynamic Mixin

@@ -30,6 +30,7 @@ from paasify_v4.common import (
     write_file,
     read_file,
     from_yaml,
+    to_yaml,
     to_domain,
     flatten,
     truncate,
@@ -70,6 +71,20 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
         self._store_vars = {}
         self._store_tags = {}
+
+    def get_infos(self):
+        "Get infos"
+        base = super().get_infos()
+        # base["---"] = "---"
+
+        if self.collection:
+            base["collection"] = self.collection
+            base["collection_name"] = self.collection.name
+            # collection_vars = self.collection.get_infos()
+            # collection_vars = {f"collection_{key}": val for key, val in collection_vars.items()}
+            # base.update(collection_vars)
+
+        return base
 
     # Vars support
     # ------------

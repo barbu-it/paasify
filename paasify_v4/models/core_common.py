@@ -6,6 +6,18 @@ from paasify_v4.lib.jsonnet2 import JsonnetProcessor, JsonnetError
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from superconf.anchors2 import PathAnchor
 
+from paasify_v4.common import (
+    find_file_in_path,
+    dict_to_env,
+    write_file,
+    read_file,
+    from_yaml,
+    to_yaml,
+    to_domain,
+    flatten,
+    truncate,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -162,21 +174,65 @@ class ComposeTagV1(PaasifyTagV1):
 
 
 class PaasifyAppV1SupportMixin:
+    def get_infos(self):
+        "Get infos"
+        out = {
+            "self": self,
+            "kind": self.kind,
+            "name": self.name,
+            "ident": self.ident,
+            "path": ~self.path,
+            "vars": to_yaml(self.get_vars(), strip_last=True),
+            "compose_files": to_yaml(
+                [str(x.name) for x in self._get_compose_files()], strip_last=True
+            ),
+            "jsonnet_files": to_yaml(
+                [str(x.name) for x in self._get_jsonnet_files()], strip_last=True
+            ),
+        }
+        return out
+
+        # base["app_ident"] = app.ident
+        # base["app_name"] = app.name
+        # base["app_path"] = ~app.path
+        # app_vars = to_yaml(app.get_vars())
+        # base["app_vars"] = app_vars
+
     def get_var_tags(self):
         "Return var tags"
 
         return []
 
-    def get_jsonnet_files(self):
+    def _get_jsonnet_files(self):
         "Return jsonnet files"
-
         app_path = ~self.path
         needle = "*.jsonnet"
         ret = []
-        # print("GET JSONNET FILES FOR", self, app_path, needle)
         for match in Path(app_path).rglob(needle):
+            ret.append(match)
+        return ret
+
+    def get_jsonnet_files(self):
+        "Return jsonnet files"
+
+        # app_path = ~self.path
+        # needle = "*.jsonnet"
+        jsonnet_paths = self._get_jsonnet_files()
+        ret = []
+        # print("GET JSONNET FILES FOR", self, app_path, needle)
+        # for match in Path(app_path).rglob(needle):
+        for match in jsonnet_paths:
             jsonnet_file = JsonnetTagV1(ident=match.stem, path=match, parent=self)
             ret.append(jsonnet_file)
+        return ret
+
+    def _get_compose_files(self):
+        "Return compose files"
+        app_path = ~self.path
+        needle = "docker-compose.*.yml"
+        ret = []
+        for match in Path(app_path).rglob(needle):
+            ret.append(match)
         return ret
 
     def get_compose_files(self):
@@ -188,9 +244,13 @@ class PaasifyAppV1SupportMixin:
         needle = "docker-compose.*.yml"
         # print("GET COMPOSE FILES FOR", self, app_path, needle)
 
+        docker_files = self._get_compose_files()
+
+        # Get all compose files
         ret = []
         # print(f"Search ({self}) docker compose  in app path:", app_path)
-        for match in Path(app_path).rglob(needle):
+        # for match in Path(app_path).rglob(needle):
+        for match in docker_files:
             ident = match.stem.replace("docker-compose.", "")
             assert "docker-compose" not in ident, f"ident={ident}"
 
