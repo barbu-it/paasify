@@ -95,6 +95,16 @@ class Node:
         return f"{self.__class__.__name__}({self.ident or ''})"
 
 
+    def iter_parents(self, include_self=False):
+        "Iterate over parents"
+        if include_self:
+            yield self
+        parent = self.parent
+        while parent:
+            yield parent
+            parent = parent.parent
+
+
 SETUP_PREFIX = "__node__setup__"
 
 
@@ -373,6 +383,7 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
         _root_path, _config_file, _sub_path = self.find_workdir(
             path=path, search_up=search_up
         )
+        # print("FINDUP RETURNED", repr(self),  _root_path, _config_file, _sub_path)
 
         _short_name = self.__class__.__name__.lower().replace("paasify", "")
         _path_name = f"{_short_name}_path"
@@ -399,7 +410,16 @@ class WorkingDirNode(VarMgrNodeMixin, AppNode):
         )
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.path.get_path(mode='rel') or ''})"
+
+        path = getattr(self, "_path", "")
+        # path = path.get_path(mode="rel")
+        if path:
+            path = path.get_path(mode="rel")
+        # else:
+        #     path = "Path not processed yet"
+        #     path = ""
+
+        return f"{self.__class__.__name__}({path or ''})"
 
     def load_config(self, config: Optional[str] = None):
         "Load the namespace config from a file"

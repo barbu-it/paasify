@@ -22,6 +22,48 @@ class PaasifyEntityMixin:
 class PodManagementMixin(PaasifyEntityMixin):
     "Pod management mixin"
 
+
+    # Fname management
+
+    def fparts(self, join=None, rev=False):
+        "Return full name parts"
+        final2 = []
+        for parent in self.iter_parents(include_self=True):
+            # print("PARENT", parent)
+            # print("PARENT.parent", parent.parent)
+            # print("PARENT.name", parent.name)
+            # print()
+            part_parent = parent.name or "MISSING"
+            final2.append(part_parent)
+
+        if not rev:
+            final2.reverse()
+
+        if not isinstance(join, str):
+            return final2
+
+        return join.join(final2)
+
+    @property
+    def fname(self):
+        "Return full name"
+        return self.fparts(join="_")
+    
+    
+    @property
+    def fname2(self):
+        "Return full name"
+
+        part_ns = self.ns.ident or "MISSING"
+        part_stack = self.stack.ident or "MISSING"
+        part_pod = self.ident or "MISSING"
+        final2 = "__".join([part_ns, part_stack, part_pod])
+
+        return final2
+    
+    # Pod management
+
+
     # IS IT A DUPLICATE OF ?
     def get_infos(self):
         "Get infos"

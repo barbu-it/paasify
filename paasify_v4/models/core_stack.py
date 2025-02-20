@@ -51,12 +51,14 @@ class PaasifyStack(PodManagementMixin, WorkingDirNode):
         catalog=None,
     ):
         super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
+        # print("INIT STACK", ident, parent)
+        assert type(parent).__name__ == "PaasifyNamespace", f"Parent should be a PaasifyNamespace, not {type(parent).__name__}"
 
         self.config = self.config or {}
 
         # Register namespace if provided
-        if namespace:
-            assert isinstance(namespace, AppNode)
+        namespace = namespace or parent
+        assert isinstance(namespace, (AppNode, type(None)))
         self.ns = namespace
 
         # Register catalog if provided
@@ -65,6 +67,16 @@ class PaasifyStack(PodManagementMixin, WorkingDirNode):
         self.catalog = catalog
 
         self.setup_node()
+
+    # @property
+    # def fname(self):
+    #     "Return full name"
+    #     part_ns = self.ns.name or "MISSING"
+    #     part_stack = self.name or "MISSING"
+    #     final1 = "__".join([part_ns, part_stack])
+    #     return final1
+
+
 
     # Pod mangement
     # --------------------------------

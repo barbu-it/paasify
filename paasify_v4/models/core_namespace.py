@@ -47,10 +47,26 @@ class PaasifyNamespace(
     def __init__(self, catalog=None, **kwargs):
         super().__init__(**kwargs)
 
+        if not self.ident:
+            self.ident = self.path.get_name()
+
+        # pprint(self.__dict__)
+        # print(self.path)
+        # # help(self.path)
+        # print()
+
+        assert self.ident, "Namespace must have an ident"
+
         self._store_stacks = {}
         # Register catalog if provided
         self.catalog = catalog
         self.setup_node()
+
+    # @property
+    # def fname(self):
+    #     "Return full name"
+    #     return self.name or "MISSING"
+    
 
     @setup_once("setup_node")
     def setup_node(self):
@@ -122,7 +138,14 @@ class PaasifyNamespace(
             )
             stack_ident = stack_dir
 
-            stack_inst = PaasifyStack(ident=stack_ident2, parent=self, path=~fanchor)
+            # print("EXEC HERER", self)
+
+            stack_inst = PaasifyStack(
+                ident=stack_ident2,
+                parent=self,
+                path=~fanchor,
+                catalog=self.catalog,
+            )
             stacks_config[stack_ident] = stack_inst
 
         self._store_stacks = stacks_config

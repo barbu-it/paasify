@@ -190,14 +190,14 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
     # ----------------------
 
     # Component commands
-    app = Command(AppGroup, help="==SUPPRESS==")
-    collection = Command(CollectionGroup, help="==SUPPRESS==")
-    pod = Command(PodGroup, help="==SUPPRESS==")
-    stack = Command(StackGroup, help="==SUPPRESS==")
-    ns = Command(NamespaceGroup, help="==SUPPRESS==")
+    app = Command(AppGroup, help="==SUPPRESS==", aliases=["a"])
+    collection = Command(CollectionGroup, help="==SUPPRESS==", aliases=["c"])
+    pod = Command(PodGroup, help="==SUPPRESS==", aliases=["p"])
+    stack = Command(StackGroup, help="==SUPPRESS==", aliases=["s"])
+    ns = Command(NamespaceGroup, help="==SUPPRESS==", aliases=["n"])
 
     # Quick commands
-    tree = Command(StackTreeCmd)
+    tree = Command(StackTreeCmd, aliases=["t"])
 
     # Beta commands
     # command2 = Command(AppCommand2)

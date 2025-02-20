@@ -229,30 +229,38 @@ class ComposedApp:
     # Generic helpers
     # ===============
 
-    def get_profiles(self):
+    def get_profiles(self, interpolate=False):
         "Return list of profiles"
         cmd = self.get_compose_cmd_prefix() + ["config", "--profiles"]
+        if not interpolate:
+            cmd.append("--no-interpolate")
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 
-    def get_volumes(self):
+    def get_volumes(self, interpolate=False):
         "Return list of volumes names"
 
         cmd = self.get_compose_cmd_prefix() + ["config", "--volumes"]
+        if not interpolate:
+            cmd.append("--no-interpolate")
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 
-    def get_services(self):
+    def get_services(self, interpolate=False)-> list[str]:
         "Return list of services"
 
         cmd = self.get_compose_cmd_prefix() + ["config", "--services"]
+        if not interpolate:
+            cmd.append("--no-interpolate")
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 
-    def get_images(self):
+    def get_images(self, interpolate=False)-> list[str]:
         "Return list of images"
 
         cmd = self.get_compose_cmd_prefix() + ["config", "--images"]
+        if not interpolate:
+            cmd.append("--no-interpolate")
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 

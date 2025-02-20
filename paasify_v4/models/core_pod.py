@@ -46,7 +46,6 @@ from paasify_v4.models.core_common import (
     TagConfigV1,
 )
 
-from paasify_v4.engine_docker.compose_app import ComposedApp
 import paasify_v4.exception as exc
 
 from paasify_v4.lib.shexec import shexec
@@ -74,6 +73,13 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
     def __init__(self, ident, parent=None, name=None, raw_config=None, path=None):
         # assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
+        self._parent = parent
+        assert type(parent).__name__ == "PaasifyStack", f"Parent should be a PaasifyStack, not {type(parent).__name__}"
+        # print("INIT POD", ident, parent, )
+
+
+        # print("TEST NS FROM POD", self, self.ns)
+
 
         self._name = name or ident.split("/", maxsplit=1)[0]
 
@@ -98,6 +104,58 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
     def catalog(self):
         "Return catalog"
         return self.parent.catalog
+    
+    # @property
+    # def fname(self):
+    #     "Return full name"
+
+    #     # part_ns = self.ns.ident or "MISSING"
+    #     # part_stack = self.stack.ident or "MISSING"
+    #     # part_pod = self.ident or "MISSING"
+    #     # final1 = "__".join([part_ns, part_stack, part_pod])
+
+    #     part_ns = self.ns.name or "MISSING"
+    #     part_stack = self.stack.name or "MISSING"
+    #     part_pod = self.name or "MISSING"
+    #     final1 = "__".join([part_ns, part_stack, part_pod])
+
+    #     return final1
+
+    # @property
+    # def fname(self, parts=False):
+    #     "Return full name"
+
+    #     # part_ns = self.ns.ident or "MISSING"
+    #     # part_stack = self.stack.ident or "MISSING"
+    #     # part_pod = self.ident or "MISSING"
+    #     # final1 = "__".join([part_ns, part_stack, part_pod])
+
+    #     part_ns = self.ns.name or "MISSING"
+    #     part_stack = self.stack.name or "MISSING"
+    #     part_pod = self.name or "MISSING"
+    #     final1 = "__".join([part_ns, part_stack, part_pod])
+
+    #     final2 = []
+    #     for parent in self.iter_parents(include_self=True):
+    #         # print("PARENT", parent)
+    #         # print("PARENT.parent", parent.parent)
+    #         # print("PARENT.name", parent.name)
+    #         # print()
+    #         part_parent = parent.name or "MISSING"
+    #         final2.append(part_parent)
+
+    #     if parts:
+    #         return final2
+
+    #     final2 = "__".join(final2)
+    #     # print("FINAL2", final2)
+    #     # assert False, "WIP"
+
+    #     # return f"{final1}   OR {final2}"
+
+    #     return final2
+    
+
 
     # Infos
     # --------------------------------
@@ -271,7 +329,7 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
     #     # app = self._build_resolve_app_name(app_name)
 
     #     # TODO: This is wrong, all collections should be asked
-    #     all_jsonnet_tags = app.parent.get_jsonnet_files()
+    #     all_jsonnet_tags = app.parent.get_jsonnet_plugin_tags()
 
     #     matches = []
     #     for tag in all_jsonnet_tags:
@@ -290,33 +348,25 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
 
-        new_tags = [TagConfigV1(config="_paasify", parent=self)]
+        # TODO: Fix wip tag
+        new_tags = [TagConfigV1(config="_paasify2", parent=self)]
         for tag in tags:
             ret_tag = TagConfigV1(config=tag, parent=self)
             # pprint(ret_tag.__dict__)
             new_tags.append(ret_tag)
 
-        # tags = new_tags
-        # pprint(tags)
-        # assert False, "WIP"
-        # docker_app_tag_files = app.get_extra_docker_files(tags)
 
-        # Resolve tag files
-        # jsonnet_app_tag_files =
-
-        # out = self.ns.get_compose_files()
-        # pprint(out)
-        # assert False, "WIP"
+        # pprint(new_tags)
 
         # Prepare tag database
         tags_db = {
-            "jsonnet_collection_tag_files": app.collection.get_jsonnet_files(),
-            "jsonnet_ns_tag_files": self.ns.get_jsonnet_files() if self.ns else [],
-            "jsonnet_app_tag_files": app.get_jsonnet_files(),
-            "jsonnet_local_tag_files": self.get_jsonnet_files(),
+            "jsonnet_collection_tag_files": app.collection.get_jsonnet_plugin_tags(),
+            "jsonnet_ns_tag_files": self.ns.get_jsonnet_plugin_tags() if self.ns else [],
+            "jsonnet_app_tag_files": app.get_jsonnet_plugin_tags(),
+            "jsonnet_local_tag_files": self.get_jsonnet_plugin_tags(),
             # "docker_ns_tag_files": app.namespace.
-            "docker_app_tag_files": app.get_compose_files(),
-            "docker_local_tag_files": self.get_compose_files(),  # TODO: Add local tag files
+            "docker_app_tag_files": app.get_compose_feat_tags(),
+            "docker_local_tag_files": self.get_compose_feat_tags(),  # TODO: Add local tag files
         }
 
         tags_db_flat = []
@@ -369,7 +419,10 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         jsonnet_vars = dict(build_vars)
         jsonnet_result = {}
         for tag in jsonnet_tags_array:
+            print("PROCESSING JSONNET TAG", tag.tag.ident)
             out = tag.tag.process_jsonnet_vars(vars=jsonnet_vars)
+            # pprint(out)
+            pprint(list(out.keys()))
             final = {}
             final.update(out["def"])
             final.update(out["dyn"])
@@ -482,30 +535,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             logger.info("Write docker-compose.yml file: %s", docker_file_dest)
             write_file(docker_file_dest, compose_content)
 
-    def gen_compose_file(
-        self, compose_files=None, name=None, build_vars=None, output="json"
-    ):
-        "Write docker-compose.yml file"
-
-        # Process docker-compose.yml file
-        compose_files = compose_files or []
-        assert compose_files, "Missing compose files"
-        comp_app = ComposedApp(
-            name=name, project_dir=self.path.get_path(), compose_files=compose_files
-        )
-
-        # TODO: To set back interpolate to false, there is an issue on
-        # volumes names VS binds
-        compose_content = comp_app.assemble(
-            interpolate=True, normalize=False, output="json"
-        )
-        # compose_content = comp_app.assemble(interpolate=False, normalize=False)
-        for varname in comp_app.get_variables2():
-            if not varname in build_vars:
-                logger.error("Missing variable: %s", varname)
-                # logger.error("  %s", conf)
-
-        return compose_content
 
     def write_env_file(self, compose_settings, build_vars=None, dry_run=False):
         "Write .env file"
@@ -545,69 +574,157 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         # Create environment file
         default_network = "network"
         default_service = None
+        tags = ["DISABLED_TEMP"]
 
         # V1 COMPAT
         stack_dir = +self.path
-        default_vars = {
-            "app_network_name": "default",
-            "app_domain": "TOFIX_app_domain",
-            "app_name": app.name,
-            # "app_log_level": "DEBUG",
-            # "app_log_access": "True",
-            # "app_dir_conf": os.path.join(stack_dir, "conf"),
-            # "app_dir_data": os.path.join(stack_dir, "data"),
-            # "app_dir_logs": os.path.join(stack_dir, "logs"),
-            # "app_dir_secrets": os.path.join(stack_dir, "secrets"),
-            # "app_puid": 1000,
-            # "app_pgid": 1000,
-            # "app_tz": "America/Toronto",
-            # "net_proxy": "net_proxy",
-            # "prj_ns": self.ns.ident,
-            # "app_fqdn": "TOFIX_app_fqdn",
-            # "app_service": default_service,
-            # "app_prot": "http",
-            # "app_description": "NO DESCRIPTION",
-            # "app_expose_ip": "0.0.0.0",
-            # "app_expose_port": 80,
-            # "app_expose_proto": "http",
-            # "app_expose_host": None,
-            # "app_expose_path": None,
-            # "app_expose_tls": False,
-            # "stack_app_path": self.stack.path.get_path(mode="abs"),
-            # "app_ident": app.ident,
+        core_00_const = {
+
+            "psf_sep": "_",
+            "psf_sep_os": os.sep,
+            "psf_sep_net": "_",
+            "psf_sep_svc": "_",
+            "psf_sep_vol": "_",
+
+            # "paasify_sep": "-",
+            # "paasify_sep_dir": os.sep,
+            # # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
+            # "_prj_path": +self.path,
+            # # "_prj_domain": to_domain(self.ns.ident),
+            # "_prj_stack_path": +self.stack.path,
+            # # Colon is used here for easier to parsing for later ...
+            # "_prj_stack_tags": f":{':'.join(tags)}:",
+            # "_stack_name": self.stack.ident,
+            # "_stack_path_abs": self.path.get_path(mode="abs"),
+            # "_stack_path_abs2": self.stack.path.get_path(mode="abs"),
+            # "_stack_network": default_network,
+            # "_stack_service": default_service,
+            # # To report below as well
+            # "_stack_app_name": None,
+            # "_stack_app_dir": None,
+            # "_stack_app_path": None,
+            # "_stack_collection_app_path": None,
+            # # App extras
+            # # "_stack_app_name": os.path.basename(app.app_name),
+            # # "_stack_app_dir": app.app_name,
+            # # "_stack_app_path": app.get_app_path(),
+            # # Project namespace (DEFAULT CAN BE OVERRIDED BY NAMESPACE)
+            # "_prj_namespace": self.ident,  # deprecated because too long !
+            # "_prj_ns": self.ident,
+
+            # "app_network_name": "default",
+            # "app_domain": "TOFIX_app_domain",
+            # "app_name": app.name,
         }
 
-        tags = ["DISABLED_TEMP"]
+        # New version namespace
+        core_01_vars = {
+            # "app2_name": app.name,
+
+            # "app2_dir": app.app_name,
+            # "app2_path": app.get_app_path(),
+            # "app2_ident": app.ident,
+            # "app2_fqdn": f"{app.name}.{self.stack.ident}.{self.ns.ident}.{self.ident}",
+            # "app2_service": default_service,
+            
+            # "__ns_repr": str(self.ns),
+            "__ns_ident": self.ns.ident,
+            "__ns_name": self.ns.name,
+            "__ns_path": +self.ns.path,
+            "__ns_fname": self.ns.fparts(join="_"),
+
+            # "__stack_repr": str(self.stack),    
+            "__stack_ident": self.stack.ident,
+            "__stack_name": self.stack.name,
+            "__stack_path": +self.stack.path,
+            "__stack_fname": self.stack.fparts(join="_"),
+            "__stack_dname": self.stack.fparts(join=".", rev=True),
+            "__stack_sname": self.stack.fparts(join="-", rev=True),
+
+            # "__product_repr": str(app),
+            "__product_ident": app.ident,
+            "__product_name": app.name,
+            "__product_path": +app.path,
+
+            "__collection_ident": self.app.collection.ident,
+            "__collection_name": self.app.collection.name,
+            "__collection_path": +self.app.collection.path,
+
+            # "__pod_repr": str(self),
+            "__pod_ident": self.ident,
+            "__pod_name": self.name,
+            "__pod_path": +self.path,
+            "__pod_fname": self.fparts(join="_"),
+            "__pod_dname": self.fparts(join=".", rev=True),
+            "__pod_sname": self.fparts(join="-", rev=True),
+            # "__pod_fname": "|||".join(self.fparts(parts=True)),
+            # "__pod_fname2": self.fname2,
+
+            # "_stack_app_path": +app.path,
+            # "_stack_path_abs": +self.path,
+
+
+            "app_top_domain": "localhost",
+            "app_name": self.name,
+            # "app_svc_ident": self.app.get_compose_infos(),
+
+        }
+        p = SimpleNamespace(**{key.replace("__",""): val for key, val in core_01_vars.items()})
+
+
+        # out = self.app.get_compose_infos()
+        # pprint(out)
+        # assert False, "WIP"
+
+
+
+        # More interesting settings
+        core_02_settings = {
+            
+            
+            "app_domain": "${pod_name}.${app_top_domain}",
+            "app_domain_pre": "${pod_name}-",
+            "app_domain_post": ".${app_top_domain}",
+
+
+            # Instance settings
+            "provider_net_ident": "provider",
+            "provider_net_key": "default",
+            "provider_net_name": "${pod_fname}",
+            "provider_net_external": False,
+            "provider_net_domain": "",
+            "provider_svc_alias": "", 
+
+        }
+
+        # # More interesting vars
+        # default_vars.update({
+        #     # "app2_name": app.name,
+
+        #     # "x-app_top_domain": "localhost",
+        #     # "x-app_domain": default_vars["__product_name"],
+        # })
+
+        tmp = {}
+        # tmp["x-app_top_domain"] = "localhost"
+        pprint(tmp)
+        # default_vars.update(tmp)
+
+
+
+        default_vars = {}
+        default_vars.update(core_00_const)
+        default_vars.update(core_01_vars)
+        default_vars.update(p.__dict__)
+        default_vars.update(core_02_settings)
+        default_vars.update(tmp)
+
+
+
+
 
         # print("============================")
-        runtime_vars = {
-            "paasify_sep": "-",
-            "paasify_sep_dir": os.sep,
-            # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
-            "paasify_sep_net": "_",
-            "_prj_path": +self.path,
-            # "_prj_domain": to_domain(self.ns.ident),
-            "_prj_stack_path": +self.stack.path,
-            # Colon is used here for easier to parsing for later ...
-            "_prj_stack_tags": f":{':'.join(tags)}:",
-            "_stack_name": self.stack.ident,
-            "_stack_path_abs": self.path.get_path(mode="abs"),
-            "_stack_path_abs2": self.stack.path.get_path(mode="abs"),
-            "_stack_network": default_network,
-            "_stack_service": default_service,
-            # To report below as well
-            "_stack_app_name": None,
-            "_stack_app_dir": None,
-            "_stack_app_path": None,
-            "_stack_collection_app_path": None,
-            # App extras
-            # "_stack_app_name": os.path.basename(app.app_name),
-            # "_stack_app_dir": app.app_name,
-            # "_stack_app_path": app.get_app_path(),
-            # Project namespace (DEFAULT CAN BE OVERRIDED BY NAMESPACE)
-            "_prj_namespace": self.ident,  # deprecated because too long !
-            "_prj_ns": self.ident,
-        }
+        runtime_vars = {}
         if self.ns:
             runtime_vars.update(
                 {
@@ -663,3 +780,133 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
 
     # Other methods
     # --------------------------------
+
+
+
+    # def get_build_varmgr(self, varmgr, app=None, app_vars=None):
+    #     "Get build varmgr - V1 support"
+
+    #     # tags = ctx.tags
+    #     # app_vars = ctx.app_vars
+    #     # app = ctx.app
+
+    #     varmgr = self.get_varmgr()
+
+    #     # Create environment file
+    #     default_network = "network"
+    #     default_service = None
+
+    #     # V1 COMPAT
+    #     stack_dir = +self.path
+    #     default_vars = {
+    #         "app_network_name": "default",
+    #         "app_domain": "TOFIX_app_domain",
+    #         "app_name": app.name,
+    #         # "app_log_level": "DEBUG",
+    #         # "app_log_access": "True",
+    #         # "app_dir_conf": os.path.join(stack_dir, "conf"),
+    #         # "app_dir_data": os.path.join(stack_dir, "data"),
+    #         # "app_dir_logs": os.path.join(stack_dir, "logs"),
+    #         # "app_dir_secrets": os.path.join(stack_dir, "secrets"),
+    #         # "app_puid": 1000,
+    #         # "app_pgid": 1000,
+    #         # "app_tz": "America/Toronto",
+    #         # "net_proxy": "net_proxy",
+    #         # "prj_ns": self.ns.ident,
+    #         # "app_fqdn": "TOFIX_app_fqdn",
+    #         # "app_service": default_service,
+    #         # "app_prot": "http",
+    #         # "app_description": "NO DESCRIPTION",
+    #         # "app_expose_ip": "0.0.0.0",
+    #         # "app_expose_port": 80,
+    #         # "app_expose_proto": "http",
+    #         # "app_expose_host": None,
+    #         # "app_expose_path": None,
+    #         # "app_expose_tls": False,
+    #         # "stack_app_path": self.stack.path.get_path(mode="abs"),
+    #         # "app_ident": app.ident,
+    #     }
+
+    #     tags = ["DISABLED_TEMP"]
+
+    #     # print("============================")
+    #     runtime_vars = {
+    #         "paasify_sep": "-",
+    #         "paasify_sep_dir": os.sep,
+    #         # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
+    #         "paasify_sep_net": "_",
+    #         "_prj_path": +self.path,
+    #         # "_prj_domain": to_domain(self.ns.ident),
+    #         "_prj_stack_path": +self.stack.path,
+    #         # Colon is used here for easier to parsing for later ...
+    #         "_prj_stack_tags": f":{':'.join(tags)}:",
+    #         "_stack_name": self.stack.ident,
+    #         "_stack_path_abs": self.path.get_path(mode="abs"),
+    #         "_stack_path_abs2": self.stack.path.get_path(mode="abs"),
+    #         "_stack_network": default_network,
+    #         "_stack_service": default_service,
+    #         # To report below as well
+    #         "_stack_app_name": None,
+    #         "_stack_app_dir": None,
+    #         "_stack_app_path": None,
+    #         "_stack_collection_app_path": None,
+    #         # App extras
+    #         # "_stack_app_name": os.path.basename(app.app_name),
+    #         # "_stack_app_dir": app.app_name,
+    #         # "_stack_app_path": app.get_app_path(),
+    #         # Project namespace (DEFAULT CAN BE OVERRIDED BY NAMESPACE)
+    #         "_prj_namespace": self.ident,  # deprecated because too long !
+    #         "_prj_ns": self.ident,
+    #     }
+    #     if self.ns:
+    #         runtime_vars.update(
+    #             {
+    #                 "_prj_namespace": self.ns.ident,  # deprecated because too long !
+    #                 "_prj_ns": self.ns.ident,
+    #             }
+    #         )
+
+    #     # runtime_vars.update(vars_dict)
+    #     # pprint(runtime_vars)
+
+    #     vbuild = RenderableStoreManager()
+    #     vbuild.add_sources(
+    #         [
+    #             Source("runtime_vars", level=200, help="Runtime variables"),
+    #             Source("pod_vars", level=500, help="Pod variables"),
+    #             Source("stack_vars", level=700, help="Stack variables"),
+    #             Source("ns_vars", level=900, help="Namespace variables"),
+    #             Source("app_vars", level=1000, help="App variables"),
+    #             Source("build_default_vars", level=2000, help="Pod variables"),
+    #             Source("default_vars", level=9999, help="Default variables"),
+    #         ]
+    #     )
+    #     vbuild.set_layer("runtime_vars", runtime_vars)
+    #     vbuild.set_layer("pod_vars", varmgr.get_layer("pod_vars"))
+    #     vbuild.set_layer("stack_vars", varmgr.get_layer("stack_vars"))
+    #     vbuild.set_layer("ns_vars", varmgr.get_layer("ns_vars"))
+    #     vbuild.set_layer("app_vars", app_vars)
+    #     vbuild.set_layer("default_vars", default_vars)
+
+    #     vbuild.set_scopes(
+    #         {
+    #             # "scope_ns": ["runtime_vars", "ns_vars", "default_vars"],
+    #             # "scope_stack": [
+    #             #     "runtime_vars",
+    #             #     "stack_vars",
+    #             #     "ns_vars",
+    #             #     "default_vars",
+    #             # ],
+    #             "scope_build": [
+    #                 "runtime_vars",
+    #                 "pod_vars",
+    #                 "stack_vars",
+    #                 "ns_vars",
+    #                 "app_vars",
+    #                 "build_default_vars",
+    #                 "default_vars",
+    #             ],
+    #         }
+    #     )
+
+    #     return vbuild

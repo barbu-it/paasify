@@ -23,11 +23,26 @@ class PaasifyRunner:
 
         # Fetch catalog
         self._catalog = PaasifyCatalog(collections_paths=collections_paths)
+        self._namespace = None
+        self._stack = None
+        self._pod = None
 
     @property
     def catalog(self):
         "Return catalog"
         return self._catalog
+
+
+    @property
+    def namespace(self):
+        "Return namespace"
+        if self._namespace is None:
+            self._namespace = PaasifyNamespace(
+                path=self.req_path or self.start_path,
+                search_up=bool(self.start_path),
+                catalog=self.catalog,
+            )
+        return self._namespace
 
     @property
     def stack(self):
@@ -38,32 +53,29 @@ class PaasifyRunner:
         except exc.PaasifyWorkdirNotFoundError:
             namespace = None
 
-        return PaasifyStack(
-            path=self.req_path or self.start_path,
-            search_up=bool(self.start_path),
-            catalog=self.catalog,
-            namespace=namespace,
-        )
+        if self._stack is None:
+            self._stack = PaasifyStack(
+                path=self.req_path or self.start_path,
+                search_up=bool(self.start_path),
+                catalog=self.catalog,
+                parent=namespace,
+            )
+        return self._stack
 
-    @property
-    def namespace(self):
-        "Return namespace"
-        return PaasifyNamespace(
-            path=self.req_path or self.start_path,
-            search_up=bool(self.start_path),
-            catalog=self.catalog,
-        )
 
     @property
     def pod(self):
         "Return pod"
 
         stack = self.stack
-        if stack.sub_path:
-            return stack[stack.sub_path]
+        if not stack.sub_path:
+            raise exc.PaasifyWorkdirNotFoundError(f"Can't find current pod in: {stack}")
+
+        if self._pod is None:
+            self._pod = stack[stack.sub_path]
+        return self._pod
 
         # logger.warning("You are not in a pod directory, go into a pod subdirectory to activate")
-        raise exc.PaasifyWorkdirNotFoundError(f"Can't find current pod in: {stack}")
 
     def get_current(self):
         "Return current item"

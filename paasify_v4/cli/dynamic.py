@@ -217,13 +217,13 @@ class DynMixin(Parser):
     "Dynamic commands"
 
     # Dynamic commands
-    build = Command(DynBuildCmd)
+    build = Command(DynBuildCmd, aliases=["b"])
     up = Command(DynUpCmd)
-    list = Command(DynListCmd, aliases=["ls"])
-    edit = Command(DynEditCmd)
+    list = Command(DynListCmd, aliases=["ls", "l"])
+    edit = Command(DynEditCmd, aliases=["e"])
 
-    vars = Command(DynVarsCmd)
-    info = Command(DynInfoCmd)
+    vars = Command(DynVarsCmd, aliases=["v"])
+    info = Command(DynInfoCmd, aliases=["i"])
     # info = Command(DynPlaceholderCmd)
     # build = Command(DynPlaceholderCmd)
     # down = Command(DynPlaceholderCmd)

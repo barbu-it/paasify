@@ -130,9 +130,9 @@ class StackInfoCmd(Parser):
 class StackGroup(Parser):
     "Manage stacks"
 
-    info = Command(StackInfoCmd)
-    ls = Command(StackListAppsCmd)
-    tree = Command(StackTreeCmd)
+    info = Command(StackInfoCmd, aliases=["i"])
+    ls = Command(StackListAppsCmd, aliases=["list", "l"])
+    tree = Command(StackTreeCmd, aliases=["t"])
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
 

@@ -1,10 +1,12 @@
 import logging
-from pathlib import Path
+from pathlib import Path, PosixPath
 from pprint import pprint
 import paasify_v4.exception as exc
 from paasify_v4.lib.jsonnet2 import JsonnetProcessor, JsonnetError
 from paasify_v4.core import AppNode, setup_once, requires_setup_node
 from superconf.anchors2 import PathAnchor
+from paasify_v4.engine_docker.compose_app import ComposedApp
+
 
 from paasify_v4.common import (
     find_file_in_path,
@@ -174,7 +176,8 @@ class ComposeTagV1(PaasifyTagV1):
 
 
 class PaasifyAppV1SupportMixin:
-    def get_infos(self):
+
+    def get_infos(self) -> dict:
         "Get infos"
         out = {
             "self": self,
@@ -184,10 +187,10 @@ class PaasifyAppV1SupportMixin:
             "path": ~self.path,
             "vars": to_yaml(self.get_vars(), strip_last=True),
             "compose_files": to_yaml(
-                [str(x.name) for x in self._get_compose_files()], strip_last=True
+                [str(x.name) for x in sorted(self.scan_children_files("docker-compose.*.yml"))], strip_last=True
             ),
             "jsonnet_files": to_yaml(
-                [str(x.name) for x in self._get_jsonnet_files()], strip_last=True
+                [str(x.name) for x in sorted(self.scan_children_files("*.jsonnet"))], strip_last=True
             ),
         }
         return out
@@ -198,26 +201,26 @@ class PaasifyAppV1SupportMixin:
         # app_vars = to_yaml(app.get_vars())
         # base["app_vars"] = app_vars
 
-    def get_var_tags(self):
+    def get_var_tags(self) -> list:
         "Return var tags"
 
         return []
 
-    def _get_jsonnet_files(self):
-        "Return jsonnet files"
-        app_path = ~self.path
-        needle = "*.jsonnet"
-        ret = []
-        for match in Path(app_path).rglob(needle):
-            ret.append(match)
-        return ret
+    # def _get_jsonnet_files(self, needle: str) -> list[PosixPath]:
+    #     "Return jsonnet files"
+    #     app_path = ~self.path
+    #     # needle = "*.jsonnet"
+    #     ret = []
+    #     for match in Path(app_path).rglob(needle):
+    #         ret.append(match)
+    #     return ret
 
-    def get_jsonnet_files(self):
+    def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
         "Return jsonnet files"
 
         # app_path = ~self.path
         # needle = "*.jsonnet"
-        jsonnet_paths = self._get_jsonnet_files()
+        jsonnet_paths = self.scan_children_files("*.jsonnet")
         ret = []
         # print("GET JSONNET FILES FOR", self, app_path, needle)
         # for match in Path(app_path).rglob(needle):
@@ -226,25 +229,34 @@ class PaasifyAppV1SupportMixin:
             ret.append(jsonnet_file)
         return ret
 
-    def _get_compose_files(self):
-        "Return compose files"
+    def scan_children_files(
+            self, 
+            needles: list[str] | str
+            ) -> list[PosixPath]:
+        """
+        Scan children files for one or more needles
+        Output is a list of PosixPath sorted by name
+        """
         app_path = ~self.path
-        needle = "docker-compose.*.yml"
+        needles = needles or ["docker-compose.*.yml"]
+        if not isinstance(needles, list):
+            needles = [needles]
         ret = []
-        for match in Path(app_path).rglob(needle):
-            ret.append(match)
-        return ret
+        for needle in needles:
+            for match in Path(app_path).rglob(needle):
+                ret.append(match)
+        return list(sorted(ret))
 
-    def get_compose_files(self):
-        "Return files"
+    def get_compose_feat_tags(self) -> list[ComposeTagV1]:
+        "Return list of ComposeTagV1 from: docker-compose.*.yml"
+
 
         # Get app path and base docker-compose file
-        app_path = ~self.path
-
-        needle = "docker-compose.*.yml"
+        # app_path = ~self.path
+        # needle = "docker-compose.*.yml"
         # print("GET COMPOSE FILES FOR", self, app_path, needle)
 
-        docker_files = self._get_compose_files()
+        docker_files = self.scan_children_files("docker-compose.*.yml")
 
         # Get all compose files
         ret = []
@@ -261,10 +273,80 @@ class PaasifyAppV1SupportMixin:
         return ret
 
 
+    def get_compose_infos(self, compose_files=None, vars=None) -> dict:
+        "Return compose infos"
+
+        # docker_file_match = self.get_compose_file()
+        # vars = vars or {}
+        name = "testbuild"
+
+        compose_files = compose_files or [self.get_compose_file()]
+        assert compose_files, "Missing compose files"
+        comp_app = ComposedApp(
+            name=name, 
+            project_dir=self.path.get_path(), 
+            compose_files=compose_files
+        )
+
+        out = {
+            "services": comp_app.get_services(),
+            # "profiles": comp_app.get_profiles(),
+            # "volumes": comp_app.get_volumes(),
+            # "images": comp_app.get_images(),
+            "variables": comp_app.get_variables(),
+
+        }
+        # out6 = comp_app.get_variables2()
+        
+        
+        return out
+
+        # # Process docker-compose.yml file
+        # compose_content = self.gen_compose_file(
+        #     # compose_files=[docker_file_match] + docker_app_tag_files,
+        #     compose_files=[docker_file_match],
+        #     name=dc_project_name,
+        #     build_vars=build_vars,
+        #     output="json",
+        # )
+
+        # print("COMPOSE CONTENT")
+        # print(compose_content)
+
+        # out = "WIPPPP"
+        # # assert False, "WIP"
+
+
+    def gen_compose_file(
+        self, compose_files=None, name=None, build_vars=None, output="json"
+    ) -> str:
+        "Write docker-compose.yml file"
+
+        # Process docker-compose.yml file
+        compose_files = compose_files or []
+        assert compose_files, "Missing compose files"
+        comp_app = ComposedApp(
+            name=name, project_dir=self.path.get_path(), compose_files=compose_files
+        )
+
+        # TODO: To set back interpolate to false, there is an issue on
+        # volumes names VS binds
+        compose_content = comp_app.assemble(
+            interpolate=True, normalize=False, output="json"
+        )
+        # compose_content = comp_app.assemble(interpolate=False, normalize=False)
+        for varname in comp_app.get_variables2():
+            if not varname in build_vars:
+                logger.error("Missing variable: %s", varname)
+                # logger.error("  %s", conf)
+
+        return compose_content
+
+
 class PaasifyCollectionV1SupportMixin:
     "Support for paasify v1 collections"
 
-    def get_jsonnet_files(self):
+    def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
         "Return var tags - V1 support"
         collection_path = self.path
         search_path = collection_path / "__paasify__/tags/"
@@ -278,8 +360,8 @@ class PaasifyCollectionV1SupportMixin:
             tags.append(tag)
         return tags
 
-    def get_compose_files(self):
-        "Return compose files - V1 support"
+    def get_compose_feat_tags(self) -> list[ComposeTagV1]:
+        "Return compose files for collections - V1 support"
         namespace_path = self.path
         search_path = namespace_path / "__paasify__/tags/"
         compose_files = []

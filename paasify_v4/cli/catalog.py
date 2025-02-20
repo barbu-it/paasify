@@ -52,15 +52,22 @@ class AppShowCmd(Parser):
 
         logger.info("Show app: %s", name)
         app = catalog_mgr.get_app(name)
-        app = catalog_mgr.get_app(name)
         assert app, f"App {name} not found"
+
+        # pprint(app.__dict__)
+        # pprint(dir(app))
+        # help(app)
+        # pprint(app.get_infos())
+        # assert False, "WIP"
 
         tag_config = app.get_tags()
         tags = list(tag_config.keys())
 
         app_vars = app.get_vars()
         app_vars = {f"var: {k}": v for k, v in app_vars.items()}
-        extra = {
+        extra = {}
+        extra1 = app.get_infos()
+        extra2 = {
             # "Infos": "",
             "ident": app.ident,
             "name": app.name,
@@ -71,8 +78,18 @@ class AppShowCmd(Parser):
             "tags": " ".join(tags),
             "": "",
         }
+        extra3 = {
+            "features_available": to_yaml(
+                [x.stem.replace("docker-compose.", "") 
+                 for x in 
+                 app.scan_children_files("docker-compose.*.yml")]
+                 ),
+        }
 
-        extra.update(app_vars)
+        extra.update(extra1)
+        extra.update(extra2)
+        extra.update(extra3)
+        # extra.update(app_vars)
         return ShowView(extra)
 
 
@@ -105,9 +122,9 @@ class AppTagsCmd(Parser):
 class AppGroup(Parser):
     "Manage collections"
 
-    ls = Command(AppListCmd)
-    show = Command(AppShowCmd)
-    tags = Command(AppTagsCmd)
+    ls = Command(AppListCmd, aliases=["list", "l"])
+    show = Command(AppShowCmd, aliases=["s"])
+    tags = Command(AppTagsCmd, aliases=["t"])
 
 
 # Collection management
@@ -194,8 +211,8 @@ class CollectionInfoCmd(Parser):
 class CollectionGroup(Parser):
     "Manage collections"
 
-    info = Command(CollectionInfoCmd)
-    ls = Command(CollectionListCmd)
-    show = Command(CollectionShowCmd)
+    info = Command(CollectionInfoCmd, aliases=["i"])
+    ls = Command(CollectionListCmd, aliases=["list", "l"])
+    show = Command(CollectionShowCmd, aliases=["s"])
     # devel = Command(CollectionDevelCmd)
     # app = Command(AppGroup)

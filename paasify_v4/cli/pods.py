@@ -95,8 +95,8 @@ class PodPlaceholderCmd(Parser):
 class PodGroup(Parser):
     "Manage pods"
 
-    info = Command(PodInfoCmd)
-    ls = Command(PodListCmd)
+    info = Command(PodInfoCmd, aliases=["i"])
+    ls = Command(PodListCmd, aliases=["list", "l"])
     # show = Command(StackShowCmd)
     # devel = Command(CollectionDevelCmd)
     up = Command(PodPlaceholderCmd)

@@ -36,7 +36,7 @@ class NamespaceInfoCmd(Parser):
 class NamespaceGroup(Parser):
     "Manage namespaces"
 
-    info = Command(NamespaceInfoCmd)
+    info = Command(NamespaceInfoCmd, aliases=["i"])
     # list = Command(NamespaceListCmd)
     # show = Command(NamespaceShowCmd)
     # devel = Command(CollectionDevelCmd)
