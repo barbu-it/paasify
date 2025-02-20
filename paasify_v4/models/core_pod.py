@@ -74,7 +74,9 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         # assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
         self._parent = parent
-        assert type(parent).__name__ == "PaasifyStack", f"Parent should be a PaasifyStack, not {type(parent).__name__}"
+        assert (
+            type(parent).__name__ == "PaasifyStack"
+        ), f"Parent should be a PaasifyStack, not {type(parent).__name__}"
 
         self._name = name or ident.split("/", maxsplit=1)[0]
 
@@ -99,7 +101,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
     def catalog(self):
         "Return catalog"
         return self.parent.catalog
-    
 
     # Infos
     # --------------------------------
@@ -301,13 +302,14 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             # pprint(ret_tag.__dict__)
             new_tags.append(ret_tag)
 
-
         # pprint(new_tags)
 
         # Prepare tag database
         tags_db = {
             "jsonnet_collection_tag_files": app.collection.get_jsonnet_plugin_tags(),
-            "jsonnet_ns_tag_files": self.ns.get_jsonnet_plugin_tags() if self.ns else [],
+            "jsonnet_ns_tag_files": self.ns.get_jsonnet_plugin_tags()
+            if self.ns
+            else [],
             "jsonnet_app_tag_files": app.get_jsonnet_plugin_tags(),
             "jsonnet_local_tag_files": self.get_jsonnet_plugin_tags(),
             # "docker_ns_tag_files": app.namespace.
@@ -481,7 +483,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             logger.info("Write docker-compose.yml file: %s", docker_file_dest)
             write_file(docker_file_dest, compose_content)
 
-
     def write_env_file(self, compose_settings, build_vars=None, dry_run=False):
         "Write .env file"
 
@@ -525,13 +526,11 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         # V1 COMPAT
         stack_dir = +self.path
         core_00_const = {
-
             "psf_sep": "_",
             "psf_sep_os": os.sep,
             "psf_sep_net": "_",
             "psf_sep_svc": "_",
             "psf_sep_vol": "_",
-
             # "paasify_sep": "-",
             # "paasify_sep_dir": os.sep,
             # # See: https://www.docker.com/blog/announcing-compose-v2-general-availability/
@@ -557,7 +556,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             # # Project namespace (DEFAULT CAN BE OVERRIDED BY NAMESPACE)
             # "_prj_namespace": self.ident,  # deprecated because too long !
             # "_prj_ns": self.ident,
-
             # "app_network_name": "default",
             # "app_domain": "TOFIX_app_domain",
             # "app_name": app.name,
@@ -566,36 +564,30 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         # New version namespace
         core_01_vars = {
             # "app2_name": app.name,
-
             # "app2_dir": app.app_name,
             # "app2_path": app.get_app_path(),
             # "app2_ident": app.ident,
             # "app2_fqdn": f"{app.name}.{self.stack.ident}.{self.ns.ident}.{self.ident}",
             # "app2_service": default_service,
-            
             # "__ns_repr": str(self.ns),
             "__ns_ident": self.ns.ident,
             "__ns_name": self.ns.name,
             "__ns_path": +self.ns.path,
             "__ns_fname": self.ns.fparts(join="_"),
-
-            # "__stack_repr": str(self.stack),    
+            # "__stack_repr": str(self.stack),
             "__stack_ident": self.stack.ident,
             "__stack_name": self.stack.name,
             "__stack_path": +self.stack.path,
             "__stack_fname": self.stack.fparts(join="_"),
             "__stack_dname": self.stack.fparts(join=".", rev=True),
             "__stack_sname": self.stack.fparts(join="-", rev=True),
-
             # "__product_repr": str(app),
             "__product_ident": app.ident,
             "__product_name": app.name,
             "__product_path": +app.path,
-
             "__collection_ident": self.app.collection.ident,
             "__collection_name": self.app.collection.name,
             "__collection_path": +self.app.collection.path,
-
             # "__pod_repr": str(self),
             "__pod_ident": self.ident,
             "__pod_name": self.name,
@@ -605,42 +597,32 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             "__pod_sname": self.fparts(join="-", rev=True),
             # "__pod_fname": "|||".join(self.fparts(parts=True)),
             # "__pod_fname2": self.fname2,
-
             # "_stack_app_path": +app.path,
             # "_stack_path_abs": +self.path,
-
-
             "app_top_domain": "localhost",
             "app_name": self.name,
             # "app_svc_ident": self.app.get_compose_infos(),
-
         }
-        p = SimpleNamespace(**{key.replace("__",""): val for key, val in core_01_vars.items()})
-
+        p = SimpleNamespace(
+            **{key.replace("__", ""): val for key, val in core_01_vars.items()}
+        )
 
         # out = self.app.get_compose_infos()
         # pprint(out)
         # assert False, "WIP"
 
-
-
         # More interesting settings
         core_02_settings = {
-            
-            
             "app_domain": "${pod_name}.${app_top_domain}",
             "app_domain_pre": "${pod_name}-",
             "app_domain_post": ".${app_top_domain}",
-
-
             # Instance settings
             "provider_net_ident": "provider",
             "provider_net_key": "default",
             "provider_net_name": "${pod_fname}",
             "provider_net_external": False,
             "provider_net_domain": "",
-            "provider_svc_alias": "", 
-
+            "provider_svc_alias": "",
         }
 
         # # More interesting vars
@@ -656,18 +638,12 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         pprint(tmp)
         # default_vars.update(tmp)
 
-
-
         default_vars = {}
         default_vars.update(core_00_const)
         default_vars.update(core_01_vars)
         default_vars.update(p.__dict__)
         default_vars.update(core_02_settings)
         default_vars.update(tmp)
-
-
-
-
 
         # print("============================")
         runtime_vars = {}
@@ -726,8 +702,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
 
     # Other methods
     # --------------------------------
-
-
 
     # def get_build_varmgr(self, varmgr, app=None, app_vars=None):
     #     "Get build varmgr - V1 support"

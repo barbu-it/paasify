@@ -52,7 +52,9 @@ class PaasifyStack(PodManagementMixin, WorkingDirNode):
     ):
         super().__init__(ident=ident, parent=parent, path=path, search_up=search_up)
         # print("INIT STACK", ident, parent)
-        assert type(parent).__name__ == "PaasifyNamespace", f"Parent should be a PaasifyNamespace, not {type(parent).__name__}"
+        assert (
+            type(parent).__name__ == "PaasifyNamespace"
+        ), f"Parent should be a PaasifyNamespace, not {type(parent).__name__}"
 
         self.config = self.config or {}
 
@@ -75,8 +77,6 @@ class PaasifyStack(PodManagementMixin, WorkingDirNode):
     #     part_stack = self.name or "MISSING"
     #     final1 = "__".join([part_ns, part_stack])
     #     return final1
-
-
 
     # Pod mangement
     # --------------------------------

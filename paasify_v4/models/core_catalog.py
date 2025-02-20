@@ -189,7 +189,6 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
     #     return ret
 
-
     def get_vars_files(self):
         "Return vars files"
         app_path = ~self.path

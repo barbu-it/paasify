@@ -22,7 +22,6 @@ class PaasifyEntityMixin:
 class PodManagementMixin(PaasifyEntityMixin):
     "Pod management mixin"
 
-
     # Fname management
 
     def fparts(self, join=None, rev=False):
@@ -48,8 +47,7 @@ class PodManagementMixin(PaasifyEntityMixin):
     def fname(self):
         "Return full name"
         return self.fparts(join="_")
-    
-    
+
     @property
     def fname2(self):
         "Return full name"
@@ -60,9 +58,8 @@ class PodManagementMixin(PaasifyEntityMixin):
         final2 = "__".join([part_ns, part_stack, part_pod])
 
         return final2
-    
-    # Pod management
 
+    # Pod management
 
     # IS IT A DUPLICATE OF ?
     def get_infos(self):

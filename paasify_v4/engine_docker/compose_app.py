@@ -246,7 +246,7 @@ class ComposedApp:
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 
-    def get_services(self, interpolate=False)-> list[str]:
+    def get_services(self, interpolate=False) -> list[str]:
         "Return list of services"
 
         cmd = self.get_compose_cmd_prefix() + ["config", "--services"]
@@ -255,7 +255,7 @@ class ComposedApp:
         out = shexec(cmd).stdout.decode("utf-8")  # , logger=logger)
         return out.splitlines()
 
-    def get_images(self, interpolate=False)-> list[str]:
+    def get_images(self, interpolate=False) -> list[str]:
         "Return list of images"
 
         cmd = self.get_compose_cmd_prefix() + ["config", "--images"]

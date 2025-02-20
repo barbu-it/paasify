@@ -89,9 +89,9 @@ class PaasifyTagV1(AppNode):
     "Paasify tag class - V1 support"
 
     def __init__(self, ident=None, path=None, parent=None):
-        assert ident is None,f"Can't acccept anything else than none value"
+        assert ident is None, f"Can't acccept anything else than none value"
         assert isinstance(path, PosixPath), f"path={path}, expected posixPath"
-        
+
         ident = path.stem.replace("docker-compose.", "")
         self._path = PathAnchor(path, parent=parent.path, name="source_file")
 
@@ -102,8 +102,6 @@ class PaasifyTagV1(AppNode):
         super().__init__(ident=ident, parent=parent)
 
         self.source = parent
-
-
 
     def __repr__(self):
         kind = self.__class__.__name__
@@ -171,17 +169,15 @@ class ComposeTagV1(PaasifyTagV1):
     "Compose tag class - V1 support"
 
 
-
 ##########################################
-class PaasifyV1SupportMixin():
+class PaasifyV1SupportMixin:
     "General API supprot for v1"
 
-
     def scan_children_files(
-            self, 
-            needles: list[str] | str,
-            path: str | PosixPath = None,
-            ) -> list[PosixPath]:
+        self,
+        needles: list[str] | str,
+        path: str | PosixPath = None,
+    ) -> list[PosixPath]:
         """
         Scan children files for one or more needles
         Output is a list of PosixPath sorted by name
@@ -198,14 +194,13 @@ class PaasifyV1SupportMixin():
         return list(sorted(ret))
 
 
-
 class PaasifyCollectionV1SupportMixin(PaasifyV1SupportMixin):
     "Support for paasify v1 collections"
 
     def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
         "Return var tags - V1 support"
 
-        # search_path = ~self.path + 
+        # search_path = ~self.path +
         search_path = "__paasify__/tags/*.jsonnet"
         tags = []
         jsonnet_paths = self.scan_children_files(search_path)
@@ -239,10 +234,15 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             "path": ~self.path,
             "vars": to_yaml(self.get_vars(), strip_last=True),
             "compose_files": to_yaml(
-                [str(x.name) for x in sorted(self.scan_children_files("docker-compose.*.yml"))], strip_last=True
+                [
+                    str(x.name)
+                    for x in sorted(self.scan_children_files("docker-compose.*.yml"))
+                ],
+                strip_last=True,
             ),
             "jsonnet_files": to_yaml(
-                [str(x.name) for x in sorted(self.scan_children_files("*.jsonnet"))], strip_last=True
+                [str(x.name) for x in sorted(self.scan_children_files("*.jsonnet"))],
+                strip_last=True,
             ),
         }
         return out
@@ -258,11 +258,9 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
 
         return []
 
-
     def get_vars_files(self) -> dict[str, None]:
         "Return app vars from vars.yml"
         # app_path = ~self.path
-
 
         # app_vars_matches = find_file_in_path(app_vars_files, app_path)
         app_vars_matches = self.scan_children_files(["vars.yml", "vars.yaml"])
@@ -271,7 +269,6 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             app_vars = from_yaml(read_file(app_vars_matches[0]))
 
         return app_vars
-
 
     def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
         "Return list of JsonnetTagV1 from *.jsonnet files"
@@ -293,8 +290,6 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             ret.append(compose_file)
         return ret
 
-
-
     def get_compose_infos(self, compose_files=None, vars=None) -> dict:
         "Return compose infos"
 
@@ -305,9 +300,7 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
         compose_files = compose_files or [self.get_compose_file()]
         assert compose_files, "Missing compose files"
         comp_app = ComposedApp(
-            name=name, 
-            project_dir=self.path.get_path(), 
-            compose_files=compose_files
+            name=name, project_dir=self.path.get_path(), compose_files=compose_files
         )
 
         out = {
@@ -316,13 +309,10 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             # "volumes": comp_app.get_volumes(),
             # "images": comp_app.get_images(),
             "variables": comp_app.get_variables(),
-
         }
         # out6 = comp_app.get_variables2()
-        
-        
-        return out
 
+        return out
 
     def gen_compose_file(
         self, compose_files=None, name=None, build_vars=None, output="json"
@@ -348,5 +338,3 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
                 # logger.error("  %s", conf)
 
         return compose_content
-
-

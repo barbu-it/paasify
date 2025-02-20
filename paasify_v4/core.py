@@ -94,7 +94,6 @@ class Node:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.ident or ''})"
 
-
     def iter_parents(self, include_self=False):
         "Iterate over parents"
         if include_self:

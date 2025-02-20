@@ -66,7 +66,6 @@ class PaasifyNamespace(
     # def fname(self):
     #     "Return full name"
     #     return self.name or "MISSING"
-    
 
     @setup_once("setup_node")
     def setup_node(self):

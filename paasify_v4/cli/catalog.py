@@ -80,10 +80,11 @@ class AppShowCmd(Parser):
         }
         extra3 = {
             "features_available": to_yaml(
-                [x.stem.replace("docker-compose.", "") 
-                 for x in 
-                 app.scan_children_files("docker-compose.*.yml")]
-                 ),
+                [
+                    x.stem.replace("docker-compose.", "")
+                    for x in app.scan_children_files("docker-compose.*.yml")
+                ]
+            ),
         }
 
         extra.update(extra1)
@@ -91,7 +92,6 @@ class AppShowCmd(Parser):
         # extra.update(extra3)
 
         pprint(app.get_jsonnet_plugin_tags())
-
 
         # extra.update(app_vars)
         return ShowView(extra)

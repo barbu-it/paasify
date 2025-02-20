@@ -32,7 +32,6 @@ class PaasifyRunner:
         "Return catalog"
         return self._catalog
 
-
     @property
     def namespace(self):
         "Return namespace"
@@ -61,7 +60,6 @@ class PaasifyRunner:
                 parent=namespace,
             )
         return self._stack
-
 
     @property
     def pod(self):
