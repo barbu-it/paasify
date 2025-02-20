@@ -75,11 +75,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         super().__init__(ident, parent)
         self._parent = parent
         assert type(parent).__name__ == "PaasifyStack", f"Parent should be a PaasifyStack, not {type(parent).__name__}"
-        # print("INIT POD", ident, parent, )
-
-
-        # print("TEST NS FROM POD", self, self.ns)
-
 
         self._name = name or ident.split("/", maxsplit=1)[0]
 
@@ -105,57 +100,6 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         "Return catalog"
         return self.parent.catalog
     
-    # @property
-    # def fname(self):
-    #     "Return full name"
-
-    #     # part_ns = self.ns.ident or "MISSING"
-    #     # part_stack = self.stack.ident or "MISSING"
-    #     # part_pod = self.ident or "MISSING"
-    #     # final1 = "__".join([part_ns, part_stack, part_pod])
-
-    #     part_ns = self.ns.name or "MISSING"
-    #     part_stack = self.stack.name or "MISSING"
-    #     part_pod = self.name or "MISSING"
-    #     final1 = "__".join([part_ns, part_stack, part_pod])
-
-    #     return final1
-
-    # @property
-    # def fname(self, parts=False):
-    #     "Return full name"
-
-    #     # part_ns = self.ns.ident or "MISSING"
-    #     # part_stack = self.stack.ident or "MISSING"
-    #     # part_pod = self.ident or "MISSING"
-    #     # final1 = "__".join([part_ns, part_stack, part_pod])
-
-    #     part_ns = self.ns.name or "MISSING"
-    #     part_stack = self.stack.name or "MISSING"
-    #     part_pod = self.name or "MISSING"
-    #     final1 = "__".join([part_ns, part_stack, part_pod])
-
-    #     final2 = []
-    #     for parent in self.iter_parents(include_self=True):
-    #         # print("PARENT", parent)
-    #         # print("PARENT.parent", parent.parent)
-    #         # print("PARENT.name", parent.name)
-    #         # print()
-    #         part_parent = parent.name or "MISSING"
-    #         final2.append(part_parent)
-
-    #     if parts:
-    #         return final2
-
-    #     final2 = "__".join(final2)
-    #     # print("FINAL2", final2)
-    #     # assert False, "WIP"
-
-    #     # return f"{final1}   OR {final2}"
-
-    #     return final2
-    
-
 
     # Infos
     # --------------------------------
@@ -342,6 +286,8 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         "Assemble the pod - V1 support"
 
         app = self.app
+        # pprint(self.__dict__)
+        assert app, "Missing app"
 
         # Fetch app files
         tags = self.config.get("tags", [])

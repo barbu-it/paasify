@@ -174,36 +174,21 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
         return docker_file_match
 
-    def get_compose_feat_tags(self):
-        "Return files"
+    # def get_compose_feat_tags(self):
+    #     "Return files"
 
-        assert False, "WIP, should be commented in profit of same method in core_common"
+    #     # assert False, "WIP, should be commented in profit of same method in core_common"
 
-        # Get app path and base docker-compose file
-        app_path = ~self.path
+    #     # Get app path and base docker-compose file
+    #     app_path = ~self.path
+    #     needle = "docker-compose.*.yml"
+    #     ret = []
+    #     for match in Path(app_path).rglob(needle):
+    #         compose_file = ComposeTagV1(path=match, parent=self)
+    #         ret.append(compose_file)
 
-        needle = "docker-compose.*.yml"
-        ret = []
-        for match in Path(app_path).rglob(needle):
-            ident = match.stem.replace("docker-compose.", "")
-            compose_file = ComposeTagV1(ident=ident, path=match, parent=self)
-            ret.append(compose_file)
+    #     return ret
 
-        return ret
-
-        # docker_files = ["docker-compose.yml", "docker-compose.yaml"]
-        # docker_file_matches = find_file_in_path(docker_files, app_path)
-        # if len(docker_file_matches) == 0:
-        #     raise exc.PaasifyAssembleError(
-        #         f"No docker-compose.yml file found in {app_path}"
-        #     )
-        # elif len(docker_file_matches) > 1:
-        #     msg = f"Multiple docker-compose.yml files found in {app_path}, keeping the first one only: {docker_file_matches}"
-        #     raise exc.PaasifyAssembleError(msg)
-        # logger.debug("Docker file matches: %s", docker_file_matches)
-        # docker_file_match = docker_file_matches[0]
-
-        # return docker_file_match
 
     def get_vars_files(self):
         "Return vars files"

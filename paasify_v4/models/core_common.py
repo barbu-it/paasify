@@ -89,15 +89,21 @@ class PaasifyTagV1(AppNode):
     "Paasify tag class - V1 support"
 
     def __init__(self, ident=None, path=None, parent=None):
+        assert ident is None,f"Can't acccept anything else than none value"
+        assert isinstance(path, PosixPath), f"path={path}, expected posixPath"
+        
+        ident = path.stem.replace("docker-compose.", "")
+        self._path = PathAnchor(path, parent=parent.path, name="source_file")
+
         assert "docker-compose" not in ident, f"ident={ident}"
         assert "yml" not in ident, f"ident={ident}"
         assert "jsonnet" not in ident, f"ident={ident}"
-        self.source = parent
 
         super().__init__(ident=ident, parent=parent)
 
-        # print("CREATE PATHANCHOR", f"{self.source}/{self}", f"{+parent.path} + {path}")
-        self._path = PathAnchor(path, name="tag_path", parent=parent.path)
+        self.source = parent
+
+
 
     def __repr__(self):
         kind = self.__class__.__name__
@@ -110,11 +116,6 @@ class PaasifyTagV1(AppNode):
 
 class JsonnetTagV1(PaasifyTagV1):
     "Jsonnet tag class - V1 support"
-
-    # def __init__(self, ident=None, path=None, parent=None):
-    #     super().__init__(ident=ident, parent=parent)
-    #     self._path = PathAnchor(path, parent=parent.path)
-    #     self.source = parent
 
     def process_jsonnet_vars(self, vars=None):
         "Process jsonnet vars"
@@ -169,13 +170,64 @@ class JsonnetTagV1(PaasifyTagV1):
 class ComposeTagV1(PaasifyTagV1):
     "Compose tag class - V1 support"
 
-    # def __init__(self, ident=None, path=None, parent=None):
-    #     super().__init__(ident=ident, parent=parent)
-    #     self._path = PathAnchor(path, parent=parent.path)
-    #     self.source = parent
 
 
-class PaasifyAppV1SupportMixin:
+##########################################
+class PaasifyV1SupportMixin():
+    "General API supprot for v1"
+
+
+    def scan_children_files(
+            self, 
+            needles: list[str] | str,
+            path: str | PosixPath = None,
+            ) -> list[PosixPath]:
+        """
+        Scan children files for one or more needles
+        Output is a list of PosixPath sorted by name
+        """
+        app_path = path or ~self.path
+        needles = needles or ["docker-compose.*.yml"]
+        if not isinstance(needles, list):
+            needles = [needles]
+        ret = []
+        upath = Path(app_path)
+        for needle in needles:
+            for match in upath.rglob(needle):
+                ret.append(match)
+        return list(sorted(ret))
+
+
+
+class PaasifyCollectionV1SupportMixin(PaasifyV1SupportMixin):
+    "Support for paasify v1 collections"
+
+    def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
+        "Return var tags - V1 support"
+
+        # search_path = ~self.path + 
+        search_path = "__paasify__/tags/*.jsonnet"
+        tags = []
+        jsonnet_paths = self.scan_children_files(search_path)
+        for match in jsonnet_paths:
+            tag = JsonnetTagV1(path=match, parent=self)
+            tags.append(tag)
+        return tags
+
+    def get_compose_feat_tags(self) -> list[ComposeTagV1]:
+        "Return compose files for collections - V1 support"
+
+        search_path = "__paasify__/tags/docker-compose.*.jsonnet"
+        compose_files = []
+        jsonnet_paths = self.scan_children_files(search_path)
+        for match in jsonnet_paths:
+            compose_file = ComposeTagV1(path=match, parent=self)
+            compose_files.append(compose_file)
+        return compose_files
+
+
+class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
+    "App v1 support"
 
     def get_infos(self) -> dict:
         "Get infos"
@@ -206,71 +258,41 @@ class PaasifyAppV1SupportMixin:
 
         return []
 
-    # def _get_jsonnet_files(self, needle: str) -> list[PosixPath]:
-    #     "Return jsonnet files"
-    #     app_path = ~self.path
-    #     # needle = "*.jsonnet"
-    #     ret = []
-    #     for match in Path(app_path).rglob(needle):
-    #         ret.append(match)
-    #     return ret
+
+    def get_vars_files(self) -> dict[str, None]:
+        "Return app vars from vars.yml"
+        # app_path = ~self.path
+
+
+        # app_vars_matches = find_file_in_path(app_vars_files, app_path)
+        app_vars_matches = self.scan_children_files(["vars.yml", "vars.yaml"])
+        app_vars = {}
+        if len(app_vars_matches) != 0:
+            app_vars = from_yaml(read_file(app_vars_matches[0]))
+
+        return app_vars
+
 
     def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
-        "Return jsonnet files"
+        "Return list of JsonnetTagV1 from *.jsonnet files"
 
-        # app_path = ~self.path
-        # needle = "*.jsonnet"
         jsonnet_paths = self.scan_children_files("*.jsonnet")
         ret = []
-        # print("GET JSONNET FILES FOR", self, app_path, needle)
-        # for match in Path(app_path).rglob(needle):
         for match in jsonnet_paths:
-            jsonnet_file = JsonnetTagV1(ident=match.stem, path=match, parent=self)
+            jsonnet_file = JsonnetTagV1(path=match, parent=self)
             ret.append(jsonnet_file)
         return ret
-
-    def scan_children_files(
-            self, 
-            needles: list[str] | str
-            ) -> list[PosixPath]:
-        """
-        Scan children files for one or more needles
-        Output is a list of PosixPath sorted by name
-        """
-        app_path = ~self.path
-        needles = needles or ["docker-compose.*.yml"]
-        if not isinstance(needles, list):
-            needles = [needles]
-        ret = []
-        for needle in needles:
-            for match in Path(app_path).rglob(needle):
-                ret.append(match)
-        return list(sorted(ret))
 
     def get_compose_feat_tags(self) -> list[ComposeTagV1]:
         "Return list of ComposeTagV1 from: docker-compose.*.yml"
 
-
-        # Get app path and base docker-compose file
-        # app_path = ~self.path
-        # needle = "docker-compose.*.yml"
-        # print("GET COMPOSE FILES FOR", self, app_path, needle)
-
         docker_files = self.scan_children_files("docker-compose.*.yml")
-
-        # Get all compose files
         ret = []
-        # print(f"Search ({self}) docker compose  in app path:", app_path)
-        # for match in Path(app_path).rglob(needle):
         for match in docker_files:
-            ident = match.stem.replace("docker-compose.", "")
-            assert "docker-compose" not in ident, f"ident={ident}"
-
-            # print("CREATE COMPOSE TAG", self,  +self.path, ident, app_path,  match)
-            compose_file = ComposeTagV1(ident=ident, path=str(match), parent=self)
+            compose_file = ComposeTagV1(path=match, parent=self)
             ret.append(compose_file)
-
         return ret
+
 
 
     def get_compose_infos(self, compose_files=None, vars=None) -> dict:
@@ -301,21 +323,6 @@ class PaasifyAppV1SupportMixin:
         
         return out
 
-        # # Process docker-compose.yml file
-        # compose_content = self.gen_compose_file(
-        #     # compose_files=[docker_file_match] + docker_app_tag_files,
-        #     compose_files=[docker_file_match],
-        #     name=dc_project_name,
-        #     build_vars=build_vars,
-        #     output="json",
-        # )
-
-        # print("COMPOSE CONTENT")
-        # print(compose_content)
-
-        # out = "WIPPPP"
-        # # assert False, "WIP"
-
 
     def gen_compose_file(
         self, compose_files=None, name=None, build_vars=None, output="json"
@@ -343,34 +350,3 @@ class PaasifyAppV1SupportMixin:
         return compose_content
 
 
-class PaasifyCollectionV1SupportMixin:
-    "Support for paasify v1 collections"
-
-    def get_jsonnet_plugin_tags(self) -> list[JsonnetTagV1]:
-        "Return var tags - V1 support"
-        collection_path = self.path
-        search_path = collection_path / "__paasify__/tags/"
-        jsonnet_files = []
-        # print("Search path JSONNET:", search_path)
-        tags = []
-        for match in Path(search_path).rglob("*.jsonnet"):
-            jsonnet_files.append(match)
-
-            tag = JsonnetTagV1(ident=match.stem, path=match, parent=self)
-            tags.append(tag)
-        return tags
-
-    def get_compose_feat_tags(self) -> list[ComposeTagV1]:
-        "Return compose files for collections - V1 support"
-        namespace_path = self.path
-        search_path = namespace_path / "__paasify__/tags/"
-        compose_files = []
-        for match in Path(search_path).rglob("docker-compose.*.yml"):
-            ident = match.stem.replace("docker-compose.", "")
-            # ident = f"{self.ident} YOOOO222"
-            # assert False, f"ident={ident}"
-            assert "docker-compose" not in ident, f"ident={ident}"
-            compose_file = ComposeTagV1(ident=ident, path=match, parent=self)
-            compose_files.append(compose_file)
-
-        return compose_files
