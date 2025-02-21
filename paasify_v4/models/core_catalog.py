@@ -13,44 +13,56 @@ The module focuses on organizing and managing applications in a hierarchical cat
 with support for metadata, variables, and collection management.
 """
 
-import os
 import logging
-from typing import List, Dict
-from pprint import pprint
-
+import os
+from difflib import get_close_matches
 # from pprint import pprint
 from pathlib import Path
-from difflib import get_close_matches
+from pprint import pprint
+from types import SimpleNamespace
+from typing import Dict, List
+
 from superconf.anchors2 import PathAnchor
 
-
-from paasify_v4.common import (
-    find_file_in_path,
-    dict_to_env,
-    write_file,
-    read_file,
-    from_yaml,
-    to_yaml,
-    to_domain,
-    flatten,
-    truncate,
-)
-
-
-from paasify_v4.core import AppNode, setup_once, requires_setup_node
-from paasify_v4.models.core_common import (
-    PaasifyAppV1SupportMixin,
-    PaasifyCollectionV1SupportMixin,
-    JsonnetTagV1,
-    ComposeTagV1,
-)
-from paasify_v4.lib.git_helpers import GitRepo
 import paasify_v4.exception as exc
+from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
+                               from_yaml, read_file, to_domain, to_yaml,
+                               truncate, write_file)
+from paasify_v4.lib.git_helpers import GitRepo
+from paasify_v4.models.core_common import (ComposeTagV1, JsonnetTagV1,
+                                           PaasifyAppV1SupportMixin,
+                                           PaasifyCollectionV1SupportMixin)
+from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
 
 logger = logging.getLogger(__name__)
 
 
-# Catalog
+# App componenets
+# ================================================
+
+
+class PaasifyTagManager(AppNode):
+    "PaasifyTagManager class"
+
+    paasify_type = "catalog_tag_manager"
+
+    #     def load_config(self, config: dict):
+    #         "Load config"
+
+    #         self.raw_config = config.get("tags", {})
+
+    def get_tags(self, tag_kind):
+        "Get tags kind"
+
+        if tag_kind == "features":
+            return self.get_features()
+        elif tag_kind == "plugins":
+            return self.get_features()
+        else:
+            raise ValueError(f"Invalid tag kind: {tag_kind}")
+
+
+# Apps
 # ================================================
 
 
@@ -72,17 +84,36 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
         self._store_vars = {}
         self._store_tags = {}
 
-    def get_infos(self):
+        # print("APP:", self.name)
+        # if self.name == "traefik":
+        # # pprint(self.__dict__)
+        # # assert False
+        #     pprint(self.__dict__)
+        #     self.app_tag_mgr = PaasifyTagManager(parent=self)
+
+    def get_infos(self) -> dict:
         "Get infos"
         base = super().get_infos()
-        # base["---"] = "---"
+        sep = base.pop("--", "--") + "-"
+        base[sep] = sep
 
         if self.collection:
             base["collection"] = self.collection
             base["collection_name"] = self.collection.name
-            # collection_vars = self.collection.get_infos()
             # collection_vars = {f"collection_{key}": val for key, val in collection_vars.items()}
             # base.update(collection_vars)
+
+        base["----"] = "---"
+
+        # help(self)
+        # pprint(self.__dict__)
+        # cfg_file = self.get_paasify_app_cfg_file()
+        # print(cfg_file)
+        # pprint(self.parse_paasify_config(cfg_file))
+        # return
+
+        base["tag_features"] = "TODO"
+        base["tag_features_channels"] = "TODO"
 
         return base
 
@@ -106,11 +137,34 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
     # Structure scan support
     # ------------
-    @setup_once("setup_tags")
-    def setup_tags(self):
+    @setup_once("setup_tag_files")
+    def setup_tag_files(self):
         "Parse app tags"
         logger.info("Setup app tags: %s", self)
-        self._store_tags = self.walk_tags()
+        # docker_files  = self.walk_tags()
+
+        compose = self.get_compose_feat_tags()
+        jsonnet = self.get_jsonnet_plugin_tags()
+
+        # self.tag_files = SimpleNamespace(
+        #     compose = compose,
+        #     jsonnet = jsonnet,
+        # )
+
+        # self._store_tags = list(sorted(compose + jsonnet))
+        self._store_tags = compose + jsonnet
+        self._store_tags = [str(x) for x in self._store_tags]
+        # for tag_config in self.get_children():
+        #     print(tag_config)
+
+        # pprint(self.__dict__)
+        # # help(self.__class__)
+
+        # pprint(tag_files)
+        # # pprint(p2)
+        # assert False
+
+        # self._store_tags = {"WIP": "TODO"}
 
     def walk_tags(self):
         "Return tags"
@@ -137,9 +191,10 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 
         return tags
 
-    @requires_setup_node("setup_tags")
+    @requires_setup_node("setup_tag_files")
     def get_tags(self):
         "Return tags"
+        # return self.tag_files
         return self._store_tags
 
     # File structure support - Shared code Apps<=>Pods
@@ -188,18 +243,6 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
     #         ret.append(compose_file)
 
     #     return ret
-
-    def get_vars_files(self):
-        "Return vars files"
-        app_path = ~self.path
-
-        app_vars_files = ["vars.yml", "vars.yaml"]
-        app_vars_matches = find_file_in_path(app_vars_files, app_path)
-        app_vars = {}
-        if len(app_vars_matches) != 0:
-            app_vars = from_yaml(read_file(app_vars_matches[0]))
-
-        return app_vars
 
 
 ############################################ V1 support
@@ -289,7 +332,7 @@ class PaasifyCollection(PaasifyCollectionV1SupportMixin, AppNode):
         # List recursively on three levels all docker-compose.yml files
         needle = "docker-compose.yml"
 
-        for match in Path(collection_path).rglob(needle):
+        for match in sorted(Path(collection_path).rglob(needle)):
             # Get relative path from collection root
             rel_path = match.relative_to(collection_path)
 

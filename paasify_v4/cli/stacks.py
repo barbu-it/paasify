@@ -1,14 +1,17 @@
 "Manage stacks commands"
 
 import logging
-from clak import Parser, Argument, Command
-from clak.views import ShowView, ListView
-from paasify_v4.lib.shexec import shexec
+
+from clak import Argument, Command, Parser
+from clak.views import ListView, ShowView
+
 import paasify_v4.exception as exc
+from paasify_v4.lib.shexec import shexec
 
 logger = logging.getLogger(__name__)
-import sh
 from pprint import pprint
+
+import sh
 
 # Stack management
 # ================================================

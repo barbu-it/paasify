@@ -1,16 +1,15 @@
-import os
-import sh
 import logging
+import os
 from pprint import pprint
 
-from clak import Parser, Argument, Command
+import sh
+from clak import Argument, Command, Parser
 from clak.views import ListView, ShowView
 
-
-from paasify_v4.models.core_namespace import PaasifyNamespace
-from paasify_v4.models.core_stack import PaasifyStack, PaasifyPod
 import paasify_v4.exception as exc
 from paasify_v4.lib.shexec import shexec
+from paasify_v4.models.core_namespace import PaasifyNamespace
+from paasify_v4.models.core_stack import PaasifyPod, PaasifyStack
 
 logger = logging.getLogger("paasify_v4.cli.dyn")
 

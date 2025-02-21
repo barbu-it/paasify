@@ -1,23 +1,17 @@
 # from paasify_v4.core import AppNode
 
-from pprint import pprint
+import logging
 import re
-import sh
+from pprint import pprint
 from shutil import which
 from types import SimpleNamespace
-import logging
 
+import sh
 from clak.common import to_boolean
 from mrjk_components.py_helpers.string_template import StringTemplate
-from paasify_v4.common import (
-    find_file_in_path,
-    dict_to_env,
-    write_file,
-    read_file,
-    from_yaml,
-    to_domain,
-    flatten,
-)
+
+from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
+                               from_yaml, read_file, to_domain, write_file)
 from paasify_v4.lib.shexec import shexec
 
 logger = logging.getLogger(__name__)

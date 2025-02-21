@@ -10,14 +10,16 @@ This module provides common utility functions used throughout Paasify:
 - to_yaml: Convert Python object to YAML string
 """
 
-import os
 import json
 import logging
+import os
 import re
+from pathlib import Path
+
+import yaml
 
 # import os
 
-import yaml
 
 log = logging.getLogger(__name__)
 
@@ -130,6 +132,8 @@ def dict_to_env(dict):
 
 def read_file(file):
     "Read file content"
+    print("TYPE", type(file), file)
+    file = str(file) if isinstance(file, Path) else file
     with open(file, encoding="utf-8") as _file:
         return "".join(_file.readlines())
 
@@ -137,6 +141,7 @@ def read_file(file):
 def write_file(file, content):
     "Write content to file"
 
+    file = str(file) if isinstance(file, Path) else file
     file_folder = os.path.dirname(file)
     if not os.path.exists(file_folder):
         os.makedirs(file_folder)

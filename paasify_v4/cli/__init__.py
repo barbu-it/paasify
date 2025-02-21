@@ -1,6 +1,5 @@
 from paasify_v4.cli.main import AppMain
 
-
 app = None
 
 

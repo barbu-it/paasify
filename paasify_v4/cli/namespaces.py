@@ -1,9 +1,9 @@
 "Manage namespaces commands"
 
 import logging
-from clak import Parser, Argument, Command
-from clak.views import ShowView
 
+from clak import Argument, Command, Parser
+from clak.views import ShowView
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 import logging
-import sh
 
+import sh
 
 _logger = logging.getLogger(__name__)
 

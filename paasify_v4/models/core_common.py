@@ -1,24 +1,17 @@
 import logging
 from pathlib import Path, PosixPath
 from pprint import pprint
-import paasify_v4.exception as exc
-from paasify_v4.lib.jsonnet2 import JsonnetProcessor, JsonnetError
-from paasify_v4.core import AppNode, setup_once, requires_setup_node
+
 from superconf.anchors2 import PathAnchor
+
+import paasify_v4.exception as exc
+from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
+                               from_yaml, read_file, to_domain, to_yaml,
+                               truncate, write_file)
 from paasify_v4.engine_docker.compose_app import ComposedApp
-
-
-from paasify_v4.common import (
-    find_file_in_path,
-    dict_to_env,
-    write_file,
-    read_file,
-    from_yaml,
-    to_yaml,
-    to_domain,
-    flatten,
-    truncate,
-)
+from paasify_v4.lib.jsonnet2 import JsonnetError, JsonnetProcessor
+from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
+from paasify_v4.specs.config_app import AppMainConfig
 
 logger = logging.getLogger(__name__)
 
@@ -233,17 +226,18 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             "ident": self.ident,
             "path": ~self.path,
             "vars": to_yaml(self.get_vars(), strip_last=True),
-            "compose_files": to_yaml(
-                [
-                    str(x.name)
-                    for x in sorted(self.scan_children_files("docker-compose.*.yml"))
-                ],
-                strip_last=True,
-            ),
-            "jsonnet_files": to_yaml(
-                [str(x.name) for x in sorted(self.scan_children_files("*.jsonnet"))],
-                strip_last=True,
-            ),
+            "tags_files": to_yaml(self.get_tags(), strip_last=True),
+            # "compose_files": to_yaml(
+            #     [
+            #         str(x.name)
+            #         for x in sorted(self.scan_children_files("docker-compose.*.yml"))
+            #     ],
+            #     strip_last=True,
+            # ),
+            # "jsonnet_files": to_yaml(
+            #     [str(x.name) for x in sorted(self.scan_children_files("*.jsonnet"))],
+            #     strip_last=True,
+            # ),
         }
         return out
 
@@ -252,6 +246,39 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
         # base["app_path"] = ~app.path
         # app_vars = to_yaml(app.get_vars())
         # base["app_vars"] = app_vars
+
+    # Manage paasify.app.yml file
+    # --------------------------------
+    def get_paasify_app_cfg_file(self) -> str:
+        "Return paasify app cfg file"
+        matches = self.scan_children_files("paasify.app.yml")
+        if matches:
+            return matches[0]
+        return None
+
+    def parse_paasify_config(self, config_file) -> dict:
+        "Parse paasify config"
+
+        config_file = config_file or self.get_paasify_app_cfg_file()
+        if not config_file:
+            return {}
+
+        raw_config = from_yaml(read_file(config_file))
+
+        assert not hasattr(self, "config"), "config already set"
+        self.config = AppMainConfig(value=raw_config)
+
+        # pprint(app_cctl.meta.get_values())
+
+        # print("YOOOO")
+        # # pprint(app_cctl.features.__dict__)
+        # pprint(app_cctl.features.parse_features())
+        # app_cctl.app_tag_mgr.get_tags("features")
+
+        # # help(app_cctl.__class__)
+        # assert False, "WIP"
+
+        return raw_config
 
     def get_var_tags(self) -> list:
         "Return var tags"

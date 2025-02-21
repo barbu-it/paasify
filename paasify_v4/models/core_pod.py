@@ -1,56 +1,34 @@
 "Manage apps/pods"
 
-import os
-import logging
-from pprint import pprint
-import sh
-
-from pathlib import Path
-from types import SimpleNamespace
 import json
+import logging
+import os
+from pathlib import Path
+from pprint import pprint
+from types import SimpleNamespace
 
-from superconf.anchors2 import PathAnchor
-from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
+import sh
 from mrjk_components.varmgr.lib.store_base import (
-    StoreManager,
-    Source,
-    UndefinedVarError,
-)
-
-from paasify_v4.core import (
-    AppNode,
-    VarMgrNodeMixin,
-    WorkingDirNode,
-    setup_once,
-    requires_setup_node,
-    node_registry,
-)
-from paasify_v4.common import (
-    find_file_in_path,
-    dict_to_env,
-    write_file,
-    read_file,
-    from_yaml,
-    to_yaml,
-    to_domain,
-    flatten,
-    truncate,
-)
-
-# from paasify_v4.models.core_catalog import PaasifyCatalog
-from paasify_v4.models.core_common import (
-    PaasifyAppV1SupportMixin,
-    JsonnetTagV1,
-    ComposeTagV1,
-    Var,
-    TagConfigV1,
-)
+    Source, StoreManager,
+    UndefinedVarError)
+from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
+from superconf.anchors2 import PathAnchor
 
 import paasify_v4.exception as exc
-
+from paasify_v4.common import (
+    dict_to_env, find_file_in_path, flatten,
+    from_yaml, read_file, to_domain, to_yaml,
+    truncate, write_file)
 from paasify_v4.lib.shexec import shexec
-from paasify_v4.core_abc import PodManagedMixin
-
+from paasify_v4.lib_paasify.api_abc import PodManagedMixin
+# from paasify_v4.models.core_catalog import PaasifyCatalog
+from paasify_v4.models.core_common import (
+    ComposeTagV1, JsonnetTagV1,
+    PaasifyAppV1SupportMixin,
+    TagConfigV1, Var)
+from paasify_v4.nodes_paasify import (
+    AppNode, VarMgrNodeMixin, WorkingDirNode,
+    requires_setup_node, setup_once)
 
 logger = logging.getLogger(__name__)
 
@@ -105,10 +83,11 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
     # Infos
     # --------------------------------
 
-    def get_infos(self):
+    def get_infos(self) -> dict:
         "Get infos"
         base = super().get_infos()
-        # base["---"] = "---"
+        sep = base.pop("--", "--") + "-"
+        base[sep] = sep
 
         if self.app:
             app_fields = [
@@ -367,10 +346,10 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         jsonnet_vars = dict(build_vars)
         jsonnet_result = {}
         for tag in jsonnet_tags_array:
-            print("PROCESSING JSONNET TAG", tag.tag.ident)
+            # print("PROCESSING JSONNET TAG", tag.tag.ident)
             out = tag.tag.process_jsonnet_vars(vars=jsonnet_vars)
             # pprint(out)
-            pprint(list(out.keys()))
+            # pprint(list(out.keys()))
             final = {}
             final.update(out["def"])
             final.update(out["dyn"])
@@ -408,7 +387,7 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
             dc_project_name = "_".join([self.ns.name, dc_project_name])
         compose_settings = {
             "COMPOSE_PROJECT_NAME": dc_project_name,
-            "COMPOSE_FILE": "docker-compose.yml",
+            "COMPOSE_FILE": docker_file_match,
             # "COMPOSE_PROFILES": "profile1,profile2",
             # "COMPOSE_CONVERT_WINDOWS_PATHS": "false",
             "COMPOSE_PATH_SEPARATOR": ":",  # ; on windows

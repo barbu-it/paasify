@@ -4,10 +4,10 @@
 import logging
 from pprint import pprint
 
-from clak import Parser, Argument, Command
+from clak import Argument, Command, Parser
 from clak.views import ListView, ShowView
 
-from paasify_v4.common import truncate, to_yaml
+from paasify_v4.common import to_yaml, truncate
 
 logger = logging.getLogger("paasify_v4.cli.catalog")
 
@@ -60,32 +60,32 @@ class AppShowCmd(Parser):
         # pprint(app.get_infos())
         # assert False, "WIP"
 
-        tag_config = app.get_tags()
-        tags = list(tag_config.keys())
+        # tag_config = app.get_tags()
+        # tags = list(tag_config.keys())
 
-        app_vars = app.get_vars()
-        app_vars = {f"var: {k}": v for k, v in app_vars.items()}
+        # app_vars = app.get_vars()
+        # app_vars = {f"var: {k}": v for k, v in app_vars.items()}
         extra = {}
         extra1 = app.get_infos()
-        extra2 = {
-            # "Infos": "",
-            "ident": app.ident,
-            "name": app.name,
-            "source": app.parent.name,
-            "index": app.index,
-            # "apps_count": len(app.get_apps()),
-            "path": ~app.path,
-            "tags": " ".join(tags),
-            "": "",
-        }
-        extra3 = {
-            "features_available": to_yaml(
-                [
-                    x.stem.replace("docker-compose.", "")
-                    for x in app.scan_children_files("docker-compose.*.yml")
-                ]
-            ),
-        }
+        # extra2 = {
+        #     # "Infos": "",
+        #     "ident": app.ident,
+        #     "name": app.name,
+        #     "source": app.parent.name,
+        #     "index": app.index,
+        #     # "apps_count": len(app.get_apps()),
+        #     "path": ~app.path,
+        #     "tags": " ".join(tags),
+        #     "": "",
+        # }
+        # extra3 = {
+        #     "features_available": to_yaml(
+        #         [
+        #             x.stem.replace("docker-compose.", "")
+        #             for x in app.scan_children_files("docker-compose.*.yml")
+        #         ]
+        #     ),
+        # }
 
         extra.update(extra1)
         # extra.update(extra2)

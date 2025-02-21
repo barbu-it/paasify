@@ -1,29 +1,25 @@
 "Main app command line interface"
 
-import os
-
 # import sys
 import logging
+import os
+from argparse import SUPPRESS
 from pprint import pprint
 
-from argparse import SUPPRESS
-from clak import Parser, Argument, Command, LoggingOptMixin
+from clak import Argument, Command, LoggingOptMixin, Parser
 from clak.views import ListView, ShowView
 from superconf.anchors2 import PathAnchor
 
-
-from paasify_v4.cli.catalog import CollectionGroup, AppGroup
+import paasify_v4.exception as exc
+from paasify_v4.app import PaasifyRunner
+from paasify_v4.cli.catalog import AppGroup, CollectionGroup
+from paasify_v4.cli.dynamic import DynMixin
 from paasify_v4.cli.namespaces import NamespaceGroup
 from paasify_v4.cli.pods import PodGroup
 from paasify_v4.cli.stacks import StackGroup, StackTreeCmd
-from paasify_v4.cli.dynamic import DynMixin
-
-from paasify_v4.app import PaasifyRunner
-
 
 # from paasify_v4.cli.devel import StackGroup, PodGroup
 
-import paasify_v4.exception as exc
 
 
 logger = logging.getLogger(__name__)

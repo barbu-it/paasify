@@ -1,10 +1,10 @@
-import os
-from pprint import pprint, pformat  # noqa: F401
-
 import json
-import _jsonnet
 import logging
+import os
+from pprint import pformat, pprint  # noqa: F401
 from types import SimpleNamespace
+
+import _jsonnet
 
 logger = logging.getLogger(__name__)
 _logger = logger
