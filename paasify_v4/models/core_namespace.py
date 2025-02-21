@@ -6,7 +6,7 @@ from superconf.anchors2 import FileAnchor
 
 from paasify_v4.common import find_files_down
 from paasify_v4.lib_paasify.api_abc import PodManagementMixin
-from paasify_v4.models.core_common import PaasifyCollectionV1SupportMixin
+from paasify_v4.models.core_common import PaasifyCollectionV1SupportMixin, PaasifyNamespaceV1Mixin
 from paasify_v4.models.core_stack import PaasifyStack
 from paasify_v4.nodes_paasify import (AppNode, WorkingDirNode,
                                       requires_setup_node, setup_once)
@@ -28,9 +28,7 @@ class PaasifyNoNamespace(PodManagementMixin, AppNode):
         super().__init__(**kwargs)
 
 
-class PaasifyNamespace(
-    PaasifyCollectionV1SupportMixin, PodManagementMixin, WorkingDirNode
-):
+class PaasifyNamespace(PaasifyNamespaceV1Mixin):
     "Namespace class, manage list of stacks"
 
     paasify_type = "namespace"

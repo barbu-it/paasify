@@ -9,44 +9,15 @@ from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
                                from_yaml, read_file, to_domain, to_yaml,
                                truncate, write_file)
 from paasify_v4.engine_docker.compose_app import ComposedApp
-from paasify_v4.lib.jsonnet2 import JsonnetError, JsonnetProcessor
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
 from paasify_v4.specs.config_app import AppMainConfig
+from paasify_v4.models.comp_tags import JsonnetTagV1, ComposeTagV1
 
 logger = logging.getLogger(__name__)
 
 
-class Var:
-    "Represent a variable"
-
-    def __init__(self, name, value, **kwargs):
-        self.ident = name
-        self._name = name
-        self._value = value
-        self.kwargs = kwargs
-        self.path = "nopath"
-
-    def __repr__(self):
-        keyval = f"{self.name}={self.value}"
-        return f"Var({truncate(keyval, max=24)})"
-
-    def __str__(self):
-        "Return string representation - Required for var templating"
-        return f"{self.value}"
-
-    @property
-    def value(self):
-        "Return value"
-        return self._value
-
-    @property
-    def name(self):
-        "Return name"
-        return self._name
-
-
 class TagConfigV1(AppNode):
-    "Stack tag config class - V1 support"
+    "Stack tag config class - V1 support - DEPRECATED< REPLACE BY SEUPR CONFIG"
 
     def __init__(self, ident=None, config=None, parent=None):
 
@@ -74,92 +45,6 @@ class TagConfigV1(AppNode):
 
         super().__init__(ident=tag_ident, parent=parent)
 
-
-#######################################
-
-
-class PaasifyTagV1(AppNode):
-    "Paasify tag class - V1 support"
-
-    def __init__(self, ident=None, path=None, parent=None):
-        assert ident is None, f"Can't acccept anything else than none value"
-        assert isinstance(path, PosixPath), f"path={path}, expected posixPath"
-
-        ident = path.stem.replace("docker-compose.", "")
-        self._path = PathAnchor(path, parent=parent.path, name="source_file")
-
-        assert "docker-compose" not in ident, f"ident={ident}"
-        assert "yml" not in ident, f"ident={ident}"
-        assert "jsonnet" not in ident, f"ident={ident}"
-
-        super().__init__(ident=ident, parent=parent)
-
-        self.source = parent
-
-    def __repr__(self):
-        kind = self.__class__.__name__
-        kind_source = self.source.__class__.__name__
-        return f"{kind}.{kind_source} ({self.source.ident}.{self.ident})"
-
-
-#######################################
-
-
-class JsonnetTagV1(PaasifyTagV1):
-    "Jsonnet tag class - V1 support"
-
-    def process_jsonnet_vars(self, vars=None):
-        "Process jsonnet vars"
-        jsonnet_path = ~self.path
-        vars = vars or {}
-
-        jproc = JsonnetProcessor()
-        try:
-            out = jproc.process_jsonnet_exec(
-                jsonnet_path,
-                "plugin_vars",
-                {
-                    "args": vars,
-                },
-            )
-            # print("======== OUT")
-            # pprint(out)
-            # print("======== OUT")
-        except JsonnetError as err:
-            # logger.critical(f"Can't parse jsonnet file: {jsonnet_path}")
-            msg = f"Can't parse jsonnet file: {jsonnet_path}, got error:\n\n{err}"
-            raise exc.PaasifyAssembleError(msg) from None
-
-        return out
-
-    def process_jsonnet_plugin(self, config=None, docker_data=None):
-        "Process jsonnet plugin"
-        jsonnet_path = ~self.path
-        docker_data = docker_data or {}
-
-        jproc = JsonnetProcessor()
-        try:
-            out = jproc.process_jsonnet_exec(
-                jsonnet_path,
-                "docker_transform",
-                {
-                    "args": config,
-                    "docker_data": docker_data,
-                },
-            )
-            # print("======== OUT")
-            # pprint(out)
-            # print("======== OUT")
-        except JsonnetError as err:
-            # logger.critical(f"Can't parse jsonnet file: {jsonnet_path}")
-            msg = f"Can't parse jsonnet file: {jsonnet_path}, got error:\n\n{err}"
-            raise exc.PaasifyAssembleError(msg) from None
-
-        return out
-
-
-class ComposeTagV1(PaasifyTagV1):
-    "Compose tag class - V1 support"
 
 
 ##########################################
@@ -365,3 +250,61 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
                 # logger.error("  %s", conf)
 
         return compose_content
+
+
+
+###### 
+from paasify_v4.lib_paasify.api_abc import PodManagedMixin, PodManagementMixin
+from paasify_v4.nodes_paasify import (
+    AppNode, VarMgrNodeMixin, WorkingDirNode,
+    requires_setup_node, setup_once)
+
+
+class PaasifyPodV1Mixin(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
+    "Pod v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}
+
+
+
+class PaasifyStackV1Mixin(PodManagementMixin, WorkingDirNode):
+    "Stack v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}
+
+
+class PaasifyNamespaceV1Mixin(
+    PaasifyCollectionV1SupportMixin, PodManagementMixin, WorkingDirNode):
+    "Namespace v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}
+
+
+class PaasifyCatalogV1Mixin(AppNode):
+    "Catalog v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}
+
+
+class PaasifyCollectionV1Mixin(PaasifyCollectionV1SupportMixin, AppNode):
+    "Collection v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}
+
+
+class PaasifyAppV1Mixin(PaasifyAppV1SupportMixin, AppNode):
+    "App v1 support"
+
+    # def get_infos(self) -> dict:
+    #     "Get infos"
+    #     return {}

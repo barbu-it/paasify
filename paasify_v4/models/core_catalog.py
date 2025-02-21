@@ -33,6 +33,7 @@ from paasify_v4.models.core_common import (ComposeTagV1, JsonnetTagV1,
                                            PaasifyAppV1SupportMixin,
                                            PaasifyCollectionV1SupportMixin)
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
+from paasify_v4.models.core_common import PaasifyCatalogV1Mixin, PaasifyAppV1Mixin, PaasifyCollectionV1Mixin
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class PaasifyTagManager(AppNode):
 # ================================================
 
 
-class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
+class PaasifyApp(PaasifyAppV1Mixin):
     "PaasifyApp class"
 
     paasify_type = "catalog_app"
@@ -251,7 +252,7 @@ class PaasifyApp(PaasifyAppV1SupportMixin, AppNode):
 ############################################
 
 
-class PaasifyCollection(PaasifyCollectionV1SupportMixin, AppNode):
+class PaasifyCollection(PaasifyCollectionV1Mixin):
     "PaasifyCollection class"
 
     def __init__(self, ident, name=None, path=None, parent=None, index=None):
@@ -440,7 +441,7 @@ class CollectionsPath(AppNode):
         raise ValueError(f"Invalid arguments: {args}")
 
 
-class PaasifyCatalog(AppNode):
+class PaasifyCatalog(PaasifyCatalogV1Mixin):
     "Catalog class, manage list of collections paths"
 
     paasify_type = "catalog"

@@ -20,12 +20,13 @@ from paasify_v4.common import (
     from_yaml, read_file, to_domain, to_yaml,
     truncate, write_file)
 from paasify_v4.lib.shexec import shexec
-from paasify_v4.lib_paasify.api_abc import PodManagedMixin
 # from paasify_v4.models.core_catalog import PaasifyCatalog
 from paasify_v4.models.core_common import (
     ComposeTagV1, JsonnetTagV1,
     PaasifyAppV1SupportMixin,
-    TagConfigV1, Var)
+    PaasifyPodV1Mixin,
+    TagConfigV1)
+from paasify_v4.models.comp_vars import Var
 from paasify_v4.nodes_paasify import (
     AppNode, VarMgrNodeMixin, WorkingDirNode,
     requires_setup_node, setup_once)
@@ -41,7 +42,7 @@ logger = logging.getLogger(__name__)
 # ================================================
 
 
-class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, AppNode):
+class PaasifyPod(PaasifyPodV1Mixin):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
@@ -275,11 +276,15 @@ class PaasifyPod(PodManagedMixin, VarMgrNodeMixin, PaasifyAppV1SupportMixin, App
         app_vars = app.get_vars_files()
 
         # TODO: Fix wip tag
+        
         new_tags = [TagConfigV1(config="_paasify2", parent=self)]
         for tag in tags:
             ret_tag = TagConfigV1(config=tag, parent=self)
             # pprint(ret_tag.__dict__)
             new_tags.append(ret_tag)
+
+        pprint(new_tags)
+        assert False, "TOFIX: Make this to use superconf instead !!!"
 
         # pprint(new_tags)
 
