@@ -23,7 +23,7 @@ from superconf.anchors2 import FileAnchor, PathAnchor
 import paasify_v4.exception as exc
 from paasify_v4.common import (find_file_up, from_yaml, list_parent_dirs,
                                read_file, to_json)
-from paasify_v4.nodes import Node, VarMgrNodeMixin
+from paasify_v4.nodes import Node
 
 logger = logging.getLogger(__name__)
 
@@ -238,7 +238,8 @@ class AppNode(Node):
 # class WorkingDirNode(VarMgrNodeMixin, AppNode):
 
 
-class WorkingDirNode(VarMgrNodeMixin, AppNode):
+# class WorkingDirNode(VarMgrNodeMixin, AppNode):
+class WorkingDirNode(AppNode):
     "Working directory mixin class"
 
     ALLOWED_CONF_FILES = []

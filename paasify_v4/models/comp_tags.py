@@ -3,10 +3,9 @@ from pathlib import Path, PosixPath
 from pprint import pprint
 
 from superconf.anchors2 import PathAnchor
-from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
+
 from paasify_v4.lib.jsonnet2 import JsonnetError, JsonnetProcessor
-
-
+from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
 
 logger = logging.getLogger(__name__)
 
@@ -93,5 +92,3 @@ class JsonnetTagV1(PaasifyTagV1):
 
 class ComposeTagV1(PaasifyTagV1):
     "Compose tag class - V1 support"
-
-

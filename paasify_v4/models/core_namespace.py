@@ -5,27 +5,25 @@ from pprint import pprint
 from superconf.anchors2 import FileAnchor
 
 from paasify_v4.common import find_files_down
-from paasify_v4.lib_paasify.api_abc import PodManagementMixin
-from paasify_v4.models.core_common import PaasifyCollectionV1SupportMixin, PaasifyNamespaceV1Mixin
+from paasify_v4.models.core_common import PaasifyNamespaceV1Mixin
 from paasify_v4.models.core_stack import PaasifyStack
-from paasify_v4.nodes_paasify import (AppNode, WorkingDirNode,
-                                      requires_setup_node, setup_once)
+from paasify_v4.nodes_paasify import requires_setup_node, setup_once
 
 # import paasify_v4.exception as exc
 
 logger = logging.getLogger(__name__)
 
 
-class PaasifyNoNamespace(PodManagementMixin, AppNode):
-    "No namespace class, just implement dumb methods"
+# class PaasifyNoNamespace(PodManagementMixin, AppNode):
+#     "No namespace class, just implement dumb methods"
 
-    paasify_type = "namespace"
+#     paasify_type = "namespace"
 
-    OBJECT_NAME = "EmptyNamespace"
-    ALLOWED_CONF_FILES = ["paasify.ns.yml"]
+#     OBJECT_NAME = "EmptyNamespace"
+#     ALLOWED_CONF_FILES = ["paasify.ns.yml"]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
 
 
 class PaasifyNamespace(PaasifyNamespaceV1Mixin):

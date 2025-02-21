@@ -3,33 +3,23 @@
 import json
 import logging
 import os
-from pathlib import Path
+# from pathlib import Path
 from pprint import pprint
 from types import SimpleNamespace
 
-import sh
-from mrjk_components.varmgr.lib.store_base import (
-    Source, StoreManager,
-    UndefinedVarError)
+# import sh
+from mrjk_components.varmgr.lib.store_base import Source
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
 from superconf.anchors2 import PathAnchor
 
 import paasify_v4.exception as exc
-from paasify_v4.common import (
-    dict_to_env, find_file_in_path, flatten,
-    from_yaml, read_file, to_domain, to_yaml,
-    truncate, write_file)
-from paasify_v4.lib.shexec import shexec
-# from paasify_v4.models.core_catalog import PaasifyCatalog
-from paasify_v4.models.core_common import (
-    ComposeTagV1, JsonnetTagV1,
-    PaasifyAppV1SupportMixin,
-    PaasifyPodV1Mixin,
-    TagConfigV1)
+from paasify_v4.common import dict_to_env, write_file
+from paasify_v4.models.comp_tags import ComposeTagV1, JsonnetTagV1
 from paasify_v4.models.comp_vars import Var
-from paasify_v4.nodes_paasify import (
-    AppNode, VarMgrNodeMixin, WorkingDirNode,
-    requires_setup_node, setup_once)
+# from paasify_v4.lib.shexec import shexec
+# from paasify_v4.models.core_catalog import PaasifyCatalog
+from paasify_v4.models.core_common import PaasifyPodV1Mixin, TagConfigV1
+from paasify_v4.nodes_paasify import requires_setup_node, setup_once
 
 logger = logging.getLogger(__name__)
 
@@ -276,7 +266,7 @@ class PaasifyPod(PaasifyPodV1Mixin):
         app_vars = app.get_vars_files()
 
         # TODO: Fix wip tag
-        
+
         new_tags = [TagConfigV1(config="_paasify2", parent=self)]
         for tag in tags:
             ret_tag = TagConfigV1(config=tag, parent=self)

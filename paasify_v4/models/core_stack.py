@@ -3,14 +3,14 @@
 import logging
 from pprint import pprint
 
-from superconf.anchors2 import PathAnchor
-
-import paasify_v4.exception as exc
+# import paasify_v4.exception as exc
 from paasify_v4.models.core_catalog import PaasifyCatalog
-from paasify_v4.models.core_pod import PaasifyPod
-from paasify_v4.nodes_paasify import (AppNode, VarMgrNodeMixin, WorkingDirNode,
-                                      requires_setup_node, setup_once)
 from paasify_v4.models.core_common import PaasifyStackV1Mixin
+from paasify_v4.models.core_pod import PaasifyPod
+from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
+
+# from superconf.anchors2 import PathAnchor
+
 
 logger = logging.getLogger(__name__)
 

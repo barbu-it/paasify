@@ -19,21 +19,22 @@ from difflib import get_close_matches
 # from pprint import pprint
 from pathlib import Path
 from pprint import pprint
-from types import SimpleNamespace
+# from types import SimpleNamespace
 from typing import Dict, List
 
 from superconf.anchors2 import PathAnchor
 
 import paasify_v4.exception as exc
-from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
-                               from_yaml, read_file, to_domain, to_yaml,
-                               truncate, write_file)
+from paasify_v4.common import (  # flatten,; dict_to_env,; from_yaml, read_file, to_domain, to_yaml,; write_file
+    find_file_in_path, truncate)
 from paasify_v4.lib.git_helpers import GitRepo
-from paasify_v4.models.core_common import (ComposeTagV1, JsonnetTagV1,
-                                           PaasifyAppV1SupportMixin,
-                                           PaasifyCollectionV1SupportMixin)
+from paasify_v4.models.core_common import (PaasifyAppV1Mixin,
+                                           PaasifyCatalogV1Mixin,
+                                           PaasifyCollectionV1Mixin)
+# from paasify_v4.models.core_common import (ComposeTagV1, JsonnetTagV1,
+#                                            PaasifyAppV1SupportMixin,
+#                                            PaasifyCollectionV1SupportMixin)
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
-from paasify_v4.models.core_common import PaasifyCatalogV1Mixin, PaasifyAppV1Mixin, PaasifyCollectionV1Mixin
 
 logger = logging.getLogger(__name__)
 
