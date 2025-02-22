@@ -1,6 +1,7 @@
 import logging
 from pprint import pprint
 
+from paasify_v4.common import to_yaml
 import paasify_v4.exception as exc
 
 logger = logging.getLogger(__name__)
@@ -70,13 +71,14 @@ class PodManagementMixin(PaasifyEntityMixin):
             "name": self.name,
             "path": +self.path,
             # "config": self.config,
-            # "vars": self.get_vars(),
+            "vars": to_yaml(self.get_vars()),
         }
         # for var_name, var_value in self.config.items():
         #     out[f"config:{var_name}"] = var_value
 
-        for var_name, var_value in self.get_vars().items():
-            out[f"var:{var_name}"] = var_value
+        # for var_name, var_value in self.get_vars().items():
+        #     # help(var_value.__class__)
+        #     out[f"var:{var_name}"] = var_value #.get_values()
         return out
 
     def get_pods(self):

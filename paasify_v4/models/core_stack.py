@@ -8,8 +8,10 @@ from paasify_v4.models.core_catalog import PaasifyCatalog
 from paasify_v4.models.core_common import PaasifyStackV1Mixin
 from paasify_v4.models.core_pod import PaasifyPod
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
-
+from paasify_v4.common import to_yaml
 # from superconf.anchors2 import PathAnchor
+
+from paasify_v4.specs.config_stack import PaasifyStackConfigFile, StackPods
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,17 @@ class PaasifyStack(PaasifyStackV1Mixin):
             type(parent).__name__ == "PaasifyNamespace"
         ), f"Parent should be a PaasifyNamespace, not {type(parent).__name__}"
 
-        self.config = self.config or {}
+        # pprint(self.__dict__)
+
+        self.raw_config = self.config or {}
+        self.config = PaasifyStackConfigFile(value=self.config)
+
+        # pprint(self.__dict__)
+        # assert False, "WIP, self.config must be superconf.Configuration"
+
+
+
+        # self.config = self.config or {}
 
         # Register namespace if provided
         namespace = namespace or parent
@@ -73,6 +85,26 @@ class PaasifyStack(PaasifyStackV1Mixin):
     #     final1 = "__".join([part_ns, part_stack])
     #     return final1
 
+    def get_infos(self) -> dict:
+        "Get infos"
+        base = super().get_infos()
+        sep = base.pop("--", "--") + "-"
+        base[sep] = sep
+
+
+        pods = self.get_pods()
+        for pod in pods:
+            pod_cfg = {
+                "app": pod.app.name, 
+                "vars": pod.get_vars(),
+                # "tags": pod.get_tags(),
+            }
+            base[f"pod:{pod.name}"] = to_yaml(pod_cfg)
+
+        return base
+
+
+
     # Pod mangement
     # --------------------------------
 
@@ -81,17 +113,27 @@ class PaasifyStack(PaasifyStackV1Mixin):
         "Setup the stack and it's apps"
         logger.info("Setup stack: %s", self)
 
-        config = self.config or {}
+        # config = self.config or {}
+
+        # self.raw_config = config
+        # self.config = PaasifyStackConfigFile(value=config)
+
+        config = self.config
 
         apps_config = config.get("apps", {}) or {}
-        assert isinstance(apps_config, dict)
+        print(type(apps_config), apps_config.__class__.__mro__)
+        # assert isinstance(apps_config, (dict, StackPods)), f"Got: {type(apps_config)}"
+        assert isinstance(apps_config, StackPods), f"Got: {type(apps_config)}"
         out = {}
         for pod_ident, pod_config in apps_config.items():
+            # pprint(pod_config)
+            # pprint(pod_config.__class__.__mro__)
             pod = PaasifyPod(
                 ident=pod_ident,
                 parent=self,
                 path=pod_ident,
-                raw_config=pod_config,
+                config = pod_config,
+                # raw_config=pod_config,
             )
             out[pod_ident] = pod
 

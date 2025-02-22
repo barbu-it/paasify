@@ -2,7 +2,7 @@
 from pprint import pprint
 
 from superconf.configuration import Configuration, ConfigurationDict
-from superconf.fields import Field, FieldConf
+from superconf.fields import Field, FieldConf, FieldDict
 
 from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
 
@@ -36,6 +36,8 @@ class AppMainConfig(Configuration):
 
     # Application configuration
     meta = FieldConf(children_class=AppMetadata)
+    vars = FieldDict(help="vars to use")
+
     features = FieldConf(children_class=AppFeatures)
     plugins = FieldConf(children_class=AppPlugins)
     sides = FieldConf(children_class=AppSides)

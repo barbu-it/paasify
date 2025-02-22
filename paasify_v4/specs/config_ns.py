@@ -3,11 +3,11 @@ from pprint import pprint
 
 from superconf.configuration import (Configuration, ConfigurationDict,
                                      ConfigurationList)
-from superconf.fields import Field, FieldConf
+from superconf.fields import Field, FieldConf, FieldDict
 
 from paasify_v4.specs.config__collections import GenericCollections
 from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
-from paasify_v4.specs.config__vars import GenericVars
+# from paasify_v4.specs.config__vars import GenericVars
 
 
 class NamespaceMetadata(Configuration):
@@ -38,5 +38,5 @@ class PaasifyNamespaceConfig(Configuration):
     # Application configuration
     meta = FieldConf(children_class=NamespaceMetadata)
     collections = FieldConf(children_class=GenericCollections)
-    vars = FieldConf(children_class=GenericVars)
+    vars = FieldDict(help="vars to use")
     stacks = FieldConf(children_class=NamespaceStacks)

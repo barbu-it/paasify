@@ -36,10 +36,10 @@ class PaasifyPod(PaasifyPodV1Mixin):
     "Base class for all Paasify pods"
 
     paasify_type = "pod"
-    node__iterate_backend = "_store_vars"
-    node__iterate_setupmarker = "setup_vars"
+    # node__iterate_backend = "_store_vars"
+    # node__iterate_setupmarker = "setup_vars"
 
-    def __init__(self, ident, parent=None, name=None, raw_config=None, path=None):
+    def __init__(self, ident, parent=None, name=None, config=None, raw_config=None, path=None):
         # assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
         self._parent = parent
@@ -50,7 +50,8 @@ class PaasifyPod(PaasifyPodV1Mixin):
         self._name = name or ident.split("/", maxsplit=1)[0]
 
         self._path = PathAnchor(path, name="pod_path", parent=parent.path)
-        self.config = self.build_config(raw_config, ident=ident)
+        self.config = config
+        # self.config = self.build_config(raw_config, ident=ident)
         self._app = None
         self._store_vars = {}
 
@@ -105,21 +106,22 @@ class PaasifyPod(PaasifyPodV1Mixin):
     # Vars management
     # --------------------------------
 
-    @setup_once("setup_vars")
-    def setup_vars(self):
-        "Setup vars"
+    # @setup_once("setup_vars")
+    # def setup_vars(self):
+    #     "Setup vars"
 
-        app_vars = self.config.get("vars", {}) or {}
-        for var_name, var_value in app_vars.items():
-            var = Var(var_name, var_value)
-            self._store_vars[var_name] = var
+    #     app_vars = self.config.get("vars", {}) or {}
+    #     print("SEUPT VARS", type(app_vars), app_vars)
+    #     for var_name, var_value in app_vars.items():
+    #         var = Var(var_name, var_value)
+    #         self._store_vars[var_name] = var
 
         # self._store_vars = self.config.get("vars", {}) or {}
 
-    @requires_setup_node("setup_vars")
+    # @requires_setup_node("setup_vars")
     def get_vars(self):  # V2
         "Get vars"
-        return {key: val.value for key, val in self._store_vars.items()}
+        return self.config.vars
 
     # @setup_once("setup_node")
     # def get_vars(self): # V1
@@ -129,43 +131,43 @@ class PaasifyPod(PaasifyPodV1Mixin):
     # Config build
     # --------------------------------
 
-    def build_config(self, config, ident=None):
-        "Build config"
-        # if ident:
-        #     config = config.get(ident, {})
-        out = {
-            "ident": ident,
-            "directory": None,
-            "app": None,
-            "name": None,
-            "vars": {},
-            "tags": [],
-        }
+    # def build_config(self, config, ident=None):
+    #     "Build config"
+    #     # if ident:
+    #     #     config = config.get(ident, {})
+    #     out = {
+    #         "ident": ident,
+    #         "directory": None,
+    #         "app": None,
+    #         "name": None,
+    #         "vars": {},
+    #         "tags": [],
+    #     }
 
-        # Check type
-        if isinstance(config, str) and config:
-            # If not empty string, on it's simplest form, we exect
-            # to be the app name
-            config = {"app": str(config)}
-        elif isinstance(config, dict):
-            pass
-        elif not config:
-            config = {}
-        else:
-            raise exc.PaasifyConfigError(f"Invalid config type: {type(config)}")
+    #     # Check type
+    #     if isinstance(config, str) and config:
+    #         # If not empty string, on it's simplest form, we exect
+    #         # to be the app name
+    #         config = {"app": str(config)}
+    #     elif isinstance(config, dict):
+    #         pass
+    #     elif not config:
+    #         config = {}
+    #     else:
+    #         raise exc.PaasifyConfigError(f"Invalid config type: {type(config)}")
 
-        out.update(config)
-        if ident:
-            out.update(
-                {
-                    "directory": ident,
-                }
-            )
+    #     out.update(config)
+    #     if ident:
+    #         out.update(
+    #             {
+    #                 "directory": ident,
+    #             }
+    #         )
 
-        out["vars"] = out["vars"] or {}
-        out["tags"] = out["tags"] or []
+    #     out["vars"] = out["vars"] or {}
+    #     out["tags"] = out["tags"] or []
 
-        return out
+    #     return out
 
     @setup_once("setup_node")
     def setup_node(self):
