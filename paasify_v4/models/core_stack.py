@@ -9,6 +9,7 @@ from paasify_v4.models.core_common import PaasifyStackV1Mixin
 from paasify_v4.models.core_pod import PaasifyPod
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
 from paasify_v4.common import to_yaml
+
 # from superconf.anchors2 import PathAnchor
 
 from paasify_v4.specs.config_stack import PaasifyStackConfigFile, StackPods
@@ -61,8 +62,6 @@ class PaasifyStack(PaasifyStackV1Mixin):
         # pprint(self.__dict__)
         # assert False, "WIP, self.config must be superconf.Configuration"
 
-
-
         # self.config = self.config or {}
 
         # Register namespace if provided
@@ -91,19 +90,16 @@ class PaasifyStack(PaasifyStackV1Mixin):
         sep = base.pop("--", "--") + "-"
         base[sep] = sep
 
-
         pods = self.get_pods()
         for pod in pods:
             pod_cfg = {
-                "app": pod.app.name, 
+                "app": pod.app.name,
                 "vars": pod.get_vars(),
                 # "tags": pod.get_tags(),
             }
             base[f"pod:{pod.name}"] = to_yaml(pod_cfg)
 
         return base
-
-
 
     # Pod mangement
     # --------------------------------
@@ -132,7 +128,7 @@ class PaasifyStack(PaasifyStackV1Mixin):
                 ident=pod_ident,
                 parent=self,
                 path=pod_ident,
-                config = pod_config,
+                config=pod_config,
                 # raw_config=pod_config,
             )
             out[pod_ident] = pod

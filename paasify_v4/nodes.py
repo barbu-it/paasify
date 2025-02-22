@@ -1,17 +1,26 @@
 import logging
 import os
+
 # pylint: disable=unused-import
 from pprint import pprint
 from typing import Optional
 
-from mrjk_components.varmgr.lib.store_base import (Source, StoreManager,
-                                                   UndefinedVarError)
+from mrjk_components.varmgr.lib.store_base import (
+    Source,
+    StoreManager,
+    UndefinedVarError,
+)
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
 from superconf.anchors2 import FileAnchor, PathAnchor
 
 import paasify_v4.exception as exc
-from paasify_v4.common import (find_file_up, from_yaml, list_parent_dirs,
-                               read_file, to_json)
+from paasify_v4.common import (
+    find_file_up,
+    from_yaml,
+    list_parent_dirs,
+    read_file,
+    to_json,
+)
 
 logger = logging.getLogger(__name__)
 

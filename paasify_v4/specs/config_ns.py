@@ -1,12 +1,12 @@
 "Tag manager spec model"
 from pprint import pprint
 
-from superconf.configuration import (Configuration, ConfigurationDict,
-                                     ConfigurationList)
+from superconf.configuration import Configuration, ConfigurationDict, ConfigurationList
 from superconf.fields import Field, FieldConf, FieldDict
 
 from paasify_v4.specs.config__collections import GenericCollections
 from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
+
 # from paasify_v4.specs.config__vars import GenericVars
 
 

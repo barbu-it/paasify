@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+
 # from pathlib import Path
 from pprint import pprint
 from types import SimpleNamespace
@@ -16,6 +17,7 @@ import paasify_v4.exception as exc
 from paasify_v4.common import dict_to_env, write_file
 from paasify_v4.models.comp_tags import ComposeTagV1, JsonnetTagV1
 from paasify_v4.models.comp_vars import Var
+
 # from paasify_v4.lib.shexec import shexec
 # from paasify_v4.models.core_catalog import PaasifyCatalog
 from paasify_v4.models.core_common import PaasifyPodV1Mixin, TagConfigV1
@@ -39,7 +41,9 @@ class PaasifyPod(PaasifyPodV1Mixin):
     # node__iterate_backend = "_store_vars"
     # node__iterate_setupmarker = "setup_vars"
 
-    def __init__(self, ident, parent=None, name=None, config=None, raw_config=None, path=None):
+    def __init__(
+        self, ident, parent=None, name=None, config=None, raw_config=None, path=None
+    ):
         # assert isinstance(parent, PaasifyStack)
         super().__init__(ident, parent)
         self._parent = parent
@@ -116,7 +120,7 @@ class PaasifyPod(PaasifyPodV1Mixin):
     #         var = Var(var_name, var_value)
     #         self._store_vars[var_name] = var
 
-        # self._store_vars = self.config.get("vars", {}) or {}
+    # self._store_vars = self.config.get("vars", {}) or {}
 
     # @requires_setup_node("setup_vars")
     def get_vars(self):  # V2

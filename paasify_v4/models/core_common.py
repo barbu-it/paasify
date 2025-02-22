@@ -1,20 +1,27 @@
 import logging
+
 # from pathlib import Path, PosixPath
 from pprint import pprint
 
 import paasify_v4.exception as exc
 from paasify_v4.lib_paasify.api_abc import PodManagedMixin, PodManagementMixin
-from paasify_v4.models.comp_apps import (PaasifyAppV1SupportMixin,
-                                         PaasifyCollectionV1SupportMixin)
+from paasify_v4.models.comp_apps import (
+    PaasifyAppV1SupportMixin,
+    PaasifyCollectionV1SupportMixin,
+)
+
 # from paasify_v4.specs.config_app import AppMainConfig
 # from paasify_v4.models.comp_tags import JsonnetTagV1, ComposeTagV1
 from paasify_v4.nodes import VarMgrNodeMixin
+
 # from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
 #                                from_yaml, read_file, to_domain, to_yaml,
 #                                truncate, write_file)
 # from paasify_v4.engine_docker.compose_app import ComposedApp
 from paasify_v4.nodes_paasify import (  # , requires_setup_node, setup_once
-    AppNode, WorkingDirNode)
+    AppNode,
+    WorkingDirNode,
+)
 
 # from superconf.anchors2 import PathAnchor
 

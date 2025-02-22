@@ -10,8 +10,15 @@ import sh
 from clak.common import to_boolean
 from mrjk_components.py_helpers.string_template import StringTemplate
 
-from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
-                               from_yaml, read_file, to_domain, write_file)
+from paasify_v4.common import (
+    dict_to_env,
+    find_file_in_path,
+    flatten,
+    from_yaml,
+    read_file,
+    to_domain,
+    write_file,
+)
 from paasify_v4.lib.shexec import shexec
 
 logger = logging.getLogger(__name__)

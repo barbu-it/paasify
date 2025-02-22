@@ -5,9 +5,17 @@ from pprint import pprint
 from superconf.anchors2 import PathAnchor
 
 import paasify_v4.exception as exc
-from paasify_v4.common import (dict_to_env, find_file_in_path, flatten,
-                               from_yaml, read_file, to_domain, to_yaml,
-                               truncate, write_file)
+from paasify_v4.common import (
+    dict_to_env,
+    find_file_in_path,
+    flatten,
+    from_yaml,
+    read_file,
+    to_domain,
+    to_yaml,
+    truncate,
+    write_file,
+)
 from paasify_v4.engine_docker.compose_app import ComposedApp
 from paasify_v4.models.comp_tags import ComposeTagV1, JsonnetTagV1
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
