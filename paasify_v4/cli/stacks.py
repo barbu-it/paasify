@@ -44,9 +44,9 @@ class StackTreeCmd(Parser):
             msg = f"Command not found: {err}"
             raise exc.PaasifyCliError(msg) from None
         except Exception as err:
-            pprint(type(err))
-            pprint(type(err).__mro__)
-            pprint(err.__dict__)
+            # pprint(type(err))
+            # pprint(type(err).__mro__)
+            # pprint(err.__dict__)
             msg = f"Command '{' '.join(cmd)}' returned an error: {err}"
             raise exc.PaasifyCliError(msg) from None
 

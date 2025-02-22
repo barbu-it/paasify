@@ -131,15 +131,14 @@ def dict_to_env(dict):
 
 
 def read_file(file):
-    "Read file content"
-    print("TYPE", type(file), file)
+    "Read file content, accept pathlib objects"
     file = str(file) if isinstance(file, Path) else file
     with open(file, encoding="utf-8") as _file:
         return "".join(_file.readlines())
 
 
 def write_file(file, content):
-    "Write content to file"
+    "Write content to file, accept pathlib objects"
 
     file = str(file) if isinstance(file, Path) else file
     file_folder = os.path.dirname(file)

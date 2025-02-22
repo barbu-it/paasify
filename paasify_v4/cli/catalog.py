@@ -91,7 +91,7 @@ class AppShowCmd(Parser):
         # extra.update(extra2)
         # extra.update(extra3)
 
-        pprint(app.get_jsonnet_plugin_tags())
+        # pprint(app.get_jsonnet_plugin_tags())
 
         # extra.update(app_vars)
         return ShowView(extra)

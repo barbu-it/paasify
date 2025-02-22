@@ -611,7 +611,7 @@ class PaasifyPod(PaasifyPodV1Mixin):
 
         tmp = {}
         # tmp["x-app_top_domain"] = "localhost"
-        pprint(tmp)
+        # pprint(tmp)
         # default_vars.update(tmp)
 
         default_vars = {}

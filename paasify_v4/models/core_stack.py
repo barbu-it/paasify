@@ -121,7 +121,7 @@ class PaasifyStack(PaasifyStackV1Mixin):
         config = self.config
 
         apps_config = config.get("apps", {}) or {}
-        print(type(apps_config), apps_config.__class__.__mro__)
+        # print(type(apps_config), apps_config.__class__.__mro__)
         # assert isinstance(apps_config, (dict, StackPods)), f"Got: {type(apps_config)}"
         assert isinstance(apps_config, StackPods), f"Got: {type(apps_config)}"
         out = {}
