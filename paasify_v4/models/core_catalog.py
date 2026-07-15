@@ -24,7 +24,7 @@ from pprint import pprint
 # from types import SimpleNamespace
 from typing import Dict, List
 
-from superconf.anchors2 import PathAnchor
+from superconf.anchors import PathAnchor
 
 import paasify_v4.exception as exc
 from paasify_v4.common import (  # flatten,; dict_to_env,; from_yaml, read_file, to_domain, to_yaml,; write_file
@@ -93,6 +93,8 @@ class PaasifyApp(PaasifyAppV1Mixin):
         self._store_vars = {}
         self._store_tags = {}
 
+        self.parse_paasify_config()
+
         # print("APP:", self.name)
         # if self.name == "traefik":
         # # pprint(self.__dict__)
@@ -103,6 +105,9 @@ class PaasifyApp(PaasifyAppV1Mixin):
     def get_infos(self) -> dict:
         "Get infos"
         base = super().get_infos()
+
+        logger.debug("Get app infos for %s", self)
+
         sep = base.pop("--", "--") + "-"
         base[sep] = sep
 

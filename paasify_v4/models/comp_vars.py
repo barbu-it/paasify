@@ -2,7 +2,7 @@ import logging
 from pathlib import Path, PosixPath
 from pprint import pprint
 
-from superconf.anchors2 import PathAnchor
+from superconf.anchors import PathAnchor
 
 import paasify_v4.exception as exc
 from paasify_v4.common import (

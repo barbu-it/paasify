@@ -19,7 +19,7 @@ import os
 from pprint import pprint
 from typing import Optional
 
-from superconf.anchors2 import FileAnchor, PathAnchor
+from superconf.anchors import FileAnchor, PathAnchor
 
 import paasify_v4.exception as exc
 from paasify_v4.common import (

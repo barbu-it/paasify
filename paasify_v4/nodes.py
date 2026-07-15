@@ -11,7 +11,7 @@ from mrjk_components.varmgr.lib.store_base import (
     UndefinedVarError,
 )
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
-from superconf.anchors2 import FileAnchor, PathAnchor
+from superconf.anchors import FileAnchor, PathAnchor
 
 import paasify_v4.exception as exc
 from paasify_v4.common import (

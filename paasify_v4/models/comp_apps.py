@@ -1,9 +1,10 @@
 import logging
 from pathlib import Path, PosixPath
 from pprint import pprint
+import yaml
 
-from superconf.anchors2 import PathAnchor
-
+from superconf.anchors import PathAnchor
+from superconf.exceptions import ConfigurationException
 import paasify_v4.exception as exc
 from paasify_v4.common import (
     dict_to_env,
@@ -81,6 +82,7 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
 
     def get_infos(self) -> dict:
         "Get infos"
+        logger.debug("Get app_v1 infos for %s", self)
         out = {
             "self": self,
             "kind": self.kind,
@@ -89,6 +91,8 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             "path": ~self.path,
             "vars": to_yaml(self.get_vars(), strip_last=True),
             "tags_files": to_yaml(self.get_tags(), strip_last=True),
+
+            "ZZZ_WIP": "YOOOO"
             # "compose_files": to_yaml(
             #     [
             #         str(x.name)
@@ -118,19 +122,38 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
             return matches[0]
         return None
 
-    def parse_paasify_config(self, config_file) -> dict:
+    def parse_paasify_config(self, config_file=None) -> dict:
         "Parse paasify config"
 
         config_file = config_file or self.get_paasify_app_cfg_file()
         if not config_file:
             return {}
 
-        raw_config = from_yaml(read_file(config_file))
 
-        assert not hasattr(self, "config"), "config already set"
-        self.config = AppMainConfig(value=raw_config)
+        # Try to parse config file
+        try:
+            raw_config = from_yaml(read_file(config_file))
+        except yaml.YAMLError as err:
+            msg = f"Error parsing paasify config file '{config_file}': {err}"
+            raise exc.PaasifyYamlError(msg) from None
 
-        # pprint(app_cctl.meta.get_values())
+        # assert not hasattr(self, "config"), "config already set"
+        # assert False, "To fix, replace by superconf.Configuration"
+        # self.config = AppMainConfig(value=raw_config, key=f"app.{self.name}")
+
+
+        # pprint(self.config.meta)
+        # pprint(self.config.meta.__dict__)
+
+
+        # assert False, "WIPPP"
+        try:
+            self.config = AppMainConfig(value=raw_config, key=f"app.{self.name}")
+        except ConfigurationException as err:
+            msg = f"{type(err).__name__} error when reading '{self.name}' app config: {err} in {config_file}"
+            raise exc.PaasifyConfigError(msg) from None
+
+        # pprint(self.config.meta.get_value())
 
         # print("YOOOO")
         # # pprint(app_cctl.features.__dict__)
@@ -140,7 +163,7 @@ class PaasifyAppV1SupportMixin(PaasifyV1SupportMixin):
         # # help(app_cctl.__class__)
         # assert False, "WIP"
 
-        return raw_config
+        # return raw_config
 
     def get_var_tags(self) -> list:
         "Return var tags"

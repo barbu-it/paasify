@@ -23,7 +23,7 @@ from paasify_v4.nodes_paasify import (  # , requires_setup_node, setup_once
     WorkingDirNode,
 )
 
-# from superconf.anchors2 import PathAnchor
+# from superconf.anchors import PathAnchor
 
 
 logger = logging.getLogger(__name__)

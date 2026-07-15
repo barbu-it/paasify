@@ -2,7 +2,7 @@ import logging
 from pathlib import Path, PosixPath
 from pprint import pprint
 
-from superconf.anchors2 import PathAnchor
+from superconf.anchors import PathAnchor
 
 from paasify_v4.lib.jsonnet2 import JsonnetError, JsonnetProcessor
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once

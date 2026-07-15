@@ -2,7 +2,7 @@
 import logging
 from pprint import pprint
 
-from superconf.anchors2 import FileAnchor
+from superconf.anchors import FileAnchor
 
 from paasify_v4.common import find_files_down
 from paasify_v4.models.core_common import PaasifyNamespaceV1Mixin
@@ -162,6 +162,8 @@ class PaasifyNamespace(PaasifyNamespaceV1Mixin):
     def get_varmgr(self):
         "Get varmgr"
         varmgr = super().get_varmgr()
+
+        logger.debug("Get varmgr from ns for %s", self)
 
         ret = {
             "ns_vars": self.get_vars(),
