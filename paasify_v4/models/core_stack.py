@@ -10,7 +10,11 @@ from paasify_v4.models.core_pod import PaasifyPod
 from paasify_v4.nodes_paasify import AppNode, requires_setup_node, setup_once
 from paasify_v4.common import to_yaml
 
-# from superconf.anchors2 import PathAnchor
+# from superconf.anchors import PathAnchor
+
+# from paasify_v4.specs.config_stack import PaasifyStackConfigFile, StackPods
+# from paasify_v4.specs2.config_stack import PaasifyStackConfigFile # , StackPods
+
 
 from paasify_v4.specs.config_stack import PaasifyStackConfigFile, StackPods
 
@@ -57,7 +61,25 @@ class PaasifyStack(PaasifyStackV1Mixin):
         # pprint(self.__dict__)
 
         self.raw_config = self.config or {}
-        self.config = PaasifyStackConfigFile(value=self.config)
+        self.config = PaasifyStackConfigFile(
+            value=self.config, key=f"stack_{self.name}"
+        )
+
+        # print("STACK CONFIG", self.config.fname)
+        # assert False
+
+        # pprint(self.raw_config)
+        # obj  = PaasifyStackConfigFile()
+        # obj.load(self.raw_config)
+
+        # print(to_yaml(obj.dump(self.raw_config)))
+
+        # pprint(obj)
+        # pprint(obj.__dict__)
+
+        # self.config = obj
+
+        # assert False, "WIP MARSHMALLOW"
 
         # pprint(self.__dict__)
         # assert False, "WIP, self.config must be superconf.Configuration"
@@ -87,6 +109,9 @@ class PaasifyStack(PaasifyStackV1Mixin):
     def get_infos(self) -> dict:
         "Get infos"
         base = super().get_infos()
+
+        logger.debug("Get stack infos for %s", self)
+
         sep = base.pop("--", "--") + "-"
         base[sep] = sep
 
@@ -115,11 +140,24 @@ class PaasifyStack(PaasifyStackV1Mixin):
         # self.config = PaasifyStackConfigFile(value=config)
 
         config = self.config
+        # print("SETUP Stack node")
+        # pprint(config)
 
-        apps_config = config.get("apps", {}) or {}
+        # apps_config = config.get("apps", {}) or {}
+        apps_config2 = config.get("apps")
+        apps_config = config.apps
+
+        assert apps_config2 == apps_config, "apps_config2 != apps_config"
         # print(type(apps_config), apps_config.__class__.__mro__)
-        # assert isinstance(apps_config, (dict, StackPods)), f"Got: {type(apps_config)}"
-        assert isinstance(apps_config, StackPods), f"Got: {type(apps_config)}"
+        # assert isinstance(apps_config, (dict, StackPods)), f"GoPaasifyPodt: {type(apps_config)}"
+        assert isinstance(
+            apps_config, StackPods
+        ), f"Expected StackPods, got: {type(apps_config)}"
+
+        # toto = apps_config.get_value()
+        # pprint(toto)
+        # # assert toto, f"WIP, got: {toto}"
+
         out = {}
         for pod_ident, pod_config in apps_config.items():
             # pprint(pod_config)
@@ -150,6 +188,7 @@ class PaasifyStack(PaasifyStackV1Mixin):
         "Get varmgr"
         varmgr = super().get_varmgr()
 
+        logger.debug("Get varmgr from stack for %s", self)
         ret = {
             "ns_vars": self.ns.get_vars() if self.ns else {},
             "stack_vars": self.get_vars(),

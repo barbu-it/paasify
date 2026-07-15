@@ -1,10 +1,9 @@
 from pprint import pprint
 
-from superconf.configuration import Configuration, ConfigurationDict
-from superconf.fields import Field, FieldConf
+from superconf import ConfigurationObj, ConfigurationDict,  Field, FieldConf
 
 
-class GenericCollection(Configuration):
+class GenericCollection(ConfigurationObj):
     """Generic collection"""
 
 
@@ -12,5 +11,4 @@ class GenericCollections(ConfigurationDict):
     """Generic collections configuration"""
 
     class Meta:
-        cache = True
         children_class = GenericCollection

@@ -1,8 +1,7 @@
 "Tag manager spec model"
 from pprint import pprint
 
-from superconf.configuration import Configuration, ConfigurationDict, ConfigurationList
-from superconf.fields import Field, FieldConf, FieldDict
+from superconf import ConfigurationObj, ConfigurationDict, ConfigurationList, Field, FieldConf, FieldDict
 
 from paasify_v4.specs.config__collections import GenericCollections
 from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
@@ -10,7 +9,7 @@ from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
 # from paasify_v4.specs.config__vars import GenericVars
 
 
-class NamespaceMetadata(Configuration):
+class NamespaceMetadata(ConfigurationObj):
     """Application configuration"""
 
     # Define configuration fields
@@ -28,7 +27,7 @@ class NamespaceStacks(ConfigurationList):
 #############################################################
 
 
-class PaasifyNamespaceConfig(Configuration):
+class PaasifyNamespaceConfig(ConfigurationObj):
     """Main namespace configuration"""
 
     class Meta:

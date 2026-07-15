@@ -11,10 +11,10 @@ from types import SimpleNamespace
 # import sh
 from mrjk_components.varmgr.lib.store_base import Source
 from mrjk_components.varmgr.lib.store_template import RenderableStoreManager
-from superconf.anchors2 import PathAnchor
-
+from superconf.lib.anchors import PathAnchor
+from superconf.configuration import Leaf
 import paasify_v4.exception as exc
-from paasify_v4.common import dict_to_env, write_file
+from paasify_v4.common import dict_to_env, write_file, to_yaml
 from paasify_v4.models.comp_tags import ComposeTagV1, JsonnetTagV1
 from paasify_v4.models.comp_vars import Var
 
@@ -82,6 +82,9 @@ class PaasifyPod(PaasifyPodV1Mixin):
     def get_infos(self) -> dict:
         "Get infos"
         base = super().get_infos()
+
+        logger.debug("Get pod infos for %s", self)
+
         sep = base.pop("--", "--") + "-"
         base[sep] = sep
 
@@ -187,6 +190,7 @@ class PaasifyPod(PaasifyPodV1Mixin):
         "Get varmgr"
         varmgr = super().get_varmgr()
 
+        logger.debug("Get varmgr from pod for %s", self)
         ret = {
             "ns_vars": self.ns.get_vars() if self.ns else {},
             "stack_vars": self.stack.get_vars(),
@@ -215,6 +219,7 @@ class PaasifyPod(PaasifyPodV1Mixin):
         # Resolve app name
         app = None
         app_name = self.config.get("app")
+        print("SETUP APP", app_name)
         if app_name:
             app = self._build_resolve_app_name(app_name)
 
@@ -261,15 +266,134 @@ class PaasifyPod(PaasifyPodV1Mixin):
     # @requires_setup_node("setup_app")
     def assemble(self, dry_run=False):
         "Assemble the pod - V1 support"
+        print("\n\nASSEMBLE POD")
 
         app = self.app
         # pprint(self.__dict__)
         assert app, "Missing app"
 
         # Fetch app files
-        tags = self.config.get("tags", [])
+        # tags = self.config.get("tags", [])
         docker_file_match = app.get_compose_file()
         app_vars = app.get_vars_files()
+
+        app_features = self.app.config.features.get_value()
+        print("APP FEATURES")
+        pprint(app_features)
+        print("======================")
+
+        pod_features = self.config.features.get_value()
+        print("POD FEATURES")
+        pprint(pod_features)
+        print("======================")
+
+        merged_features = self.app.config.features.merge(self.config.features)
+        print("MERGED FEATURES")
+        pprint(merged_features)
+        print("Merged features")
+        pprint({k:v for k,v in merged_features.__dict__.items() if not k in ["__node_value__"]})
+        print("App features")
+        pprint({k:v for k,v in self.app.config.features.__dict__.items() if not k in ["__node_value__"]})
+        print("Pod features")
+        pprint({k:v for k,v in self.config.features.__dict__.items() if not k in ["__node_value__"]})
+
+        assert False, "WIP"
+
+        # pprint(merged_features.__node_children__)
+        # pprint(merged_features.fname)
+        # pprint(merged_features.get_value())
+
+        print("DEBUG EMRGED FEATURES", merged_features)
+        for ft in merged_features:
+            print("FEATURE", ft)
+            pprint(ft.__dict__)
+            assert not isinstance(ft, Leaf), f"Expected a TYPE instance, not a Leaf: {type(ft)}:{ft}"
+            print("FEATURE ENABLE", ft.enable)
+            print("FEATURE PROVIDERS", ft.get_providers())
+            print("FEATURE CONSUMERS", ft.get_requires())
+        print("======================")
+
+
+
+        enabled_features = {
+            feat.__node_key__: feat for feat in merged_features if feat.enable is True
+        }
+        print("Actual enabled features")
+        pprint(enabled_features)
+        print("======================")
+
+        metadata = SimpleNamespace(
+            **{
+                "stack_name": self.stack.name,
+                "stack_fname": self.stack.fname,
+                "stack": self.stack,
+                "app_name": self.app.name,
+                # "app_fname": self.app.fname,
+                "app": self.app,
+                "pod_name": self.name,
+                "pod_fname": self.fname,
+                "pod": self,
+            }
+        )
+        print("ENABLED PROVIDERS")
+        # Get enabled features
+        enabled_providers = []
+        metadata_features = metadata.__dict__ | {
+            "kind": "provider",
+        }
+        metadata_features = SimpleNamespace(**metadata_features)
+        for feat in enabled_features.values():
+            enabled_providers.extend(feat.get_providers(metadata=metadata_features))
+
+        pprint(enabled_providers)
+
+        print("ENABLED CONSUMERS")
+        # Get enabled features
+        enabled_consumers = []
+        metadata_features = metadata.__dict__ | {
+            "kind": "consumer",
+        }
+        metadata_features = SimpleNamespace(**metadata_features)
+        for feat in enabled_features.values():
+            enabled_consumers.extend(feat.get_requires(metadata=metadata_features))
+        pprint(enabled_consumers)
+
+
+
+        # Ensure consumers are present, or auto-enable them
+        for consumer in enabled_consumers:
+            print("Ensure consumer has a provider", consumer)
+            # if consumer not in enabled_providers:
+            #     consumer.enable = True
+
+            def find_matching_provider(consumer):
+                provider_db = enabled_providers
+
+                consumer_rule = consumer.rule
+                print("CONSUMER RULE", consumer_rule)
+
+                matches = []
+                for provider in provider_db:
+                    if provider.rule.startswith(consumer_rule):
+                        matches.append(provider)
+
+                return matches
+
+            matches = find_matching_provider(consumer)
+            print("MATCHES", consumer.rule)
+            pprint(matches)
+
+
+
+
+        # print("ENABLED CONSUMERS")
+        # # Get enabled features
+        # enabled_consumers = {
+        #     feat.key: feat.get_requires() for key, feat in enabled_features.items()
+        # }
+        # pprint(enabled_consumers)
+
+        assert False, "WIP"
 
         # TODO: Fix wip tag
 
@@ -279,8 +403,87 @@ class PaasifyPod(PaasifyPodV1Mixin):
             # pprint(ret_tag.__dict__)
             new_tags.append(ret_tag)
 
-        pprint(new_tags)
-        assert False, "TOFIX: Make this to use superconf instead !!!"
+        # pprint(new_tags)
+
+        pod_tags = self.config.tags
+        app_tags = self.app.config.plugins.get_enabled(pod_tags)
+
+        pod_tags_enabled_names = self.config.tags
+
+        feature_config, feature_rest = self.app.config.features.filter_enabled(
+            pod_tags_enabled_names, rest=True
+        )
+
+        if len(feature_rest) > 0:
+            logger.warning("Some features were not found: %s", feature_rest)
+
+        pprint(feature_config)
+        pprint(feature_rest)
+
+        match_providers_rules = []
+        provider_rules = []
+        consumer_rules = []
+
+        extra_sufixes = [
+            self.stack.name,
+            f"{self.stack.name}.{self.app.name}",
+            f"{self.stack.name}.{self.name}",
+            self.app.name,
+            self.name,
+        ]
+        for feature in feature_config:
+
+            local_providers = feature.get_providers(extra_suffixes=extra_sufixes)
+            provider_rules.extend(local_providers)
+            local_consumers = feature.get_requires()
+            consumer_rules.extend(local_consumers)
+            # for tag_rule in :
+            #     print("TAG RULE1", tag_rule.key)
+            #     print("TAG RULE2", self.stack.ident)
+            #     # pprint(self.stack.__dict__)
+            #     provider_rules.extend(tag_rule.gen_rules(extra_suffixes=extra_sufixes))
+
+            # for tag_rule in feature.get_requires():
+            #     consumer_rules.extend(tag_rule.gen_rules(extra_suffixes=None))
+
+        print("Providers:")
+        pprint(provider_rules)
+        print("consumers:")
+        pprint(consumer_rules)
+
+        # Validate that each consumer rules exists in provider_rules
+        missing_rules = []
+        for consumer in consumer_rules:
+            if consumer not in provider_rules:
+                missing_rules.append(consumer)
+
+        if missing_rules:
+            for missing_rule in missing_rules:
+                feature_name = missing_rule.tag.feature.name
+                # file_name = missing_rule.tag.feature.get_file(+self.app.path)
+                # pprint(missing_rule.tag.feature.__dict__)
+                # print("FILE NAME", file_name)
+                # print("FEATURE NAME", feature_name)
+                msg = f"The following feature '{feature_name}' requires the following tag '{missing_rule.tag.key}' but it was not found in the provider rules."
+                logger.warning(msg)
+
+            # rule_names = ",".join([x.key for x in provider_rules])
+            rule_names = "\n  ".join([x.rule for x in provider_rules])
+            logger.error("Available provider rules:\n  %s", rule_names)
+            raise exc.PaasifyConfigError(
+                "The following consumer rules were not found in provider rules"
+            )
+
+        assert False
+
+        # pprint(self.app.config.__dict__)
+        app_tags_available = self.app.config.plugins
+
+        # pod_tags_enabled = self.app.config.plugins .get_enabled(pod_tags_enabled_names)
+
+        print("POD TAGS", pod_tags_enabled_names)
+        pprint(app_tags_available.get_value())
+        # assert False, "TOFIX: Make this to use superconf instead !!!"
 
         # pprint(new_tags)
 

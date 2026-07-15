@@ -50,6 +50,10 @@ class PaasifyNamespaceError(PaasifyError):
 # ==============================
 
 
+class PaasifyYamlError(PaasifyError):
+    "Error when a yaml is invalid"
+
+
 class PaasifyWorkdirNotFoundError(PaasifyError):
     "Error when a workdir is not found"
 

@@ -65,6 +65,7 @@ class PodManagementMixin(PaasifyEntityMixin):
     # IS IT A DUPLICATE OF ?
     def get_infos(self):
         "Get infos"
+        logger.debug("Get API infos for %s", self)
 
         out = {
             "kind": self.kind,

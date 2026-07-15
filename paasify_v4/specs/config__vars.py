@@ -1,10 +1,10 @@
 # from pprint import pprint
 
-# from superconf.configuration import Configuration, ConfigurationDict
+# from superconf.configuration import ConfigurationObj, ConfigurationDict
 # from superconf.fields import Field, FieldConf
 
 
-# class GenericVar(Configuration):
+# class GenericVar(ConfigurationObj):
 #     """Generic var"""
 
 
@@ -12,6 +12,5 @@
 #     """Generic vars configuration"""
 
 #     class Meta:
-#         cache = True
 #         # children_class = GenericVar
 #         # children_class = dict

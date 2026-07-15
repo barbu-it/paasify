@@ -1,17 +1,13 @@
 "Tag manager spec model"
 from pprint import pprint
 
-from superconf.configuration import Configuration, ConfigurationDict
-from superconf.fields import Field, FieldConf, FieldDict
+from superconf import ConfigurationObj, ConfigurationDict, Field, FieldConf, FieldDict, FieldList
 
-from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides
+from paasify_v4.specs.config__tags import AppFeatures, AppPlugins, AppSides, AppPlugin, AppFeature
 
 
-class AppMetadata(Configuration):
+class AppMetadata(ConfigurationObj):
     """Application configuration"""
-
-    class Meta:
-        cache = True
 
     # Define configuration fields
     desc = Field(help="Application description")
@@ -26,21 +22,28 @@ class AppMetadata(Configuration):
 #############################################################
 
 
-class AppMainConfig(Configuration):
+class AppMainConfig(ConfigurationObj):
     """Main Application example"""
 
     class Meta:
-        cache = True
-        app_name = "my-app"
-        env_prefix = "MYAPP"
+        # app_name = "my-app"
+        # env_prefix = "MYAPP"
+        extra_fields = False
 
     # Application configuration
-    meta = FieldConf(children_class=AppMetadata)
+    meta = FieldConf(AppMetadata)
     vars = FieldDict(help="vars to use")
+    resource_model = FieldDict(help="resource model to use")
+    remap_rules = FieldDict(help="remap rules to use")
+    default_features = FieldList(help="Default features enabled")
 
-    features = FieldConf(children_class=AppFeatures)
-    plugins = FieldConf(children_class=AppPlugins)
-    sides = FieldConf(children_class=AppSides)
+    # features = FieldConf(AppFeatures)
+    features = FieldConf(ConfigurationDict, children_class=AppFeature)
+    plugins = FieldConf(ConfigurationDict, children_class=AppPlugin)
+
+
+    # plugins = FieldConf(children_class=AppPlugins)
+    # sides = FieldConf(children_class=AppSides)
 
     # @property
     # def root_dir(self):
