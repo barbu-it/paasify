@@ -8,7 +8,7 @@ from pprint import pprint
 
 from clak import Argument, Command, LoggingOptMixin, Parser
 from clak.views import ListView, ShowView
-from superconf.anchors2 import PathAnchor
+from superconf.anchors import PathAnchor
 
 import paasify_v4.exception as exc
 from paasify_v4.app import PaasifyRunner
@@ -153,10 +153,12 @@ class AppMain(LoggingOptMixin, DynMixin, Parser):
                 "INFO|paasify_v4",
                 "INFO|mrjk_components",
                 "INFO|sh.command.process",
+                "INFO|superconf",
             ],
             [
                 "DEBUG|paasify_v4",
                 "DEBUG|mrjk_components",
+                "DEBUG|superconf",
             ],
             ["INFO|"],
             ["DEBUG|"],
